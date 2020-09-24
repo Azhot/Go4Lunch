@@ -16,8 +16,20 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "String", "GOOGLE_API_KEY", GOOGLE_API_KEY
+            resValue "string", "google_api_key", GOOGLE_API_KEY
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "String", "GOOGLE_API_KEY", GOOGLE_API_KEY
+            resValue "string", "google_api_key", GOOGLE_API_KEY
         }
     }
 
@@ -42,4 +54,6 @@ dependencies {
 
     // Google play services
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.google.android.libraries.places:places:2.4.0'
 }
