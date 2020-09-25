@@ -6,9 +6,14 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+
+import com.google.android.material.navigation.NavigationView;
 
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 
@@ -30,8 +35,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        init();
+        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
+        setSupportActionBar(mBinding.toolbar);
+        setUpDrawerNavigation();
         launchFragment();
     }
 
@@ -54,9 +61,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void init() {
-        Log.d(TAG, "init");
-        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed");
+        if (mBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     private void checkPermissions() {
@@ -109,5 +121,39 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    private void setUpDrawerNavigation() {
+        Log.d(TAG, "setUpDrawerNavigation");
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this,
+                mBinding.drawerLayout,
+                mBinding.toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+        mBinding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        mBinding.navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.nav_your_lunch:
+                        // launch details about the restaurant selected by the user
+                        break;
+                    case R.id.nav_settings:
+                        // launch settings, e.g. to set up notifications
+                        break;
+                    case R.id.nav_logout:
+                        // sign out here
+                        break;
+                    default:
+                        break;
+                }
+
+                mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
     }
 }
