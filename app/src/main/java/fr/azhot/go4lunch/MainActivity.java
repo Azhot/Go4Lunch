@@ -78,14 +78,15 @@ public class MainActivity extends AppCompatActivity {
     private void forceUserChoiceOnPermissions(final AppCompatActivity appCompatActivity) {
         Log.d(TAG, "forceUserChoiceOnPermissions");
         new AlertDialog.Builder(appCompatActivity)
-                .setTitle("Location permissions are required for this app components to work.")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setTitle(R.string.permissions_dialog_title)
+                .setMessage(R.string.permissions_dialog_message)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         checkPermissions();
                     }
                 })
-                .setNeutralButton("Exit", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         appCompatActivity.finish();
