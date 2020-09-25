@@ -12,15 +12,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 
+import static fr.azhot.go4lunch.AppConstants.RC_PERMISSIONS;
+
 public class MainActivity extends AppCompatActivity {
+
 
     // private static
     private static final String TAG = "MainActivity";
-    private static final int RC_PERMISSIONS = 1234;
+
 
     // variables
     private ActivityMainBinding mBinding;
 
+
+    // inherited methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -34,20 +39,18 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult");
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case RC_PERMISSIONS:
-                if (grantResults.length > 0) {
-                    for (int i : grantResults) {
-                        if (i != PackageManager.PERMISSION_GRANTED) {
-                            Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
-                            forceUserChoiceOnPermissions(this);
-                            return;
-                        }
+        if (requestCode == RC_PERMISSIONS) {
+            if (grantResults.length > 0) {
+                for (int i : grantResults) {
+                    if (i != PackageManager.PERMISSION_GRANTED) {
+                        Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
+                        forceUserChoiceOnPermissions(this);
+                        return;
                     }
                 }
-                //todo: might not be kept here
-                launchFragment();
-                break;
+            }
+            //todo: might not be kept here
+            launchFragment();
         }
     }
 
@@ -58,14 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
         Log.d(TAG, "checkPermissions");
-        if (!Permissions.isLocationPermissionGranted(this)) {
-            Permissions.getLocationPermission(this, RC_PERMISSIONS);
+        if (!PermissionsUtils.isLocationPermissionGranted(this)) {
+            PermissionsUtils.getLocationPermission(this, RC_PERMISSIONS);
         }
     }
 
     private void launchFragment() {
         Log.d(TAG, "launchFragment");
-        if (Permissions.isLocationPermissionGranted(this)) {
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(mBinding.navHostFragment.getId(), MapViewFragment.newInstance())

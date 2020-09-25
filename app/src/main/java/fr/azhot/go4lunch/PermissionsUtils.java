@@ -9,9 +9,9 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-public class Permissions {
+public class PermissionsUtils {
 
-    private static final String TAG = "Permissions";
+    private static final String TAG = "PermissionsUtils";
 
     public static void getLocationPermission(AppCompatActivity activity, int requestCode) {
         Log.d(TAG, "getLocationPermission");

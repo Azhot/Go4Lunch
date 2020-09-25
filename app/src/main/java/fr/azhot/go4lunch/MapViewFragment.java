@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -23,8 +24,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
+
+import static fr.azhot.go4lunch.AppConstants.DEFAULT_INTERVAL;
+import static fr.azhot.go4lunch.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
@@ -32,8 +38,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     // private static
     private static final String TAG = "MapViewFragment";
-    private static final float DEFAULT_ZOOM = 15f;
-    private static final long DEFAULT_INTERVAL = 60 * 1000;
 
 
     // public static
@@ -67,6 +71,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
         init(inflater);
+        LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
         return mBinding.getRoot();
     }
 
@@ -97,7 +102,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
-        getDeviceLocation();
         mGoogleMap.setMyLocationEnabled(true);
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
     }
@@ -117,7 +121,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void checkPermissions() {
-        if (!Permissions.isLocationPermissionGranted(mContext)) {
+        if (!PermissionsUtils.isLocationPermissionGranted(mContext)) {
             requireActivity().finish();
         }
     }
@@ -135,10 +139,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
-                            moveCamera(task.getResult(), DEFAULT_ZOOM);
+                            moveCamera(task.getResult(), AppConstants.DEFAULT_ZOOM);
                         } else {
                             Log.d(TAG, "onComplete: current location is null ");
-                            Toast.makeText(mContext, "Error: unable to get current location.", Toast.LENGTH_SHORT).show();
+                            LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+                            Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();
                         }
                     }
                 });
