@@ -12,7 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
@@ -28,23 +30,29 @@ public class MainActivity extends AppCompatActivity {
 
     // variables
     private ActivityMainBinding mBinding;
+    private MapViewFragment mMapViewFragment;
+    private ListViewFragment mListViewFragment;
+    private WorkmatesFragment mWorkmatesFragment;
 
 
     // inherited methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.toolbar);
         setUpDrawerNavigation();
+        setUpBottomNavigation();
         launchFragment();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult");
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_PERMISSIONS) {
             if (grantResults.length > 0) {
@@ -64,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Log.d(TAG, "onBackPressed");
+
         if (mBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             mBinding.drawerLayout.closeDrawer(GravityCompat.START);
         } else {
@@ -73,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
         Log.d(TAG, "checkPermissions");
+
         if (!PermissionsUtils.isLocationPermissionGranted(this)) {
             PermissionsUtils.getLocationPermission(this, RC_PERMISSIONS);
         }
@@ -80,10 +90,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchFragment() {
         Log.d(TAG, "launchFragment");
+
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            mMapViewFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(mBinding.navHostFragment.getId(), MapViewFragment.newInstance())
+                    .replace(mBinding.navHostFragment.getId(), mMapViewFragment)
                     .commit();
         } else {
             checkPermissions();
@@ -92,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void forceUserChoiceOnPermissions(final AppCompatActivity appCompatActivity) {
         Log.d(TAG, "forceUserChoiceOnPermissions");
+
         new AlertDialog.Builder(appCompatActivity)
                 .setTitle(R.string.permissions_dialog_title)
                 .setMessage(R.string.permissions_dialog_message)
@@ -125,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpDrawerNavigation() {
         Log.d(TAG, "setUpDrawerNavigation");
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this,
                 mBinding.drawerLayout,
@@ -148,10 +162,53 @@ public class MainActivity extends AppCompatActivity {
                         // sign out here
                         break;
                     default:
+                        Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");
                         break;
                 }
 
                 mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+
+                return true;
+            }
+        });
+    }
+
+    private void setUpBottomNavigation() {
+        Log.d(TAG, "setUpBottomNavigation");
+
+        mBinding.bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment selectedFragment;
+                switch (item.getItemId()) {
+                    case R.id.list_view:
+                        Log.d(TAG, "onNavigationItemSelected: user clicked on List view.");
+                        selectedFragment = (mListViewFragment == null) ? ListViewFragment.newInstance() : mListViewFragment;
+                        setTitle(R.string.list_view_title);
+                        break;
+                    case R.id.workmates:
+                        Log.d(TAG, "onNavigationItemSelected: user clicked on Workmates.");
+                        selectedFragment = (mWorkmatesFragment == null) ? WorkmatesFragment.newInstance() : mWorkmatesFragment;
+                        setTitle(R.string.workmates_title);
+                        break;
+                    case R.id.map_view:
+                        Log.d(TAG, "onNavigationItemSelected: user clicked on Map view.");
+                        selectedFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
+                        setTitle(R.string.map_view_title);
+                        break;
+                    default:
+                        Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");
+                        selectedFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
+                        setTitle(R.string.map_view_title);
+                        break;
+                }
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit, R.anim.fragment_open_enter, R.anim.fragment_close_exit)
+                        .replace(mBinding.navHostFragment.getId(), selectedFragment)
+                        .commit();
+
                 return true;
             }
         });

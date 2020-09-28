@@ -42,6 +42,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     // public static
     public static MapViewFragment newInstance() {
         Log.d(TAG, "newInstance");
+
         MapViewFragment fragment = new MapViewFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
@@ -61,6 +62,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onAttach(@NonNull Context context) {
         Log.d(TAG, "onAttach");
+
         super.onAttach(context);
         mContext = context;
     }
@@ -69,6 +71,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
+
         init(inflater);
         LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
 
@@ -78,15 +81,16 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onResume() {
         Log.d(TAG, "onResume");
+
         super.onResume();
         checkPermissions(); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
-        // todo : should check that gps is turn on and if not, ask user to turn it on https://developer.android.com/training/location/change-location-settings
         loadMap();
     }
 
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
+
         super.onPause();
         // todo : turn of callback when implementation of location updates
     }
@@ -95,12 +99,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onDetach() {
         Log.d(TAG, "onDetach");
+
         super.onDetach();
         mContext = null;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d(TAG, "onMapReady");
+
         mGoogleMap = googleMap;
         mGoogleMap.setMyLocationEnabled(true);
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -109,6 +116,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     // methods
     private void init(LayoutInflater inflater) {
+        Log.d(TAG, "init");
+
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
@@ -121,6 +130,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void checkPermissions() {
+        Log.d(TAG, "checkPermissions");
+
         if (!PermissionsUtils.isLocationPermissionGranted(mContext)) {
             requireActivity().finish();
         }
@@ -128,12 +139,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void loadMap() {
         Log.d(TAG, "loadMap");
+
         checkPermissions();
         mMapFragment.getMapAsync(this);
     }
 
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation");
+
         mFusedLocationProviderClient.getLastLocation()
                 .addOnCompleteListener(new OnCompleteListener<Location>() {
                     @Override
@@ -151,12 +164,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void moveCamera(Location location, float zoom) {
         Log.d(TAG, "moveCamera");
+
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),
                 zoom));
     }
 
     private void closeKeyboard() {
+        Log.d(TAG, "closeKeyboard");
 
         View view = requireActivity().getCurrentFocus();
 
