@@ -6,7 +6,10 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -80,6 +83,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu");
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.search_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected");
+
+        switch (item.getItemId()) {
+            case R.id.search:
+                Log.d(TAG, "onOptionsItemSelected: search_menu");
+                mBinding.searchBar.setVisibility(View.VISIBLE);
+                return true;
+            default:
+                mBinding.searchBar.setVisibility(View.GONE);
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void checkPermissions() {
         Log.d(TAG, "checkPermissions");
 
@@ -97,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     .beginTransaction()
                     .replace(mBinding.navHostFragment.getId(), mMapViewFragment)
                     .commit();
+            setTitle(R.string.list_view_title);
         } else {
             checkPermissions();
         }
