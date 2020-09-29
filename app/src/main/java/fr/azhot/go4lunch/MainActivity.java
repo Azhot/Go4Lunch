@@ -1,6 +1,8 @@
 package fr.azhot.go4lunch;
 
 import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -9,11 +11,12 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private MapViewFragment mMapViewFragment;
     private ListViewFragment mListViewFragment;
     private WorkmatesFragment mWorkmatesFragment;
+    private ActionBarDrawerToggle mToggle;
 
 
     // inherited methods
@@ -87,26 +91,40 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(TAG, "onCreateOptionsMenu");
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.search_menu, menu);
-        return true;
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.search_menu, menu);
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+
+        String[] test = new String[]{"abc", "def", "ghi"};
+
+        SearchView.SearchAutoComplete textArea = searchView.findViewById(R.id.search_src_text);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, test);
+        textArea.setAdapter(arrayAdapter);
+
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setQueryHint(getString(R.string.search_bar_hint));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // searching here
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        Log.d(TAG, "onOptionsItemSelected");
 
-        switch (item.getItemId()) {
-            case R.id.search:
-                Log.d(TAG, "onOptionsItemSelected: search_menu");
-                mBinding.searchBar.setVisibility(View.VISIBLE);
-                return true;
-            default:
-                mBinding.searchBar.setVisibility(View.GONE);
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
+    // methods
     private void checkPermissions() {
         Log.d(TAG, "checkPermissions");
 
@@ -167,14 +185,14 @@ public class MainActivity extends AppCompatActivity {
     private void setUpDrawerNavigation() {
         Log.d(TAG, "setUpDrawerNavigation");
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        mToggle = new ActionBarDrawerToggle(
                 this,
                 mBinding.drawerLayout,
                 mBinding.toolbar,
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
-        mBinding.drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        mBinding.drawerLayout.addDrawerListener(mToggle);
+        mToggle.syncState();
 
         mBinding.navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override

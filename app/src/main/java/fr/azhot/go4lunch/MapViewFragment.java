@@ -165,7 +165,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void moveCamera(Location location, float zoom) {
         Log.d(TAG, "moveCamera");
 
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),
                 zoom));
     }
