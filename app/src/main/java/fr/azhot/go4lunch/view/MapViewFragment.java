@@ -31,10 +31,10 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.azhot.go4lunch.POJO.NearbySearch;
-import fr.azhot.go4lunch.POJO.Result;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
+import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.NearbySearch.Result;
 import fr.azhot.go4lunch.util.AppConstants;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
@@ -219,11 +219,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             Log.d(TAG, "addRestaurantMarkers: add marker for: " + result.getName());
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.title(result.getName());
-            Log.d(TAG, "addRestaurantMarkers:" + result.getName() + "'s location = " + result.getGeometry().getLocation());
-            markerOptions.position(new LatLng(result.getGeometry().getLocation().getLatitude(), result.getGeometry().getLocation().getLongitude()));
-            Log.d(TAG, "addRestaurantMarkers: " + result.getName() + " is located: " + result.getGeometry().getLocation().getLatitude() + "," + result.getGeometry().getLocation().getLongitude());
+            markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
             mGoogleMap.addMarker(markerOptions);
-            mGoogleMap.clear();
         }
     }
 }

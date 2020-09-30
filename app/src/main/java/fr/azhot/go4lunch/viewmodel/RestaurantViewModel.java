@@ -5,7 +5,7 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import fr.azhot.go4lunch.POJO.NearbySearch;
+import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.repository.RestaurantRepository;
 
 public class RestaurantViewModel extends ViewModel {

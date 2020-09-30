@@ -2,11 +2,12 @@ package fr.azhot.go4lunch.repository;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import fr.azhot.go4lunch.POJO.NearbySearch;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
+import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.service.RetrofitService;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,14 +38,14 @@ public class RestaurantRepository {
         final MutableLiveData<NearbySearch> restaurants = new MutableLiveData<>();
         mGoogleMapsApi.getNearbyRestaurants(location, radius).enqueue(new Callback<NearbySearch>() {
             @Override
-            public void onResponse(Call<NearbySearch> call, Response<NearbySearch> response) {
+            public void onResponse(@NonNull Call<NearbySearch> call, @NonNull Response<NearbySearch> response) {
                 if (response.isSuccessful()) {
                     restaurants.setValue(response.body());
                 }
             }
 
             @Override
-            public void onFailure(Call<NearbySearch> call, Throwable t) {
+            public void onFailure(@NonNull Call<NearbySearch> call, @NonNull Throwable t) {
                 restaurants.setValue(null);
             }
         });
