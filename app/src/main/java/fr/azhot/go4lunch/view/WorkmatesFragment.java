@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.view;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -10,21 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
+import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
 
-public class ListViewFragment extends Fragment {
+public class WorkmatesFragment extends Fragment {
 
 
     // private static
-    private static final String TAG = "ListViewFragment";
+    private static final String TAG = "WorkmatesFragment";
     // variables
-    private FragmentListViewBinding mBinding;
+    private FragmentWorkmatesBinding mBinding;
 
     // public static
-    public static ListViewFragment newInstance() {
+    public static WorkmatesFragment newInstance() {
         Log.d(TAG, "newInstance");
 
-        ListViewFragment fragment = new ListViewFragment();
+        WorkmatesFragment fragment = new WorkmatesFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -36,7 +36,7 @@ public class ListViewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
 
-        mBinding = FragmentListViewBinding.inflate(inflater);
+        mBinding = FragmentWorkmatesBinding.inflate(inflater);
         return mBinding.getRoot();
     }
 }

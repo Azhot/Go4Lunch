@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.location.Location;
@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -21,15 +23,26 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
-import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
+import java.util.ArrayList;
+import java.util.List;
 
-import static fr.azhot.go4lunch.AppConstants.DEFAULT_INTERVAL;
-import static fr.azhot.go4lunch.AppConstants.FASTEST_INTERVAL;
-import static fr.azhot.go4lunch.AppConstants.RC_CHECK_SETTINGS;
+import fr.azhot.go4lunch.POJO.NearbySearch;
+import fr.azhot.go4lunch.POJO.Result;
+import fr.azhot.go4lunch.R;
+import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
+import fr.azhot.go4lunch.util.AppConstants;
+import fr.azhot.go4lunch.util.LocationUtils;
+import fr.azhot.go4lunch.util.PermissionsUtils;
+import fr.azhot.go4lunch.viewmodel.RestaurantViewModel;
+
+import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
@@ -56,6 +69,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment mMapFragment;
     private GoogleMap mGoogleMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private RestaurantViewModel mRestaurantViewModel;
+    private List<Result> mRestaurants = new ArrayList<>();
 
 
     // inherited methods
@@ -121,11 +136,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
+        mRestaurantViewModel = ViewModelProviders.of(this).get(RestaurantViewModel.class);
         mBinding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDeviceLocation();
             }
+
         });
     }
 
@@ -153,6 +170,22 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     public void onComplete(@NonNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
                             moveCamera(task.getResult(), AppConstants.DEFAULT_ZOOM);
+
+                            double latitude = task.getResult().getLatitude();
+                            double longitude = task.getResult().getLongitude();
+
+                            mRestaurantViewModel.getNearbyRestaurants(latitude + "," + longitude, 1000).observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
+                                @Override
+                                public void onChanged(NearbySearch nearbySearch) {
+                                    Log.d(TAG, "onChanged");
+                                    List<Result> restaurants = nearbySearch.getResults();
+                                    mRestaurants.clear();
+                                    mRestaurants.addAll(restaurants);
+                                    addRestaurantMarkers(mRestaurants);
+                                }
+                            });
+
+
                         } else {
                             Log.d(TAG, "onComplete: current location is null ");
                             LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
@@ -178,6 +211,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    private void addRestaurantMarkers(List<Result> restaurants) {
+        for (Result result : restaurants) {
+            Log.d(TAG, "addRestaurantMarkers: add marker for: " + result.getName());
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.title(result.getName());
+            Log.d(TAG, "addRestaurantMarkers:" + result.getName() + "'s location = " + result.getGeometry().getLocation());
+            markerOptions.position(new LatLng(result.getGeometry().getLocation().getLatitude(), result.getGeometry().getLocation().getLongitude()));
+            Log.d(TAG, "addRestaurantMarkers: " + result.getName() + " is located: " + result.getGeometry().getLocation().getLatitude() + "," + result.getGeometry().getLocation().getLongitude());
+            mGoogleMap.addMarker(markerOptions);
+            mGoogleMap.clear();
         }
     }
 }

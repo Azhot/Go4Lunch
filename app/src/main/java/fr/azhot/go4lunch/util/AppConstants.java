@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.util;
 
 public class AppConstants {
     public static final int RC_PERMISSIONS = 1234;

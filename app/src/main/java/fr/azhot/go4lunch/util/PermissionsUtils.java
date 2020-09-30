@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.util;
 
 import android.Manifest;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.util;
 
 import android.content.IntentSender;
 import android.util.Log;

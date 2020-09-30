@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch;
+package fr.azhot.go4lunch.view;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
@@ -23,9 +23,11 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
+import fr.azhot.go4lunch.util.PermissionsUtils;
 
-import static fr.azhot.go4lunch.AppConstants.RC_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
 
