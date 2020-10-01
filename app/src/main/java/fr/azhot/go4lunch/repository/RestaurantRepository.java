@@ -35,20 +35,24 @@ public class RestaurantRepository {
     public LiveData<NearbySearch> getNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "getNearbyRestaurants");
 
-        final MutableLiveData<NearbySearch> restaurants = new MutableLiveData<>();
+        MutableLiveData<NearbySearch> mutableLiveData = new MutableLiveData<>();
         mGoogleMapsApi.getNearbyRestaurants(location, radius).enqueue(new Callback<NearbySearch>() {
             @Override
             public void onResponse(@NonNull Call<NearbySearch> call, @NonNull Response<NearbySearch> response) {
+                Log.d(TAG, "getNearbyRestaurants: onResponse");
+
                 if (response.isSuccessful()) {
-                    restaurants.setValue(response.body());
+                    mutableLiveData.setValue(response.body());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<NearbySearch> call, @NonNull Throwable t) {
-                restaurants.setValue(null);
+                Log.d(TAG, "getNearbyRestaurants: onFailure");
+
+                mutableLiveData.setValue(null);
             }
         });
-        return restaurants;
+        return mutableLiveData;
     }
 }

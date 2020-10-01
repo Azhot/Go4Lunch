@@ -15,7 +15,7 @@ public class PermissionsUtils {
 
     public static void getLocationPermission(AppCompatActivity activity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION

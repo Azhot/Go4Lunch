@@ -17,8 +17,11 @@ public class ListViewFragment extends Fragment {
 
     // private static
     private static final String TAG = "ListViewFragment";
+
+
     // variables
     private FragmentListViewBinding mBinding;
+
 
     // public static
     public static ListViewFragment newInstance() {

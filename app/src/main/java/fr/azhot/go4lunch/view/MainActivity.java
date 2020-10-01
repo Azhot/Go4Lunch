@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -23,10 +24,14 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 
+import static fr.azhot.go4lunch.model.NearbySearch.Result;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     // private static
     private static final String TAG = "MainActivity";
+    static Location CURRENT_LOCATION;
+    static List<Result> CURRENT_RESTAURANTS = new ArrayList<>();
 
 
     // variables
