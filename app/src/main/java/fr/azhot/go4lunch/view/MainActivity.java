@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private MapViewFragment mMapViewFragment;
     private ListViewFragment mListViewFragment;
     private WorkmatesFragment mWorkmatesFragment;
+    private FirebaseAuth mAuth;
 
 
     // inherited methods
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        mAuth = FirebaseAuth.getInstance();
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.toolbar);
         setUpDrawerNavigation();
@@ -213,7 +217,9 @@ public class MainActivity extends AppCompatActivity {
                         // launch settings, e.g. to set up notifications
                         break;
                     case R.id.nav_logout:
-                        // sign out here
+                        mAuth.signOut();
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        finish();
                         break;
                     default:
                         Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");

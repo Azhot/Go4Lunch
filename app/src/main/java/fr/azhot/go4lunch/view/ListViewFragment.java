@@ -55,6 +55,7 @@ public class ListViewFragment extends Fragment {
         mBinding = FragmentListViewBinding.inflate(inflater);
 
         mBinding.recycleView.setLayoutManager(new LinearLayoutManager(mContext));
+        // todo : if user asks for ListViewFragment before MapViewFragment could get nearby restaurants, the adapter will be initialized with an empty list
         mBinding.recycleView.setAdapter(new RestaurantListAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS));
         return mBinding.getRoot();
     }
