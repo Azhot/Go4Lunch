@@ -29,9 +29,9 @@ import java.util.List;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
+import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 
-import static fr.azhot.go4lunch.model.NearbySearch.Result;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     // private static
     private static final String TAG = "MainActivity";
-    static Location CURRENT_LOCATION;
-    static List<Result> CURRENT_RESTAURANTS = new ArrayList<>();
+    protected static Location CURRENT_LOCATION;
+    protected static List<NearbySearch.Result> CURRENT_RESTAURANTS = new ArrayList<>();
 
 
     // variables
@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private MapViewFragment mMapViewFragment;
     private ListViewFragment mListViewFragment;
     private WorkmatesFragment mWorkmatesFragment;
-    private ActionBarDrawerToggle mToggle;
 
 
     // inherited methods
@@ -194,14 +193,14 @@ public class MainActivity extends AppCompatActivity {
     private void setUpDrawerNavigation() {
         Log.d(TAG, "setUpDrawerNavigation");
 
-        mToggle = new ActionBarDrawerToggle(
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this,
                 mBinding.drawerLayout,
                 mBinding.toolbar,
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
-        mBinding.drawerLayout.addDrawerListener(mToggle);
-        mToggle.syncState();
+        mBinding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
         mBinding.navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override

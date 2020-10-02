@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_background_underlined_bottom"
+    android:padding="@dimen/small_padding">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/name_textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorDarkGrey"
+        android:textSize="@dimen/large_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/vicinity_textView"
+        app:layout_constraintEnd_toStartOf="@id/distance_textView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Le Zinc" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/distance_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/average_margin"
+        android:layout_marginEnd="@dimen/average_margin"
+        android:textColor="@color/colorLightGrey"
+        android:textSize="@dimen/large_text_size"
+        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
+        app:layout_constraintStart_toEndOf="@id/name_textView"
+        app:layout_constraintTop_toTopOf="@id/name_textView"
+        tools:text="120m" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/vicinity_textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/very_small_margin"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/average_text_size"
+        app:layout_constraintBottom_toTopOf="@id/openingHours_textView"
+        app:layout_constraintEnd_toStartOf="@id/workmates_imageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/name_textView"
+        tools:text="French - 12 rue du Faubourg Poissonière" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/workmates_imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/large_margin"
+        android:src="@drawable/ic_person_outline"
+        app:layout_constraintBottom_toBottomOf="@id/vicinity_textView"
+        app:layout_constraintEnd_toStartOf="@id/workmates_textView"
+        app:layout_constraintStart_toEndOf="@id/vicinity_textView"
+        app:layout_constraintTop_toTopOf="@id/vicinity_textView" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/workmates_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/small_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/workmates_imageView"
+        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
+        app:layout_constraintStart_toEndOf="@id/workmates_imageView"
+        tools:text="(2)" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/openingHours_textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/very_small_margin"
+        android:layout_marginEnd="@dimen/average_margin"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/average_text_size"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/vicinity_textView"
+        tools:text="Open until 7pm" />
+
+    <!-- todo : should add stars (rating) here -->
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/photo_imageView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_drawer_header"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

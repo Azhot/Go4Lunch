@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
- * POJO of a NearbySearch API request on
+ * POJO of a NearbySearch API request
  */
 public class NearbySearch {
 

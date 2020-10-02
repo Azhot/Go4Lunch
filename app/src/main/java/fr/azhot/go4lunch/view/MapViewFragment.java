@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -35,24 +36,23 @@ import java.util.List;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
 import fr.azhot.go4lunch.model.NearbySearch;
-import fr.azhot.go4lunch.model.NearbySearch.Result;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.RestaurantViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_ZOOM;
+import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
-public class MapViewFragment extends SupportMapFragment implements OnMapReadyCallback, Observer<NearbySearch> {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback, Observer<NearbySearch> {
 
 
     // private static
     private static final String TAG = "MapViewFragment";
-    private static final float DISTANCE_UNTIL_UPDATE = 50f;
 
 
     // public static
@@ -135,7 +135,6 @@ public class MapViewFragment extends SupportMapFragment implements OnMapReadyCal
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(MainActivity.CURRENT_LOCATION.getLatitude(), MainActivity.CURRENT_LOCATION.getLongitude()),
                     DEFAULT_ZOOM));
-            addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
         }
         initLocationUpdates();
     }
@@ -147,10 +146,12 @@ public class MapViewFragment extends SupportMapFragment implements OnMapReadyCal
     public void onChanged(NearbySearch nearbySearch) {
         Log.d(TAG, "onChanged");
 
-        List<Result> restaurants = nearbySearch.getResults();
-        MainActivity.CURRENT_RESTAURANTS.clear();
-        MainActivity.CURRENT_RESTAURANTS.addAll(restaurants);
-        addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
+        if (nearbySearch != null) {
+            List<NearbySearch.Result> restaurants = nearbySearch.getResults();
+            MainActivity.CURRENT_RESTAURANTS.clear();
+            MainActivity.CURRENT_RESTAURANTS.addAll(restaurants);
+            addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
+        }
     }
 
 
@@ -224,10 +225,12 @@ public class MapViewFragment extends SupportMapFragment implements OnMapReadyCal
                     Log.d(TAG, "LocationCallback.onLocationAvailability");
                     super.onLocationAvailability(locationAvailability);
 
-                    mGoogleMap.setMyLocationEnabled(true);
-
-                    if (!locationAvailability.isLocationAvailable()) {
+                    if (locationAvailability.isLocationAvailable()) {
+                        mGoogleMap.setMyLocationEnabled(true);
+                        addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
+                    } else {
                         mGoogleMap.setMyLocationEnabled(false);
+                        mGoogleMap.clear();
                         Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();
                     }
                 }
@@ -237,7 +240,7 @@ public class MapViewFragment extends SupportMapFragment implements OnMapReadyCal
         mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
     }
 
-    private void addRestaurantMarkers(List<Result> restaurants) {
+    private void addRestaurantMarkers(List<NearbySearch.Result> restaurants) {
         Log.d(TAG, "addRestaurantMarkers");
 
         // todo : markers color should be orange with
@@ -245,7 +248,7 @@ public class MapViewFragment extends SupportMapFragment implements OnMapReadyCal
         //  Color should change to light green and
         //  cutlery in white when at least one workmate
         //  confirms going to the corresponding restaurant
-        for (Result result : restaurants) {
+        for (NearbySearch.Result result : restaurants) {
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.title(result.getName());
             markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
