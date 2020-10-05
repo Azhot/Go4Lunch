@@ -18,13 +18,17 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.toolbar);
         setUpDrawerNavigation();
+        setUpDrawerWithUserDetails();
         setUpBottomNavigation();
         launchFragment();
     }
@@ -231,6 +236,29 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    // configuring nav drawer header
+    private void setUpDrawerWithUserDetails() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        AppCompatImageView userPicture = mBinding.navView
+                .getHeaderView(0)
+                .findViewById(R.id.user_picture);
+        Glide.with(this)
+                // todo : add a "no image" picture here ?
+                .load(currentUser.getPhotoUrl())
+                .circleCrop()
+                .into(userPicture);
+
+        AppCompatTextView userName = mBinding.navView
+                .getHeaderView(0)
+                .findViewById(R.id.user_name);
+        userName.setText(currentUser.getDisplayName());
+
+        AppCompatTextView userEmail = mBinding.navView
+                .getHeaderView(0)
+                .findViewById(R.id.user_email);
+        userEmail.setText(currentUser.getEmail());
     }
 
     private void setUpBottomNavigation() {
