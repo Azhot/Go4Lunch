@@ -1,5 +1,6 @@
 package fr.azhot.go4lunch.view;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.facebook.CallbackManager;
@@ -125,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        mGoogleSignInClient.signOut();
     }
 
     private void signInWithGoogle() {
@@ -135,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
     private void configureFacebookSignIn() {
         mCallbackManager = CallbackManager.Factory.create();
         mLoginManager = LoginManager.getInstance();
+        mLoginManager.logOut();
         mLoginManager.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -193,8 +197,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                                 FirebaseAuthUserCollisionException e = (FirebaseAuthUserCollisionException) task.getException();
                                 if (e.getErrorCode().equals("ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL")) {
-                                    mUpdatedAuthCredential = e.getUpdatedCredential();
-                                    signInWithGoogle();
+                                    makeAlertDialogExistingSignIn(e.getEmail(), e.getUpdatedCredential());
                                 } else {
                                     Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
                                 }
@@ -212,5 +215,23 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void makeAlertDialogExistingSignIn(String email, AuthCredential credential) {
+        new AlertDialog.Builder(this)
+                .setTitle("Email address already linked to an existing account.")
+                .setMessage(email + " is already linked to an existing account via Google sign in.\n" +
+                        "Would you like to log in to your Google account to link both " +
+                        "Google and Facebook sign in methods to your Go4Lunch account ?")
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mUpdatedAuthCredential = credential;
+                        signInWithGoogle();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .create()
+                .show();
     }
 }
