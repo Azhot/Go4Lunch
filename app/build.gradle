@@ -9,6 +9,7 @@ android {
         applicationId "fr.azhot.go4lunch"
         minSdkVersion 19
         targetSdkVersion 29
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
 
@@ -45,6 +46,9 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
+    // Multidex
+    implementation 'com.android.support:multidex:1.0.3'
+
     // Testing
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
@@ -64,6 +68,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.1.0'
     implementation 'com.google.android.libraries.places:places:2.4.0'
+
+    // Facebook
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     // Gson
     implementation 'com.google.code.gson:gson:2.8.6'
