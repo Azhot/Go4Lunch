@@ -9,6 +9,7 @@
 
     <dimen name="small_padding">8dp</dimen>
     <dimen name="average_padding">16dp</dimen>
+    <dimen name="large_padding">24dp</dimen>
 
     <dimen name="small_text_size">12sp</dimen>
     <dimen name="average_text_size">14sp</dimen>

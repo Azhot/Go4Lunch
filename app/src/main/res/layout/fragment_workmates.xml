@@ -8,6 +8,6 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/cell_workmates" />
+        tools:listitem="@layout/cell_workmates_fragment" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

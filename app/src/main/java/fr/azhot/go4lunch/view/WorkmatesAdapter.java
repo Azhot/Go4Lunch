@@ -10,7 +10,7 @@ import com.bumptech.glide.RequestManager;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
-import fr.azhot.go4lunch.databinding.CellWorkmatesBinding;
+import fr.azhot.go4lunch.databinding.CellWorkmatesFragmentBinding;
 import fr.azhot.go4lunch.model.User;
 
 public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAdapter.WorkmateViewHolder> {
@@ -31,7 +31,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
     @NonNull
     @Override
     public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new WorkmateViewHolder(CellWorkmatesBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new WorkmateViewHolder(CellWorkmatesFragmentBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
     }
 
     @Override
@@ -43,9 +43,9 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
     // view holder
     public static class WorkmateViewHolder extends RecyclerView.ViewHolder {
 
-        private CellWorkmatesBinding binding;
+        private CellWorkmatesFragmentBinding binding;
 
-        public WorkmateViewHolder(CellWorkmatesBinding binding) {
+        public WorkmateViewHolder(CellWorkmatesFragmentBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

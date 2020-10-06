@@ -1,6 +1,7 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,9 +15,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 
+import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
+import fr.azhot.go4lunch.model.NearbySearch;
 
-public class ListViewFragment extends Fragment {
+public class ListViewFragment extends Fragment implements ListViewAdapter.Listener {
 
 
     // private static
@@ -40,7 +43,6 @@ public class ListViewFragment extends Fragment {
 
 
     // inherited methods
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -57,7 +59,7 @@ public class ListViewFragment extends Fragment {
         mBinding.recycleView.setLayoutManager(new LinearLayoutManager(mContext));
         // todo : if user asks for ListViewFragment before MapViewFragment could get nearby restaurants,
         //  the adapter will be initialized with an empty list
-        mBinding.recycleView.setAdapter(new ListViewAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS));
+        mBinding.recycleView.setAdapter(new ListViewAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS, this));
         return mBinding.getRoot();
     }
 
@@ -67,4 +69,21 @@ public class ListViewFragment extends Fragment {
         mContext = null;
     }
 
+    @Override
+    public void onRestaurantClick(int position) {
+        Intent intent = new Intent(mContext, RestaurantDetailActivity.class);
+        NearbySearch.Result restaurant = MainActivity.CURRENT_RESTAURANTS.get(position);
+        String name = restaurant.getName();
+        intent.putExtra("name", name);
+        String details = restaurant.getVicinity();
+        intent.putExtra("details", details);
+        if (restaurant.getPhotos() != null) {
+            String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                    "key=" + BuildConfig.GOOGLE_API_KEY +
+                    "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
+                    "&maxwidth=400";
+            intent.putExtra("photoUrl", photoUrl);
+        }
+        startActivity(intent);
+    }
 }

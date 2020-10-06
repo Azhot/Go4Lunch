@@ -1,6 +1,7 @@
 package fr.azhot.go4lunch.view;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -16,24 +17,28 @@ import fr.azhot.go4lunch.model.NearbySearch;
 
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
-
     // variables
-    private final RequestManager mGlide;
+    private RequestManager mGlide;
+    private Listener mListener;
     private List<NearbySearch.Result> mRestaurants;
 
-
     // constructor
-    public ListViewAdapter(RequestManager glide, List<NearbySearch.Result> restaurants) {
+    public ListViewAdapter(RequestManager glide, List<NearbySearch.Result> restaurants, ListViewAdapter.Listener listener) {
         this.mGlide = glide;
         this.mRestaurants = restaurants;
+        this.mListener = listener;
     }
-
 
     // inherited methods
     @NonNull
     @Override
     public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RestaurantViewHolder(CellListViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new RestaurantViewHolder(CellListViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+    }
+
+
+    public interface Listener {
+        void onRestaurantClick(int position);
     }
 
     @Override
@@ -53,19 +58,20 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         notifyDataSetChanged();
     }
 
-
     // view holder
-    public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
+    public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private CellListViewBinding mBinding;
+        private ListViewAdapter.Listener mListener;
 
-        public RestaurantViewHolder(CellListViewBinding binding) {
+        public RestaurantViewHolder(CellListViewBinding binding, ListViewAdapter.Listener listener) {
             super(binding.getRoot());
             this.mBinding = binding;
+            this.mListener = listener;
+            binding.getRoot().setOnClickListener(this);
         }
 
         public void onBindData(NearbySearch.Result result, RequestManager glide) {
-
             if (result.getName() != null) mBinding.nameTextView.setText(result.getName());
             // mBinding.distanceTextView.setText(); // todo : calculate distance ?
             if (result.getVicinity() != null)
@@ -92,6 +98,11 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
                 glide.load(url).into(mBinding.photoImageView);
             }
 
+        }
+
+        @Override
+        public void onClick(View v) {
+            mListener.onRestaurantClick(getAdapterPosition());
         }
     }
 }
