@@ -87,8 +87,8 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
             }
             if (result.getRating() != null) {
                 double d = result.getRating();
-                float f = (float) d;
-                mBinding.ratingBar.setRating(f);
+                int i = (int) (d / 5 * 3);
+                mBinding.ratingBar.setRating(i);
             }
 
             // todo : count workmates (hide imageview if none

@@ -26,10 +26,14 @@
         <item name="android:background">#FFFFFF</item>
     </style>
 
-
     <style name="DrawerTextStyle">
         <item name="textAllCaps">true</item>
         <item name="android:textSize">@dimen/very_large_text_size</item>
+    </style>
+
+    <style name="RatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@android:color/transparent</item>
+        <item name="colorControlActivated">#FFD600</item>
     </style>
 
 </resources>

@@ -86,8 +86,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
         }
         if (restaurant.getRating() != null) {
             double d = restaurant.getRating();
-            float f = (float) d;
-            intent.putExtra("rating", f);
+            int i = (int) (d / 5 * 3);
+            intent.putExtra("rating", i);
         }
         startActivity(intent);
     }

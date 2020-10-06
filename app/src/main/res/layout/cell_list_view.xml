@@ -98,10 +98,12 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/average_margin"
         android:rotationY="180"
+        android:numStars="3"
+        android:theme="@style/RatingBar"
         app:layout_constraintBottom_toBottomOf="@id/openingHours_textView"
         app:layout_constraintEnd_toStartOf="@id/photo_imageView"
         app:layout_constraintTop_toTopOf="@id/openingHours_textView"
-        tools:rating="4" />
+        tools:rating="2" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/photo_imageView"
