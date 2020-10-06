@@ -213,9 +213,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
                                 || locationResult.getLastLocation().distanceTo(MainActivity.CURRENT_LOCATION) > DISTANCE_UNTIL_UPDATE) {
                             MainActivity.CURRENT_LOCATION = locationResult.getLastLocation();
                             moveCamera(locationResult.getLastLocation(), DEFAULT_ZOOM);
+
+                            // todo : question for Virgil : is this the correct way to use viewmodel ?
+                            //  could'nt we just post a new location here?
+                            //  Should'nt I remove the observer when I retrieve value ?
+
                             mRestaurantViewModel
                                     .getNearbyRestaurants(MainActivity.CURRENT_LOCATION.getLatitude() + "," + MainActivity.CURRENT_LOCATION.getLongitude(), NEARBY_SEARCH_RADIUS)
-                                    .observe(getViewLifecycleOwner(), MapViewFragment.this);
+                                    .observe(MapViewFragment.this, MapViewFragment.this);
+                            addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
                         }
                     }
                 }

@@ -10,14 +10,22 @@ import fr.azhot.go4lunch.repository.RestaurantRepository;
 
 public class RestaurantViewModel extends ViewModel {
 
+
+    // private static
     private static final String TAG = "RestaurantViewModel";
 
+
+    // variables
     private RestaurantRepository mRestaurantRepository;
 
+
+    // constructors
     public RestaurantViewModel() {
         mRestaurantRepository = RestaurantRepository.getInstance();
     }
 
+
+    // methods
     public LiveData<NearbySearch> getNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "getNearbyRestaurants");
 

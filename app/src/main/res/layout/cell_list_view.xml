@@ -98,10 +98,10 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/bg_drawer_header"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/bg_drawer_header" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

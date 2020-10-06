@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -36,6 +37,8 @@ import java.util.Arrays;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityLoginBinding;
+import fr.azhot.go4lunch.model.User;
+import fr.azhot.go4lunch.viewmodel.UserViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.RC_GOOGLE_SIGN_IN;
 
@@ -54,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager mCallbackManager;
     private AuthCredential mUpdatedAuthCredential;
     private LoginManager mLoginManager;
+    private UserViewModel mUserViewModel;
 
 
     // inherited methods
@@ -65,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         mBinding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         mAuth = FirebaseAuth.getInstance();
+        mUserViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         configureGoogleSignIn();
         configureFacebookSignIn();
     }
@@ -187,6 +192,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (mUpdatedAuthCredential != null && mCurrentUser != null) {
                                 mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
                             }
+                            createUserInFirestore(mCurrentUser);
                             navigateToMainActivity();
                         } else {
                             Log.e(TAG, "firebaseAuthWithCredential: failure.", task.getException());
@@ -233,5 +239,16 @@ public class LoginActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.no, null)
                 .create()
                 .show();
+    }
+
+    private void createUserInFirestore(FirebaseUser user) {
+        String uid = user.getUid();
+        String name = user.getDisplayName();
+        String email = user.getEmail();
+        String urlPicture = (user.getPhotoUrl() != null)
+                ? user.getPhotoUrl().toString()
+                : null;
+
+        mUserViewModel.createUser(new User(uid, name, email, urlPicture));
     }
 }

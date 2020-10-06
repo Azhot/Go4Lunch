@@ -14,21 +14,22 @@ import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.databinding.CellListViewBinding;
 import fr.azhot.go4lunch.model.NearbySearch;
 
-public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAdapter.RestaurantViewHolder> {
+public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
+
+    // variables
     private final RequestManager mGlide;
     private List<NearbySearch.Result> mRestaurants;
 
-    public RestaurantListAdapter(RequestManager glide, List<NearbySearch.Result> restaurants) {
+
+    // constructor
+    public ListViewAdapter(RequestManager glide, List<NearbySearch.Result> restaurants) {
         this.mGlide = glide;
         this.mRestaurants = restaurants;
     }
 
-    public void setRestaurants(List<NearbySearch.Result> restaurants) {
-        this.mRestaurants = restaurants;
-        notifyDataSetChanged();
-    }
 
+    // inherited methods
     @NonNull
     @Override
     public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,6 +46,15 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         return mRestaurants.size();
     }
 
+
+    // methods
+    public void setRestaurants(List<NearbySearch.Result> restaurants) {
+        this.mRestaurants = restaurants;
+        notifyDataSetChanged();
+    }
+
+
+    // view holder
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
 
         private CellListViewBinding mBinding;
@@ -72,6 +82,7 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
 
             // todo : count workmates (hide imageview if none
 
+            // todo : add a "no-image" icon if null
             if (result.getPhotos() != null) {
                 String url = "https://maps.googleapis.com/maps/api/place/photo?" +
                         "key=" + BuildConfig.GOOGLE_API_KEY +

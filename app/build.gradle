@@ -62,6 +62,7 @@ dependencies {
 
     // Firebase
     implementation 'com.google.firebase:firebase-auth:19.4.0'
+    implementation 'com.firebaseui:firebase-ui-firestore:6.2.0'
 
     // Google play services
     implementation 'com.google.android.gms:play-services-auth:18.1.0'
@@ -70,7 +71,7 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:2.4.0'
 
     // Facebook
-    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.facebook.android:facebook-android-sdk:5.15.3'
 
     // Gson
     implementation 'com.google.code.gson:gson:2.8.6'

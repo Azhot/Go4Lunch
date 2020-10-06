@@ -15,23 +15,30 @@ import retrofit2.Response;
 
 public class RestaurantRepository {
 
+
+    // private static
     private static final String TAG = "RestaurantRepository";
-    private static RestaurantRepository mRestaurantRepository;
+    private static RestaurantRepository RESTAURANT_REPOSITORY;
+    // variables
     private GoogleMapsApi mGoogleMapsApi;
 
+
+    // constructor
     private RestaurantRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
     }
 
+    // public static
     public static RestaurantRepository getInstance() {
         Log.d(TAG, "getInstance");
 
-        if (mRestaurantRepository == null) {
-            mRestaurantRepository = new RestaurantRepository();
+        if (RESTAURANT_REPOSITORY == null) {
+            RESTAURANT_REPOSITORY = new RestaurantRepository();
         }
-        return mRestaurantRepository;
+        return RESTAURANT_REPOSITORY;
     }
 
+    // methods
     public LiveData<NearbySearch> getNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "getNearbyRestaurants");
 
