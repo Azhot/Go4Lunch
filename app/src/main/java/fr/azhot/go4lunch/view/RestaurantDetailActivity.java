@@ -29,11 +29,13 @@ public class RestaurantDetailActivity extends AppCompatActivity {
         String name = intent.getStringExtra("name");
         String details = intent.getStringExtra("details");
         String photoUrl = intent.getStringExtra("photoUrl");
+        float rating = intent.getFloatExtra("rating", 0);
 
         mBinding.restaurantNameTextView.setText(name);
         mBinding.restaurantDetails.setText(details);
         Glide.with(this)
                 .load(photoUrl)
                 .into(mBinding.restaurantPhotoImageView);
+        mBinding.ratingBar.setRating(rating);
     }
 }

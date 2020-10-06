@@ -49,6 +49,17 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Le Zinc" />
 
+        <androidx.appcompat.widget.AppCompatRatingBar
+            android:id="@+id/rating_bar"
+            style="@style/Widget.AppCompat.RatingBar.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/average_margin"
+            app:layout_constraintBottom_toBottomOf="@id/restaurant_name_text_view"
+            app:layout_constraintStart_toEndOf="@id/restaurant_name_text_view"
+            app:layout_constraintTop_toTopOf="@id/restaurant_name_text_view"
+            tools:rating="4" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/restaurant_details"
             android:layout_width="wrap_content"

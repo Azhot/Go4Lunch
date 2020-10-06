@@ -85,6 +85,11 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
             } else {
                 mBinding.openingHoursTextView.setText("Information not available");
             }
+            if (result.getRating() != null) {
+                double d = result.getRating();
+                float f = (float) d;
+                mBinding.ratingBar.setRating(f);
+            }
 
             // todo : count workmates (hide imageview if none
 

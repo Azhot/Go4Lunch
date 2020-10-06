@@ -84,6 +84,11 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
                     "&maxwidth=400";
             intent.putExtra("photoUrl", photoUrl);
         }
+        if (restaurant.getRating() != null) {
+            double d = restaurant.getRating();
+            float f = (float) d;
+            intent.putExtra("rating", f);
+        }
         startActivity(intent);
     }
 }
