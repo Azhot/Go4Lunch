@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.R;
@@ -38,7 +39,7 @@ import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
 import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
-import fr.azhot.go4lunch.viewmodel.RestaurantViewModel;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_ZOOM;
@@ -48,7 +49,7 @@ import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
-public class MapViewFragment extends Fragment implements OnMapReadyCallback, Observer<NearbySearch> {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
 
     // private static
@@ -72,8 +73,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
     private SupportMapFragment mMapFragment;
     private GoogleMap mGoogleMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private Location mLastLocation;
+    private Location mCurrentLocation;
     private LocationCallback mLocationCallback;
-    private RestaurantViewModel mRestaurantViewModel;
+    private AppViewModel mAppViewModel;
+    private List<NearbySearch.Result> mCurrentRestaurants;
 
 
     // inherited methods
@@ -92,8 +96,16 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
 
         init(inflater);
         LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
-
         return mBinding.getRoot();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated");
+
+        super.onActivityCreated(savedInstanceState);
+        mAppViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
+        initObserver();
     }
 
     @Override
@@ -101,12 +113,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
         Log.d(TAG, "onResume");
 
         super.onResume();
-        checkPermissions(); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
+        checkLocationPermissions(); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
         mMapFragment.getMapAsync(this);
     }
 
     @Override
     public void onPause() {
+        Log.d(TAG, "onPause");
+
         super.onPause();
         if (mFusedLocationProviderClient != null) {
             mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
@@ -131,27 +145,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
 
         mGoogleMap = googleMap;
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        if (MainActivity.CURRENT_LOCATION != null) {
+        if (mCurrentLocation != null) {
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(MainActivity.CURRENT_LOCATION.getLatitude(), MainActivity.CURRENT_LOCATION.getLongitude()),
+                    new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()),
                     DEFAULT_ZOOM));
         }
         initLocationUpdates();
-    }
-
-    /**
-     * Observer for RestaurantViewModel.getNearbyRestaurants(String location, int radius) method
-     */
-    @Override
-    public void onChanged(NearbySearch nearbySearch) {
-        Log.d(TAG, "onChanged");
-
-        if (nearbySearch != null) {
-            List<NearbySearch.Result> restaurants = nearbySearch.getResults();
-            MainActivity.CURRENT_RESTAURANTS.clear();
-            MainActivity.CURRENT_RESTAURANTS.addAll(restaurants);
-            addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
-        }
     }
 
 
@@ -162,13 +161,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
-        mRestaurantViewModel = ViewModelProviders.of(this).get(RestaurantViewModel.class);
+        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
-                if (MainActivity.CURRENT_LOCATION != null) {
-                    moveCamera(MainActivity.CURRENT_LOCATION, DEFAULT_ZOOM);
+                if (mCurrentLocation != null) {
+                    animateCamera(mCurrentLocation, DEFAULT_ZOOM);
                 } else {
                     Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();
                 }
@@ -176,7 +175,21 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
         });
     }
 
-    private void checkPermissions() {
+    private void initObserver() {
+        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
+            @Override
+            public void onChanged(NearbySearch nearbySearch) {
+                if (mCurrentRestaurants == null) {
+                    mCurrentRestaurants = new ArrayList<>();
+                }
+                mCurrentRestaurants.clear();
+                mCurrentRestaurants.addAll(nearbySearch.getResults());
+                addRestaurantMarkers(mCurrentRestaurants);
+            }
+        });
+    }
+
+    private void checkLocationPermissions() {
         Log.d(TAG, "checkPermissions");
 
         if (!PermissionsUtils.isLocationPermissionGranted(mContext)) {
@@ -184,7 +197,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
         }
     }
 
-    private void moveCamera(Location location, float zoom) {
+    private void animateCamera(Location location, float zoom) {
         Log.d(TAG, "moveCamera");
 
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
@@ -208,20 +221,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
                     Log.d(TAG, "LocationCallback.onLocationResult");
                     super.onLocationResult(locationResult);
 
-                    if (locationResult.getLastLocation() != null) {
-                        if (MainActivity.CURRENT_LOCATION == null
-                                || locationResult.getLastLocation().distanceTo(MainActivity.CURRENT_LOCATION) > DISTANCE_UNTIL_UPDATE) {
-                            MainActivity.CURRENT_LOCATION = locationResult.getLastLocation();
-                            moveCamera(locationResult.getLastLocation(), DEFAULT_ZOOM);
+                    mLastLocation = locationResult.getLastLocation();
 
-                            // todo : question for Virgil : is this the correct way to use viewmodel ?
-                            //  could'nt we just post a new location here?
-                            //  Should'nt I remove the observer when I retrieve value ?
-
-                            mRestaurantViewModel
-                                    .getNearbyRestaurants(MainActivity.CURRENT_LOCATION.getLatitude() + "," + MainActivity.CURRENT_LOCATION.getLongitude(), NEARBY_SEARCH_RADIUS)
-                                    .observe(MapViewFragment.this, MapViewFragment.this);
-                            addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
+                    if (mLastLocation != null) {
+                        if (mCurrentLocation == null
+                                || mLastLocation.distanceTo(mCurrentLocation) > DISTANCE_UNTIL_UPDATE) {
+                            mCurrentLocation = mLastLocation;
+                            animateCamera(mCurrentLocation, DEFAULT_ZOOM);
+                            mAppViewModel.setNearbyRestaurants(mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
                         }
                     }
                 }
@@ -232,9 +239,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
                     super.onLocationAvailability(locationAvailability);
 
                     if (locationAvailability.isLocationAvailable()) {
+                        mAppViewModel.setLocationActivated(true);
                         mGoogleMap.setMyLocationEnabled(true);
-                        addRestaurantMarkers(MainActivity.CURRENT_RESTAURANTS);
+                        if (mCurrentLocation != null) {
+                            if (mCurrentRestaurants == null) {
+                                mAppViewModel.setNearbyRestaurants(mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                            }
+                            if (mCurrentRestaurants != null) {
+                                addRestaurantMarkers(mCurrentRestaurants);
+                            }
+                        }
                     } else {
+                        mAppViewModel.setLocationActivated(false);
                         mGoogleMap.setMyLocationEnabled(false);
                         mGoogleMap.clear();
                         Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();

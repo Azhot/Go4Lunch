@@ -19,14 +19,7 @@ public class RestaurantRepository {
     // private static
     private static final String TAG = "RestaurantRepository";
     private static RestaurantRepository RESTAURANT_REPOSITORY;
-    // variables
-    private GoogleMapsApi mGoogleMapsApi;
 
-
-    // constructor
-    private RestaurantRepository() {
-        mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
-    }
 
     // public static
     public static RestaurantRepository getInstance() {
@@ -38,28 +31,42 @@ public class RestaurantRepository {
         return RESTAURANT_REPOSITORY;
     }
 
-    // methods
-    public LiveData<NearbySearch> getNearbyRestaurants(String location, int radius) {
-        Log.d(TAG, "getNearbyRestaurants");
 
-        MutableLiveData<NearbySearch> mutableLiveData = new MutableLiveData<>();
-        mGoogleMapsApi.getNearbyRestaurants(location, radius).enqueue(new Callback<NearbySearch>() {
+    // variables
+    private final GoogleMapsApi mGoogleMapsApi;
+    private final MutableLiveData<NearbySearch> mNearbyRestaurants = new MutableLiveData<>();
+
+
+    // constructor
+    private RestaurantRepository() {
+        mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
+    }
+
+    public void setNearbyRestaurants(String location, int radius) {
+        Log.d(TAG, "setNearbyRestaurants");
+
+        Call<NearbySearch> restaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
+        restaurants.enqueue(new Callback<NearbySearch>() {
             @Override
             public void onResponse(@NonNull Call<NearbySearch> call, @NonNull Response<NearbySearch> response) {
-                Log.d(TAG, "getNearbyRestaurants: onResponse");
+                Log.d(TAG, "setNearbyRestaurants: onResponse");
 
-                if (response.isSuccessful()) {
-                    mutableLiveData.setValue(response.body());
-                }
+                mNearbyRestaurants.setValue(response.body());
             }
 
             @Override
             public void onFailure(@NonNull Call<NearbySearch> call, @NonNull Throwable t) {
-                Log.d(TAG, "getNearbyRestaurants: onFailure");
+                Log.d(TAG, "setNearbyRestaurants: onFailure");
 
-                mutableLiveData.setValue(null);
+                // todo : question to Virgil : why postValue ? are we not on the main Thread ?
+                mNearbyRestaurants.postValue(null);
             }
         });
-        return mutableLiveData;
+    }
+
+    public LiveData<NearbySearch> getNearbyRestaurants() {
+        Log.d(TAG, "getNearbyRestaurants");
+
+        return mNearbyRestaurants;
     }
 }

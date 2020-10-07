@@ -28,15 +28,7 @@ public class UserRepository {
     // private static
     private static final String TAG = "UserRepository";
     private static UserRepository USER_REPOSITORY;
-    // varibales
-    private FirebaseFirestore firebaseFirestore;
-    private CollectionReference collectionReference;
 
-    // constructor
-    public UserRepository() {
-        this.firebaseFirestore = FirebaseFirestore.getInstance();
-        this.collectionReference = firebaseFirestore.collection("users");
-    }
 
     // public static
     public static UserRepository getInstance() {
@@ -47,6 +39,19 @@ public class UserRepository {
         }
         return USER_REPOSITORY;
     }
+
+
+    // variables
+    private FirebaseFirestore firebaseFirestore;
+    private CollectionReference collectionReference;
+
+
+    // constructor
+    private UserRepository() {
+        this.firebaseFirestore = FirebaseFirestore.getInstance();
+        this.collectionReference = firebaseFirestore.collection("users");
+    }
+
 
     // methods
     public void createUser(User user) {
@@ -67,12 +72,30 @@ public class UserRepository {
                 });
     }
 
-    public Task<DocumentSnapshot> getUser(String uid) {
-        return collectionReference.document(uid).get();
-    }
-
     public Query getUsersQuery() {
         return collectionReference;
+    }
+
+    public void updateUserChosenRestaurant(String uid, String restaurantId) {
+        collectionReference
+                .document(uid)
+                .update("chosenRestaurant", restaurantId)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "updateUserChosenRestaurant: onSuccess");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "updateUserChosenRestaurant: onFailure");
+                    }
+                });
+    }
+
+    public Task<DocumentSnapshot> getUser(String uid) {
+        return collectionReference.document(uid).get();
     }
 
     public ListenerRegistration getAllUsersAsLiveData(final MutableLiveData<List<User>> users) {

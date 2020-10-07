@@ -2,15 +2,13 @@ package fr.azhot.go4lunch.viewmodel;
 
 import android.util.Log;
 
-import androidx.lifecycle.MutableLiveData;
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-
-import java.util.List;
 
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.UserRepository;
@@ -22,7 +20,7 @@ public class UserViewModel extends ViewModel {
     //  linking to both RestaurantRepo and UserRepo ?
 
     // private static
-    private static final String TAG = "RestaurantViewModel";
+    private static final String TAG = "UserViewModel";
 
 
     // variables
@@ -54,9 +52,18 @@ public class UserViewModel extends ViewModel {
         return mUserRepository.getUsersQuery();
     }
 
-    public ListenerRegistration getAllUsersAsLiveData(MutableLiveData<List<User>> users) {
-        Log.d(TAG, "getAllUsersAsLiveData");
-
-        return mUserRepository.getAllUsersAsLiveData(users);
+    public void updateUserChosenRestaurant(String uid, String restaurantId) {
+        getUser(uid).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    if (!restaurantId.equals(task.getResult().get("chosenRestaurant"))) {
+                        mUserRepository.updateUserChosenRestaurant(uid, restaurantId);
+                    } else {
+                        mUserRepository.updateUserChosenRestaurant(uid, null);
+                    }
+                }
+            }
+        });
     }
 }

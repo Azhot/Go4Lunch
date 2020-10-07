@@ -11,16 +11,24 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
-public class ListViewFragment extends Fragment implements ListViewAdapter.Listener {
+public class ListViewFragment extends Fragment implements ListViewAdapter.OnRestaurantClickListener {
 
+    // todo : question to Virgil : if user asks for ListViewFragment before MapViewFragment could get
+    //  nearby restaurants, the adapter is initialized with an empty list
 
     // private static
     private static final String TAG = "ListViewFragment";
@@ -38,13 +46,20 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
 
 
     // variables
+    @SuppressWarnings("FieldCanBeLocal")
     private FragmentListViewBinding mBinding;
     private Context mContext;
+    @SuppressWarnings("FieldCanBeLocal")
+    private AppViewModel mAppViewModel;
+    private ListViewAdapter mAdapter;
+    private List<NearbySearch.Result> mCurrentRestaurants;
 
 
     // inherited methods
     @Override
     public void onAttach(@NonNull Context context) {
+        Log.d(TAG, "onAttach");
+
         super.onAttach(context);
         this.mContext = context;
     }
@@ -54,29 +69,36 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
 
-        mBinding = FragmentListViewBinding.inflate(inflater);
-
-        mBinding.cellWorkmatesRecycleView.setLayoutManager(new LinearLayoutManager(mContext));
-        // todo : if user asks for ListViewFragment before MapViewFragment could get nearby restaurants,
-        //  the adapter will be initialized with an empty list
-        mBinding.cellWorkmatesRecycleView.setAdapter(new ListViewAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS, this));
+        init(inflater);
         return mBinding.getRoot();
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated");
+
+        super.onActivityCreated(savedInstanceState);
+        mAppViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
+        initObservers();
+    }
+
+    @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach");
+
         super.onDetach();
         mContext = null;
     }
 
+    // Called when user clicks on a cell of the recyclerview
     @Override
     public void onRestaurantClick(int position) {
         Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
-        NearbySearch.Result restaurant = MainActivity.CURRENT_RESTAURANTS.get(position);
+        NearbySearch.Result restaurant = mAdapter.getRestaurants().get(position);
         String name = restaurant.getName();
         intent.putExtra("name", name);
-        String details = restaurant.getVicinity();
-        intent.putExtra("details", details);
+        String vicinity = restaurant.getVicinity();
+        intent.putExtra("vicinity", vicinity);
         if (restaurant.getPhotos() != null) {
             String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
                     "key=" + BuildConfig.GOOGLE_API_KEY +
@@ -87,6 +109,40 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
         if (restaurant.getRating() != null) {
             intent.putExtra("rating", ((int) Math.round(restaurant.getRating() / 5 * 3)));
         }
+        intent.putExtra("restaurantId", restaurant.getPlaceId());
         startActivity(intent);
+    }
+
+    // methods
+    // Initializes UI related variables
+    private void init(LayoutInflater inflater) {
+        mBinding = FragmentListViewBinding.inflate(inflater);
+        mBinding.cellWorkmatesRecycleView.setLayoutManager(new LinearLayoutManager(mContext));
+        mAdapter = new ListViewAdapter(Glide.with(this), this);
+        mBinding.cellWorkmatesRecycleView.setAdapter(mAdapter);
+    }
+
+    // Initializes the AppViewModel observers
+    private void initObservers() {
+        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
+            @Override
+            public void onChanged(NearbySearch nearbySearch) {
+                if (mCurrentRestaurants == null) {
+                    mCurrentRestaurants = new ArrayList<>();
+                }
+                mCurrentRestaurants.clear();
+                mCurrentRestaurants.addAll(nearbySearch.getResults());
+            }
+        });
+        mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    mAdapter.setRestaurants(mCurrentRestaurants);
+                } else {
+                    mAdapter.setRestaurants(new ArrayList<>());
+                }
+            }
+        });
     }
 }

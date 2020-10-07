@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -17,28 +18,31 @@ import fr.azhot.go4lunch.model.NearbySearch;
 
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
+    private OnRestaurantClickListener mListener;
+
+
     // variables
     private RequestManager mGlide;
-    private Listener mListener;
     private List<NearbySearch.Result> mRestaurants;
 
     // constructor
-    public ListViewAdapter(RequestManager glide, List<NearbySearch.Result> restaurants, ListViewAdapter.Listener listener) {
+    public ListViewAdapter(RequestManager glide, ListViewAdapter.OnRestaurantClickListener listener) {
         this.mGlide = glide;
-        this.mRestaurants = restaurants;
+        this.mRestaurants = new ArrayList<>();
         this.mListener = listener;
     }
+
+    // methods
+    public List<NearbySearch.Result> getRestaurants() {
+        return mRestaurants;
+    }
+
 
     // inherited methods
     @NonNull
     @Override
     public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new RestaurantViewHolder(CellListViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
-    }
-
-
-    public interface Listener {
-        void onRestaurantClick(int position);
     }
 
     @Override
@@ -51,20 +55,24 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         return mRestaurants.size();
     }
 
-
-    // methods
     public void setRestaurants(List<NearbySearch.Result> restaurants) {
-        this.mRestaurants = restaurants;
+        mRestaurants.clear();
+        mRestaurants.addAll(restaurants);
         notifyDataSetChanged();
+    }
+
+    // interface
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(int position);
     }
 
     // view holder
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private CellListViewBinding mBinding;
-        private ListViewAdapter.Listener mListener;
+        private ListViewAdapter.OnRestaurantClickListener mListener;
 
-        public RestaurantViewHolder(CellListViewBinding binding, ListViewAdapter.Listener listener) {
+        public RestaurantViewHolder(CellListViewBinding binding, ListViewAdapter.OnRestaurantClickListener listener) {
             super(binding.getRoot());
             this.mBinding = binding;
             this.mListener = listener;
@@ -74,9 +82,10 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         public void onBindData(NearbySearch.Result result, RequestManager glide) {
             if (result.getName() != null)
                 mBinding.cellListViewNameTextView.setText(result.getName());
-            // mBinding.distanceTextView.setText(); // todo : calculate distance ?
+            // mBinding.distanceTextView.setText(); // todo : calculate distance
             if (result.getVicinity() != null)
                 mBinding.cellListViewVicinityTextView.setText(result.getVicinity());
+            // todo : review opening hours logic to show as in project
             if (result.getOpeningHours() != null) {
                 if (result.getOpeningHours().getOpenNow()) {
                     mBinding.cellListViewOpeningHoursTextView.setText("Open");

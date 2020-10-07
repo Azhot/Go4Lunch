@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,12 +29,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
-import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
@@ -45,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     // private static
     private static final String TAG = "MainActivity";
-    protected static Location CURRENT_LOCATION;
-    protected static List<NearbySearch.Result> CURRENT_RESTAURANTS = new ArrayList<>();
 
 
     // variables
@@ -117,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         String[] test = new String[]{"abc", "def", "ghi"};
 
         SearchView.SearchAutoComplete textArea = searchView.findViewById(R.id.search_src_text);
+        // todo : question to Virgil : should I do a "assert user != null" here ? what is the best practice ?
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, test);
@@ -142,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // methods
-    private void checkPermissions() {
+    private void checkLocationPermissions() {
         Log.d(TAG, "checkPermissions");
 
         if (!PermissionsUtils.isLocationPermissionGranted(this)) {
@@ -161,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
             setTitle(R.string.list_view_title);
         } else {
-            checkPermissions();
+            checkLocationPermissions();
         }
     }
 
@@ -174,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        checkPermissions();
+                        checkLocationPermissions();
                     }
                 })
                 .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
@@ -190,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                                 event.getAction() == KeyEvent.ACTION_UP &&
                                 !event.isCanceled()) {
                             dialog.cancel();
-                            checkPermissions();
+                            checkLocationPermissions();
                             return true;
                         }
                         return false;
@@ -245,8 +239,10 @@ public class MainActivity extends AppCompatActivity {
                 .getHeaderView(0)
                 .findViewById(R.id.drawer_header_user_picture);
         Glide.with(this)
-                // todo : add a "no image" picture here ?
-                .load(currentUser.getPhotoUrl())
+                // todo : add a "no image" picture here instead of null
+                .load((currentUser != null)
+                        ? currentUser.getPhotoUrl()
+                        : null)
                 .circleCrop()
                 .into(userPicture);
 
@@ -270,17 +266,17 @@ public class MainActivity extends AppCompatActivity {
                 Fragment selectedFragment;
                 switch (item.getItemId()) {
                     case R.id.list_view:
-                        Log.d(TAG, "onNavigationItemSelected: user clicked on List view.");
+                        Log.d(TAG, "onNavigationItemSelected: list view fragment");
                         selectedFragment = (mListViewFragment == null) ? ListViewFragment.newInstance() : mListViewFragment;
                         setTitle(R.string.list_view_title);
                         break;
                     case R.id.workmates:
-                        Log.d(TAG, "onNavigationItemSelected: user clicked on Workmates.");
+                        Log.d(TAG, "onNavigationItemSelected: workmates fragment");
                         selectedFragment = (mWorkmatesFragment == null) ? WorkmatesFragment.newInstance() : mWorkmatesFragment;
                         setTitle(R.string.workmates_title);
                         break;
                     case R.id.map_view:
-                        Log.d(TAG, "onNavigationItemSelected: user clicked on Map view.");
+                        Log.d(TAG, "onNavigationItemSelected: map view fragment");
                         selectedFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
                         setTitle(R.string.map_view_title);
                         break;

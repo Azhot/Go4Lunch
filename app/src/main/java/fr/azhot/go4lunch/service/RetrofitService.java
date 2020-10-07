@@ -8,16 +8,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitService {
 
     private static final String TAG = "RetrofitService";
-    private static String url = "https://maps.googleapis.com/";
-
-    private static Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(url)
+    private static final String BASE_URL = "https://maps.googleapis.com/";
+    private static final Retrofit RETROFIT = new Retrofit.Builder()
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 
     public static <S> S createService(Class<S> serviceClass) {
         Log.d(TAG, "createService");
 
-        return retrofit.create(serviceClass);
+        return RETROFIT.create(serviceClass);
     }
 }
