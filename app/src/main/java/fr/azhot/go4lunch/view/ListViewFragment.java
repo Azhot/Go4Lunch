@@ -56,10 +56,10 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
 
         mBinding = FragmentListViewBinding.inflate(inflater);
 
-        mBinding.recycleView.setLayoutManager(new LinearLayoutManager(mContext));
+        mBinding.cellWorkmatesRecycleView.setLayoutManager(new LinearLayoutManager(mContext));
         // todo : if user asks for ListViewFragment before MapViewFragment could get nearby restaurants,
         //  the adapter will be initialized with an empty list
-        mBinding.recycleView.setAdapter(new ListViewAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS, this));
+        mBinding.cellWorkmatesRecycleView.setAdapter(new ListViewAdapter(Glide.with(this), MainActivity.CURRENT_RESTAURANTS, this));
         return mBinding.getRoot();
     }
 
@@ -71,7 +71,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
 
     @Override
     public void onRestaurantClick(int position) {
-        Intent intent = new Intent(mContext, RestaurantDetailActivity.class);
+        Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
         NearbySearch.Result restaurant = MainActivity.CURRENT_RESTAURANTS.get(position);
         String name = restaurant.getName();
         intent.putExtra("name", name);
@@ -85,9 +85,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.Listen
             intent.putExtra("photoUrl", photoUrl);
         }
         if (restaurant.getRating() != null) {
-            double d = restaurant.getRating();
-            int i = (int) (d / 5 * 3);
-            intent.putExtra("rating", i);
+            intent.putExtra("rating", ((int) Math.round(restaurant.getRating() / 5 * 3)));
         }
         startActivity(intent);
     }

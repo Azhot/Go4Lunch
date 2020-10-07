@@ -61,8 +61,8 @@ public class WorkmatesFragment extends Fragment {
 
         mUserViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
-        mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-        mBinding.recyclerView.setAdapter(new WorkmatesAdapter(
+        mBinding.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        mBinding.workmatesRecyclerView.setAdapter(new WorkmatesAdapter(
                 generateOptionsForAdapter(mUserViewModel.getUsersQuery()),
                 Glide.with(this)));
 

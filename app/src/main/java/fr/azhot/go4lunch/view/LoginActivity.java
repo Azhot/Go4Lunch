@@ -108,12 +108,12 @@ public class LoginActivity extends AppCompatActivity {
     // methods
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.facebook_login_button:
+            case R.id.login_facebook_login_button:
                 Log.d(TAG, "onClick: facebook login button");
 
                 signInWithFacebook();
                 break;
-            case R.id.google_login_button:
+            case R.id.login_google_login_button:
                 Log.d(TAG, "onClick: google login button");
 
                 signInWithGoogle();
@@ -184,12 +184,15 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "firebaseAuthWithCredential: success.");
 
-                            mCurrentUser = mAuth.getCurrentUser();
+                            mCurrentUser = task.getResult().getUser();
+
+                            // since task is successful, we can assert mCurrentUser is not null
+                            assert mCurrentUser != null;
 
                             // this is called only when user tries to sign in to Facebook
                             // with an account already existing with the email address with
                             // Google sign in (see below)
-                            if (mUpdatedAuthCredential != null && mCurrentUser != null) {
+                            if (mUpdatedAuthCredential != null) {
                                 mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
                             }
                             createUserInFirestore(mCurrentUser);

@@ -8,7 +8,7 @@
     android:padding="@dimen/small_padding">
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/name_textView"
+        android:id="@+id/cell_list_view_name_text_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
@@ -16,27 +16,27 @@
         android:textColor="@color/colorDarkGrey"
         android:textSize="@dimen/large_text_size"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/vicinity_textView"
-        app:layout_constraintEnd_toStartOf="@id/distance_textView"
+        app:layout_constraintBottom_toTopOf="@id/cell_list_view_vicinity_text_view"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_distance_text_view"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Le Zinc" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/distance_textView"
+        android:id="@+id/cell_list_view_distance_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/average_margin"
         android:layout_marginEnd="@dimen/average_margin"
         android:textColor="@color/colorLightGrey"
         android:textSize="@dimen/large_text_size"
-        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
-        app:layout_constraintStart_toEndOf="@id/name_textView"
-        app:layout_constraintTop_toTopOf="@id/name_textView"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_photo_image_view"
+        app:layout_constraintStart_toEndOf="@id/cell_list_view_name_text_view"
+        app:layout_constraintTop_toTopOf="@id/cell_list_view_name_text_view"
         tools:text="120m" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/vicinity_textView"
+        android:id="@+id/cell_list_view_vicinity_text_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/very_small_margin"
@@ -44,38 +44,38 @@
         android:maxLines="1"
         android:textColor="@color/colorGrey"
         android:textSize="@dimen/average_text_size"
-        app:layout_constraintBottom_toTopOf="@id/openingHours_textView"
-        app:layout_constraintEnd_toStartOf="@id/workmates_imageView"
+        app:layout_constraintBottom_toTopOf="@id/cell_list_view_openingHours_text_view"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_workmates_image_view"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/name_textView"
+        app:layout_constraintTop_toBottomOf="@id/cell_list_view_name_text_view"
         tools:text="French - 12 rue du Faubourg Poissonière" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/workmates_imageView"
+        android:id="@+id/cell_list_view_workmates_image_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/large_margin"
         android:src="@drawable/ic_person_outline"
-        app:layout_constraintBottom_toBottomOf="@id/vicinity_textView"
-        app:layout_constraintEnd_toStartOf="@id/workmates_textView"
-        app:layout_constraintStart_toEndOf="@id/vicinity_textView"
-        app:layout_constraintTop_toTopOf="@id/vicinity_textView" />
+        app:layout_constraintBottom_toBottomOf="@id/cell_list_view_vicinity_text_view"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_workmates_text_view"
+        app:layout_constraintStart_toEndOf="@id/cell_list_view_vicinity_text_view"
+        app:layout_constraintTop_toTopOf="@id/cell_list_view_vicinity_text_view" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/workmates_textView"
+        android:id="@+id/cell_list_view_workmates_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/small_margin"
         android:textColor="@color/colorGrey"
         android:textSize="@dimen/small_text_size"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/workmates_imageView"
-        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
-        app:layout_constraintStart_toEndOf="@id/workmates_imageView"
+        app:layout_constraintBottom_toBottomOf="@id/cell_list_view_workmates_image_view"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_photo_image_view"
+        app:layout_constraintStart_toEndOf="@id/cell_list_view_workmates_image_view"
         tools:text="(2)" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/openingHours_textView"
+        android:id="@+id/cell_list_view_openingHours_text_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/very_small_margin"
@@ -86,13 +86,13 @@
         android:textSize="@dimen/average_text_size"
         android:textStyle="italic"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/rating_bar"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_rating_bar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/vicinity_textView"
+        app:layout_constraintTop_toBottomOf="@id/cell_list_view_vicinity_text_view"
         tools:text="Open until 7pm" />
 
     <androidx.appcompat.widget.AppCompatRatingBar
-        android:id="@+id/rating_bar"
+        android:id="@+id/cell_list_view_rating_bar"
         style="@style/Widget.AppCompat.RatingBar.Small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -100,13 +100,13 @@
         android:rotationY="180"
         android:numStars="3"
         android:theme="@style/RatingBar"
-        app:layout_constraintBottom_toBottomOf="@id/openingHours_textView"
-        app:layout_constraintEnd_toStartOf="@id/photo_imageView"
-        app:layout_constraintTop_toTopOf="@id/openingHours_textView"
+        app:layout_constraintBottom_toBottomOf="@id/cell_list_view_openingHours_text_view"
+        app:layout_constraintEnd_toStartOf="@id/cell_list_view_photo_image_view"
+        app:layout_constraintTop_toTopOf="@id/cell_list_view_openingHours_text_view"
         tools:rating="2" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/photo_imageView"
+        android:id="@+id/cell_list_view_photo_image_view"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:scaleType="centerCrop"

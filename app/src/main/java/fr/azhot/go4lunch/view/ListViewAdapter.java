@@ -72,23 +72,22 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         }
 
         public void onBindData(NearbySearch.Result result, RequestManager glide) {
-            if (result.getName() != null) mBinding.nameTextView.setText(result.getName());
+            if (result.getName() != null)
+                mBinding.cellListViewNameTextView.setText(result.getName());
             // mBinding.distanceTextView.setText(); // todo : calculate distance ?
             if (result.getVicinity() != null)
-                mBinding.vicinityTextView.setText(result.getVicinity());
+                mBinding.cellListViewVicinityTextView.setText(result.getVicinity());
             if (result.getOpeningHours() != null) {
                 if (result.getOpeningHours().getOpenNow()) {
-                    mBinding.openingHoursTextView.setText("Open");
+                    mBinding.cellListViewOpeningHoursTextView.setText("Open");
                 } else {
-                    mBinding.openingHoursTextView.setText("Closed");
+                    mBinding.cellListViewOpeningHoursTextView.setText("Closed");
                 }
             } else {
-                mBinding.openingHoursTextView.setText("Information not available");
+                mBinding.cellListViewOpeningHoursTextView.setText("Information not available");
             }
             if (result.getRating() != null) {
-                double d = result.getRating();
-                int i = (int) (d / 5 * 3);
-                mBinding.ratingBar.setRating(i);
+                mBinding.cellListViewRatingBar.setRating((int) Math.round(result.getRating() / 5 * 3));
             }
 
             // todo : count workmates (hide imageview if none
@@ -100,7 +99,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
                         "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
                         "&maxwidth=200";
 
-                glide.load(url).into(mBinding.photoImageView);
+                glide.load(url).into(mBinding.cellListViewPhotoImageView);
             }
 
         }

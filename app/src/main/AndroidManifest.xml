@@ -32,9 +32,9 @@
             android:name=".view.MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <!-- Restaurant Detail Activity -->
+        <!-- Restaurant Details Activity -->
         <activity
-            android:name=".view.RestaurantDetailActivity"
+            android:name=".view.RestaurantDetailsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Places meta-data -->

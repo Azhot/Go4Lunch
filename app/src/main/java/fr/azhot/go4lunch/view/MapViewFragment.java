@@ -160,10 +160,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Obs
         Log.d(TAG, "init");
 
         mBinding = FragmentMapViewBinding.inflate(inflater);
-        mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
         mRestaurantViewModel = ViewModelProviders.of(this).get(RestaurantViewModel.class);
-        mBinding.fab.setOnClickListener(new View.OnClickListener() {
+        mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);

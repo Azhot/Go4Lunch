@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
         setContentView(mBinding.getRoot());
-        setSupportActionBar(mBinding.toolbar);
+        setSupportActionBar(mBinding.mainToolbar);
         setUpDrawerNavigation();
         setUpDrawerWithUserDetails();
         setUpBottomNavigation();
@@ -97,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         Log.d(TAG, "onBackPressed");
 
-        if (mBinding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+        if (mBinding.mainDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mBinding.mainDrawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
             mMapViewFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(mBinding.navHostFragment.getId(), mMapViewFragment)
+                    .replace(mBinding.mainNavHostFragment.getId(), mMapViewFragment)
                     .commit();
             setTitle(R.string.list_view_title);
         } else {
@@ -204,14 +204,14 @@ public class MainActivity extends AppCompatActivity {
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this,
-                mBinding.drawerLayout,
-                mBinding.toolbar,
+                mBinding.mainDrawerLayout,
+                mBinding.mainToolbar,
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
-        mBinding.drawerLayout.addDrawerListener(toggle);
+        mBinding.mainDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        mBinding.navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        mBinding.mainNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
 
-                mBinding.drawerLayout.closeDrawer(GravityCompat.START);
+                mBinding.mainDrawerLayout.closeDrawer(GravityCompat.START);
 
                 return true;
             }
@@ -241,30 +241,30 @@ public class MainActivity extends AppCompatActivity {
     // configuring nav drawer header
     private void setUpDrawerWithUserDetails() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        AppCompatImageView userPicture = mBinding.navView
+        AppCompatImageView userPicture = mBinding.mainNavView
                 .getHeaderView(0)
-                .findViewById(R.id.user_picture);
+                .findViewById(R.id.drawer_header_user_picture);
         Glide.with(this)
                 // todo : add a "no image" picture here ?
                 .load(currentUser.getPhotoUrl())
                 .circleCrop()
                 .into(userPicture);
 
-        AppCompatTextView userName = mBinding.navView
+        AppCompatTextView userName = mBinding.mainNavView
                 .getHeaderView(0)
-                .findViewById(R.id.user_name);
+                .findViewById(R.id.drawer_header_user_name);
         userName.setText(currentUser.getDisplayName());
 
-        AppCompatTextView userEmail = mBinding.navView
+        AppCompatTextView userEmail = mBinding.mainNavView
                 .getHeaderView(0)
-                .findViewById(R.id.user_email);
+                .findViewById(R.id.drawer_header_user_email);
         userEmail.setText(currentUser.getEmail());
     }
 
     private void setUpBottomNavigation() {
         Log.d(TAG, "setUpBottomNavigation");
 
-        mBinding.bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+        mBinding.mainBottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Fragment selectedFragment;
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .setCustomAnimations(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit, R.anim.fragment_open_enter, R.anim.fragment_close_exit)
-                        .replace(mBinding.navHostFragment.getId(), selectedFragment)
+                        .replace(mBinding.mainNavHostFragment.getId(), selectedFragment)
                         .commit();
 
                 return true;

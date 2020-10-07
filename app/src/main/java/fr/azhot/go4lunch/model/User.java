@@ -6,6 +6,7 @@ public class User {
     private String name;
     private String email;
     private String urlPicture;
+    private String chosenRestaurant;
 
     public User() {
         // public no-arg constructor needed for Firestore
@@ -16,6 +17,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.urlPicture = urlPicture;
+        this.chosenRestaurant = null;
     }
 
     public String getUid() {
@@ -48,5 +50,13 @@ public class User {
 
     public void setUrlPicture(String urlPicture) {
         this.urlPicture = urlPicture;
+    }
+
+    public String getChosenRestaurant() {
+        return chosenRestaurant;
+    }
+
+    public void setChosenRestaurant(String chosenRestaurant) {
+        this.chosenRestaurant = chosenRestaurant;
     }
 }

@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.RestaurantDetailActivity">
+    tools:context=".view.RestaurantDetailsActivity">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/restaurant_photo_image_view"
+        android:id="@+id/restaurant_details_photo_image_view"
         android:layout_width="match_parent"
         android:layout_height="256dp"
         android:scaleType="centerCrop"
@@ -17,15 +17,16 @@
         tools:src="@drawable/bg_login_background" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/restaurant_details_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/average_margin"
+        android:onClick="onClick"
         android:src="@drawable/ic_check_circle"
         app:backgroundTint="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/texts_constraint_layout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restaurant_photo_image_view" />
+        app:layout_constraintTop_toBottomOf="@id/restaurant_details_photo_image_view" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/texts_constraint_layout"
@@ -38,41 +39,41 @@
         android:paddingBottom="@dimen/large_padding"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restaurant_photo_image_view">
+        app:layout_constraintTop_toBottomOf="@id/restaurant_details_photo_image_view">
 
         <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/restaurant_name_text_view"
+            android:id="@+id/restaurant_details_name_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
             android:textSize="@dimen/very_large_text_size"
-            app:layout_constraintEnd_toStartOf="@id/rating_bar"
+            app:layout_constraintEnd_toStartOf="@id/restaurant_details_rating_bar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Le Zinc" />
 
         <androidx.appcompat.widget.AppCompatRatingBar
-            android:id="@+id/rating_bar"
+            android:id="@+id/restaurant_details_rating_bar"
             style="@style/Widget.AppCompat.RatingBar.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/average_margin"
             android:numStars="3"
             android:theme="@style/RatingBar"
-            app:layout_constraintBottom_toBottomOf="@id/restaurant_name_text_view"
-            app:layout_constraintStart_toEndOf="@id/restaurant_name_text_view"
-            app:layout_constraintTop_toTopOf="@id/restaurant_name_text_view"
+            app:layout_constraintBottom_toBottomOf="@id/restaurant_details_name_text_view"
+            app:layout_constraintStart_toEndOf="@id/restaurant_details_name_text_view"
+            app:layout_constraintTop_toTopOf="@id/restaurant_details_name_text_view"
             tools:rating="2" />
 
         <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/restaurant_details"
+            android:id="@+id/restaurant_details_vicinity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/very_small_margin"
             android:textColor="@android:color/white"
             android:textSize="@dimen/small_text_size"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/restaurant_name_text_view"
+            app:layout_constraintTop_toBottomOf="@id/restaurant_details_name_text_view"
             tools:text="French restaurant - 12 rue du Faubourg Poissonière" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -88,7 +89,7 @@
         app:layout_constraintTop_toBottomOf="@id/texts_constraint_layout">
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_call"
+            android:id="@+id/restaurant_details_call_button"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -99,12 +100,12 @@
             android:text="@string/call"
             android:textColor="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_like"
+            app:layout_constraintEnd_toStartOf="@id/restaurant_details_like_button"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_like"
+            android:id="@+id/restaurant_details_like_button"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -115,12 +116,12 @@
             android:text="@string/like"
             android:textColor="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_website"
-            app:layout_constraintStart_toEndOf="@id/button_call"
+            app:layout_constraintEnd_toStartOf="@id/restaurant_details_website_button"
+            app:layout_constraintStart_toEndOf="@id/restaurant_details_call_button"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_website"
+            android:id="@+id/restaurant_details_website_button"
             style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -132,14 +133,15 @@
             android:textColor="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/button_like"
+            app:layout_constraintStart_toEndOf="@id/restaurant_details_like_button"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/restaurant_details_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/buttons_constraint_layout"
-        tools:listitem="@layout/cell_restaurant_detail_fragment" />
+        tools:listitem="@layout/cell_restaurant_details" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_layout"
+    android:id="@+id/login_main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.LoginActivity">
@@ -14,7 +14,7 @@
         android:src="@drawable/bg_login_background" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/logo_image_view"
+        android:id="@+id/login_logo_image_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="96dp"
@@ -24,7 +24,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/app_name_text_view"
+        android:id="@+id/login_app_name_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:includeFontPadding="false"
@@ -34,10 +34,10 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/logo_image_view" />
+        app:layout_constraintTop_toBottomOf="@id/login_logo_image_view" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/sub_title_text_view"
+        android:id="@+id/login_sub_title_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:includeFontPadding="false"
@@ -47,10 +47,10 @@
         android:textStyle="bold|italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/app_name_text_view" />
+        app:layout_constraintTop_toBottomOf="@id/login_app_name_text_view" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/facebook_login_button"
+        android:id="@+id/login_facebook_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/very_large_margin"
@@ -68,10 +68,10 @@
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sub_title_text_view" />
+        app:layout_constraintTop_toBottomOf="@+id/login_sub_title_text_view" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/google_login_button"
+        android:id="@+id/login_google_login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/very_large_margin"
@@ -89,6 +89,6 @@
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/facebook_login_button" />
+        app:layout_constraintTop_toBottomOf="@+id/login_facebook_login_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
