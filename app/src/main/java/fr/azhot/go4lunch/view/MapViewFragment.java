@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +30,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +169,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 if (mCurrentLocation != null) {
                     animateCamera(mCurrentLocation, DEFAULT_ZOOM);
                 } else {
-                    Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();
+                    Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -253,7 +253,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         mAppViewModel.setLocationActivated(false);
                         mGoogleMap.setMyLocationEnabled(false);
                         mGoogleMap.clear();
-                        Snackbar.make(mBinding.getRoot(), R.string.get_location_error, Snackbar.LENGTH_LONG).show();
+                        Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
                     }
                 }
             };
@@ -275,6 +275,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             markerOptions.title(result.getName());
             markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
             mGoogleMap.addMarker(markerOptions);
+            // todo : bugs when log in
         }
     }
 
