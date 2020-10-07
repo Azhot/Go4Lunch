@@ -184,9 +184,8 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "firebaseAuthWithCredential: success.");
 
-                            mCurrentUser = task.getResult().getUser();
-
                             // since task is successful, we can assert mCurrentUser is not null
+                            mCurrentUser = task.getResult().getUser();
                             assert mCurrentUser != null;
 
                             // this is called only when user tries to sign in to Facebook
