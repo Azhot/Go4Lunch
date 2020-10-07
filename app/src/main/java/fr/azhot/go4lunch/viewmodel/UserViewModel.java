@@ -16,9 +16,6 @@ import fr.azhot.go4lunch.repository.UserRepository;
 public class UserViewModel extends ViewModel {
 
 
-    // todo : question for Virgil : should I have a single ViewModel in my project
-    //  linking to both RestaurantRepo and UserRepo ?
-
     // private static
     private static final String TAG = "UserViewModel";
 

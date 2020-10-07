@@ -58,7 +58,6 @@ public class RestaurantRepository {
             public void onFailure(@NonNull Call<NearbySearch> call, @NonNull Throwable t) {
                 Log.d(TAG, "setNearbyRestaurants: onFailure");
 
-                // todo : question to Virgil : why postValue ? are we not on the main Thread ?
                 mNearbyRestaurants.postValue(null);
             }
         });

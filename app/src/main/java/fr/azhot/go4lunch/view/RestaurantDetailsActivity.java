@@ -45,15 +45,16 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         retrieveRestaurantDetailsFromIntent();
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        // todo : question to Virgil : should I do a "assert user != null" here ? what is the best practice ?
-        mUserViewModel.getUser(user.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                mCurrentUser = task.getResult().toObject(User.class);
-                setContentView(mBinding.getRoot());
-                updateUIWithRestaurantDetails();
-            }
-        });
+        if (user != null) {
+            mUserViewModel.getUser(user.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    mCurrentUser = task.getResult().toObject(User.class);
+                    setContentView(mBinding.getRoot());
+                    updateUIWithRestaurantDetails();
+                }
+            });
+        }
     }
 
 
@@ -62,10 +63,13 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
                 // update user chosen restaurant status
-                // todo : question to Virgil : should I do a "assert user != null" here ? what is the best practice ?
-                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                String uid = null;
+                if (user != null) {
+                    uid = user.getUid();
+                }
                 mUserViewModel.updateUserChosenRestaurant(uid, mRestaurantId);
-                if (!mCurrentUser.getChosenRestaurant().equals(mRestaurantId)) {
+                if (!mCurrentUser.getChosenRestaurantId().equals(mRestaurantId)) {
                     mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorGrey));
                 } else {
                     mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorAccent));
@@ -94,7 +98,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 .into(mBinding.restaurantDetailsPhotoImageView);
         mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
 
-        if (!mCurrentUser.getChosenRestaurant().equals(mRestaurantId)) {
+        if (!mCurrentUser.getChosenRestaurantId().equals(mRestaurantId)) {
             mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorGrey));
         }
     }
