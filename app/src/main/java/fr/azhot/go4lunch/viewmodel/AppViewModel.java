@@ -1,5 +1,6 @@
 package fr.azhot.go4lunch.viewmodel;
 
+import android.location.Location;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -18,6 +19,7 @@ public class AppViewModel extends ViewModel {
 
     // variables
     private final RestaurantRepository mRestaurantRepository;
+    private MutableLiveData<Location> deviceLocation = new MutableLiveData<>();
     private MutableLiveData<Boolean> isLocationActivated = new MutableLiveData<>();
 
 
@@ -38,6 +40,18 @@ public class AppViewModel extends ViewModel {
         Log.d(TAG, "getNearbyRestaurants");
 
         return mRestaurantRepository.getNearbyRestaurants();
+    }
+
+    public MutableLiveData<Location> getDeviceLocation() {
+        Log.d(TAG, "getLocation");
+
+        return deviceLocation;
+    }
+
+    public void setDeviceLocation(Location location) {
+        Log.d(TAG, "setLocationActivated");
+
+        deviceLocation.setValue(location);
     }
 
     public MutableLiveData<Boolean> getLocationActivated() {

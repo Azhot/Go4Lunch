@@ -3,7 +3,6 @@ package fr.azhot.go4lunch.view;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +17,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationAvailability;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -72,10 +65,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Context mContext;
     private SupportMapFragment mMapFragment;
     private GoogleMap mGoogleMap;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-    private Location mLastLocation;
-    private Location mCurrentLocation;
-    private LocationCallback mLocationCallback;
+    private Location mDeviceLastKnownLocation;
+    private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
     private List<NearbySearch.Result> mCurrentRestaurants;
 
@@ -118,16 +109,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public void onPause() {
-        Log.d(TAG, "onPause");
-
-        super.onPause();
-        if (mFusedLocationProviderClient != null) {
-            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        }
-    }
-
-    @Override
     public void onDetach() {
         Log.d(TAG, "onDetach");
 
@@ -145,12 +126,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         mGoogleMap = googleMap;
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        if (mCurrentLocation != null) {
+        if (mDeviceLastKnownLocation != null) {
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()),
+                    new LatLng(mDeviceLastKnownLocation.getLatitude(), mDeviceLastKnownLocation.getLongitude()),
                     DEFAULT_ZOOM));
+            if (mIsLocationActivated) {
+                mGoogleMap.setMyLocationEnabled(true);
+                addRestaurantMarkers(mCurrentRestaurants);
+            }
         }
-        initLocationUpdates();
     }
 
 
@@ -160,14 +144,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
         mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
-                if (mCurrentLocation != null) {
-                    animateCamera(mCurrentLocation, DEFAULT_ZOOM);
+                if (mDeviceLastKnownLocation != null) {
+                    animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM);
                 } else {
                     Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
                 }
@@ -176,15 +159,50 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void initObserver() {
+        Log.d(TAG, "initObserver");
+
         mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
             @Override
             public void onChanged(NearbySearch nearbySearch) {
+                Log.d(TAG, "getNearbyRestaurants: onChanged");
+
                 if (mCurrentRestaurants == null) {
                     mCurrentRestaurants = new ArrayList<>();
                 }
                 mCurrentRestaurants.clear();
                 mCurrentRestaurants.addAll(nearbySearch.getResults());
                 addRestaurantMarkers(mCurrentRestaurants);
+            }
+        });
+        mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+            @Override
+            public void onChanged(Location location) {
+                Log.d(TAG, "getDeviceLocation: onChanged");
+
+                if (mDeviceLastKnownLocation == null || mDeviceLastKnownLocation.distanceTo(location) > DISTANCE_UNTIL_UPDATE) {
+                    mDeviceLastKnownLocation = location;
+                    animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM);
+                    mAppViewModel.setNearbyRestaurants(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                }
+            }
+        });
+        mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                Log.d(TAG, "getLocationActivated: onChanged");
+
+                mIsLocationActivated = aBoolean;
+
+                if (aBoolean) {
+                    mGoogleMap.setMyLocationEnabled(true);
+                    if (mCurrentRestaurants != null) {
+                        addRestaurantMarkers(mCurrentRestaurants);
+                    }
+                } else {
+                    mGoogleMap.setMyLocationEnabled(false);
+                    mGoogleMap.clear();
+                    Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -203,63 +221,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),
                 zoom));
-    }
-
-    public void initLocationUpdates() {
-        Log.d(TAG, "initLocationUpdates");
-
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest
-                .setInterval(DEFAULT_INTERVAL)
-                .setFastestInterval(FASTEST_INTERVAL)
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        if (mLocationCallback == null) {
-            mLocationCallback = new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    Log.d(TAG, "LocationCallback.onLocationResult");
-                    super.onLocationResult(locationResult);
-
-                    mLastLocation = locationResult.getLastLocation();
-
-                    if (mLastLocation != null) {
-                        if (mCurrentLocation == null
-                                || mLastLocation.distanceTo(mCurrentLocation) > DISTANCE_UNTIL_UPDATE) {
-                            mCurrentLocation = mLastLocation;
-                            animateCamera(mCurrentLocation, DEFAULT_ZOOM);
-                            mAppViewModel.setNearbyRestaurants(mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
-                        }
-                    }
-                }
-
-                @Override
-                public void onLocationAvailability(LocationAvailability locationAvailability) {
-                    Log.d(TAG, "LocationCallback.onLocationAvailability");
-                    super.onLocationAvailability(locationAvailability);
-
-                    if (locationAvailability.isLocationAvailable()) {
-                        mAppViewModel.setLocationActivated(true);
-                        mGoogleMap.setMyLocationEnabled(true);
-                        if (mCurrentLocation != null) {
-                            if (mCurrentRestaurants == null) {
-                                mAppViewModel.setNearbyRestaurants(mCurrentLocation.getLatitude() + "," + mCurrentLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
-                            }
-                            if (mCurrentRestaurants != null) {
-                                addRestaurantMarkers(mCurrentRestaurants);
-                            }
-                        }
-                    } else {
-                        mAppViewModel.setLocationActivated(false);
-                        mGoogleMap.setMyLocationEnabled(false);
-                        mGoogleMap.clear();
-                        Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
-                    }
-                }
-            };
-        }
-
-        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
     }
 
     private void addRestaurantMarkers(List<NearbySearch.Result> restaurants) {

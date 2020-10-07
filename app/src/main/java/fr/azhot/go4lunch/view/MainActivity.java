@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -22,8 +23,15 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,7 +40,10 @@ import com.google.firebase.auth.FirebaseUser;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.util.PermissionsUtils;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private ListViewFragment mListViewFragment;
     private WorkmatesFragment mWorkmatesFragment;
     private FirebaseAuth mAuth;
+    private AppViewModel mAppViewModel;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private LocationCallback mLocationCallback;
 
 
     // inherited methods
@@ -58,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
+        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mainToolbar);
         setUpDrawerNavigation();
@@ -81,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            //todo: might not be kept here
             launchFragment();
         }
     }
@@ -110,8 +125,9 @@ public class MainActivity extends AppCompatActivity {
         String[] test = new String[]{"abc", "def", "ghi"};
 
         SearchView.SearchAutoComplete textArea = searchView.findViewById(R.id.search_src_text);
-        // todo : question to Virgil : should I do a "assert user != null" here ? what is the best practice ?
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        }
 
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, test);
         textArea.setAdapter(arrayAdapter);
@@ -134,6 +150,23 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkLocationPermissions();
+        initLocationUpdates();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+
+        super.onPause();
+        if (mFusedLocationProviderClient != null) {
+            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        }
+    }
+
 
     // methods
     private void checkLocationPermissions() {
@@ -141,21 +174,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (!PermissionsUtils.isLocationPermissionGranted(this)) {
             PermissionsUtils.getLocationPermission(this, RC_PERMISSIONS);
-        }
-    }
-
-    private void launchFragment() {
-        Log.d(TAG, "launchFragment");
-
-        if (PermissionsUtils.isLocationPermissionGranted(this)) {
-            mMapViewFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(mBinding.mainNavHostFragment.getId(), mMapViewFragment)
-                    .commit();
-            setTitle(R.string.list_view_title);
-        } else {
-            checkLocationPermissions();
         }
     }
 
@@ -296,5 +314,51 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
+    public void initLocationUpdates() {
+        Log.d(TAG, "initLocationUpdates");
+
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest
+                .setInterval(DEFAULT_INTERVAL)
+                .setFastestInterval(FASTEST_INTERVAL)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        if (mLocationCallback == null) {
+            mLocationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Log.d(TAG, "LocationCallback: onLocationResult");
+                    super.onLocationResult(locationResult);
+                    mAppViewModel.setDeviceLocation(locationResult.getLastLocation());
+                }
+
+                @Override
+                public void onLocationAvailability(LocationAvailability locationAvailability) {
+                    Log.d(TAG, "LocationCallback: onLocationAvailability");
+                    super.onLocationAvailability(locationAvailability);
+                    mAppViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
+                }
+            };
+        }
+
+        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
+    }
+
+    private void launchFragment() {
+        Log.d(TAG, "launchFragment");
+
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            mMapViewFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(mBinding.mainNavHostFragment.getId(), mMapViewFragment)
+                    .commit();
+            setTitle(R.string.list_view_title);
+        } else {
+            checkLocationPermissions();
+        }
     }
 }

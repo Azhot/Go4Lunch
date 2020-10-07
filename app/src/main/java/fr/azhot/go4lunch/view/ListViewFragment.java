@@ -27,8 +27,6 @@ import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 public class ListViewFragment extends Fragment implements ListViewAdapter.OnRestaurantClickListener {
 
-    // todo : question to Virgil : if user asks for ListViewFragment before MapViewFragment could get
-    //  nearby restaurants, the adapter is initialized with an empty list
 
     // private static
     private static final String TAG = "ListViewFragment";
@@ -46,10 +44,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
 
     // variables
-    @SuppressWarnings("FieldCanBeLocal")
     private FragmentListViewBinding mBinding;
     private Context mContext;
-    @SuppressWarnings("FieldCanBeLocal")
     private AppViewModel mAppViewModel;
     private ListViewAdapter mAdapter;
     private List<NearbySearch.Result> mCurrentRestaurants;
