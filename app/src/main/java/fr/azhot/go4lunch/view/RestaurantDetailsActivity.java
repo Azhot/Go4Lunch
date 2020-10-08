@@ -4,17 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
@@ -28,33 +22,22 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private ActivityRestaurantDetailsBinding mBinding;
     private UserViewModel mUserViewModel;
     private User mCurrentUser;
+    private String mRestaurantId;
     private String mRestaurantName;
     private String mRestaurantVicinity;
     private String mRestaurantPhotoUrl;
     private int mRestaurantRating;
-    private String mRestaurantId;
 
 
     // inherited methods
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBinding = ActivityRestaurantDetailsBinding.inflate(getLayoutInflater());
-        mUserViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
 
-        retrieveRestaurantDetailsFromIntent();
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            mUserViewModel.getUser(user.getUid()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    mCurrentUser = task.getResult().toObject(User.class);
-                    setContentView(mBinding.getRoot());
-                    updateUIWithRestaurantDetails();
-                }
-            });
-        }
+        init();
+        setContentView(mBinding.getRoot());
+        retrieveDataFromIntent();
+        updateUIWithRestaurantDetails();
     }
 
 
@@ -63,31 +46,26 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
                 // update user chosen restaurant status
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                String uid = null;
-                if (user != null) {
-                    uid = user.getUid();
-                }
-                mUserViewModel.updateUserChosenRestaurant(uid, mRestaurantId);
-                if (!mCurrentUser.getChosenRestaurantId().equals(mRestaurantId)) {
-                    mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorGrey));
-                } else {
-                    mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-                }
+
                 break;
             default:
                 break;
         }
     }
 
-    private void retrieveRestaurantDetailsFromIntent() {
+    private void init() {
+        mBinding = ActivityRestaurantDetailsBinding.inflate(getLayoutInflater());
+        mUserViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+    }
+
+    private void retrieveDataFromIntent() {
         Intent intent = getIntent();
 
-        mRestaurantName = intent.getStringExtra("name");
-        mRestaurantVicinity = intent.getStringExtra("vicinity");
-        mRestaurantPhotoUrl = intent.getStringExtra("photoUrl");
-        mRestaurantRating = intent.getIntExtra("rating", 0);
         mRestaurantId = intent.getStringExtra("restaurantId");
+        mRestaurantName = intent.getStringExtra("restaurantName");
+        mRestaurantVicinity = intent.getStringExtra("restaurantVicinity");
+        mRestaurantPhotoUrl = intent.getStringExtra("restaurantPhotoUrl");
+        mRestaurantRating = intent.getIntExtra("restaurantRating", 0);
     }
 
     private void updateUIWithRestaurantDetails() {
@@ -97,9 +75,5 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 .load(mRestaurantPhotoUrl)
                 .into(mBinding.restaurantDetailsPhotoImageView);
         mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
-
-        if (!mCurrentUser.getChosenRestaurantId().equals(mRestaurantId)) {
-            mBinding.restaurantDetailsFab.setBackgroundColor(getResources().getColor(R.color.colorGrey));
-        }
     }
 }

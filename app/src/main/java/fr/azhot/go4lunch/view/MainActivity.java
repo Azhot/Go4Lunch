@@ -1,15 +1,13 @@
 package fr.azhot.go4lunch.view;
 
-import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -43,7 +41,9 @@ import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private AppViewModel mAppViewModel;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback mLocationCallback;
+    private Location mDeviceLastKnownLocation;
 
 
     // inherited methods
@@ -79,7 +80,10 @@ public class MainActivity extends AppCompatActivity {
         setUpDrawerNavigation();
         setUpDrawerWithUserDetails();
         setUpBottomNavigation();
-        launchFragment();
+        PermissionsUtils.checkLocationPermissions(this);
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            launchFragment();
+        }
     }
 
     @Override
@@ -92,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 for (int i : grantResults) {
                     if (i != PackageManager.PERMISSION_GRANTED) {
                         Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
-                        forceUserChoiceOnPermissions(this);
+                        PermissionsUtils.forceUserChoiceOnPermissions(this);
                         return;
                     }
                 }
@@ -153,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkLocationPermissions();
         initLocationUpdates();
     }
 
@@ -169,48 +172,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     // methods
-    private void checkLocationPermissions() {
-        Log.d(TAG, "checkPermissions");
-
-        if (!PermissionsUtils.isLocationPermissionGranted(this)) {
-            PermissionsUtils.getLocationPermission(this, RC_PERMISSIONS);
-        }
-    }
-
-    private void forceUserChoiceOnPermissions(final AppCompatActivity appCompatActivity) {
-        Log.d(TAG, "forceUserChoiceOnPermissions");
-
-        new AlertDialog.Builder(appCompatActivity)
-                .setTitle(R.string.permissions_dialog_title)
-                .setMessage(R.string.permissions_dialog_message)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        checkLocationPermissions();
-                    }
-                })
-                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        appCompatActivity.finish();
-                    }
-                })
-                .setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK &&
-                                event.getAction() == KeyEvent.ACTION_UP &&
-                                !event.isCanceled()) {
-                            dialog.cancel();
-                            checkLocationPermissions();
-                            return true;
-                        }
-                        return false;
-                    }
-                })
-                .show();
-    }
-
     private void setUpDrawerNavigation() {
         Log.d(TAG, "setUpDrawerNavigation");
 
@@ -316,8 +277,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
-    public void initLocationUpdates() {
+    // ok since permissions are forced onto the user @ onRequestPermissionsResult and
+    // checkLocationPermissions is called @ onCreate
+    @SuppressWarnings("MissingPermission")
+    private void initLocationUpdates() {
         Log.d(TAG, "initLocationUpdates");
 
         LocationRequest locationRequest = new LocationRequest();
@@ -331,13 +294,20 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     Log.d(TAG, "LocationCallback: onLocationResult");
+
                     super.onLocationResult(locationResult);
-                    mAppViewModel.setDeviceLocation(locationResult.getLastLocation());
+                    Location currentLocation = locationResult.getLastLocation();
+                    mAppViewModel.setDeviceLocation(currentLocation);
+                    if (mDeviceLastKnownLocation == null || mDeviceLastKnownLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
+                        mDeviceLastKnownLocation = currentLocation;
+                        mAppViewModel.setNearbyRestaurants(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                    }
                 }
 
                 @Override
                 public void onLocationAvailability(LocationAvailability locationAvailability) {
                     Log.d(TAG, "LocationCallback: onLocationAvailability");
+
                     super.onLocationAvailability(locationAvailability);
                     mAppViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
                 }
@@ -358,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
             setTitle(R.string.list_view_title);
         } else {
-            checkLocationPermissions();
+            PermissionsUtils.checkLocationPermissions(this);
         }
     }
 }

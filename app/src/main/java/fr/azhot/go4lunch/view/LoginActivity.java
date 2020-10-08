@@ -1,7 +1,9 @@
 package fr.azhot.go4lunch.view;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -163,7 +165,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onError(FacebookException error) {
                 Log.e(TAG, "facebook sign in: onError", error);
 
-                Toast.makeText(LoginActivity.this, R.string.sign_in_failed, Toast.LENGTH_LONG).show();
+                // todo : just a patch-up - should check doc for new implementation since deprecated
+                ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting()) {
+                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -210,7 +218,13 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
                                 }
                             } else {
-                                Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                                // todo : just a patch-up - should check doc for new implementation since deprecated
+                                ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting()) {
+                                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
                     }

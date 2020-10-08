@@ -36,9 +36,7 @@ import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_ZOOM;
-import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
-import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
@@ -104,7 +102,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "onResume");
 
         super.onResume();
-        checkLocationPermissions(); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
+        checkLocationPermissions(mContext); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
         mMapFragment.getMapAsync(this);
     }
 
@@ -132,7 +130,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     DEFAULT_ZOOM));
             if (mIsLocationActivated) {
                 mGoogleMap.setMyLocationEnabled(true);
-                addRestaurantMarkers(mCurrentRestaurants);
+                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
             }
         }
     }
@@ -150,7 +148,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onClick(View v) {
                 LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
                 if (mDeviceLastKnownLocation != null) {
-                    animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM);
+                    animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
                 } else {
                     Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
                 }
@@ -170,8 +168,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     mCurrentRestaurants = new ArrayList<>();
                 }
                 mCurrentRestaurants.clear();
+                // todo : will crash if no connection available
+                //  Attempt to invoke virtual method 'java.util.List fr.azhot.go4lunch.model.NearbySearch.getResults()' on a null object reference
                 mCurrentRestaurants.addAll(nearbySearch.getResults());
-                addRestaurantMarkers(mCurrentRestaurants);
+                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
             }
         });
         mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
@@ -179,11 +179,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onChanged(Location location) {
                 Log.d(TAG, "getDeviceLocation: onChanged");
 
-                if (mDeviceLastKnownLocation == null || mDeviceLastKnownLocation.distanceTo(location) > DISTANCE_UNTIL_UPDATE) {
-                    mDeviceLastKnownLocation = location;
-                    animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM);
-                    mAppViewModel.setNearbyRestaurants(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
-                }
+                mDeviceLastKnownLocation = location;
+                animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
             }
         });
         mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
@@ -196,7 +193,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 if (aBoolean) {
                     mGoogleMap.setMyLocationEnabled(true);
                     if (mCurrentRestaurants != null) {
-                        addRestaurantMarkers(mCurrentRestaurants);
+                        addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
                     }
                 } else {
                     mGoogleMap.setMyLocationEnabled(false);
@@ -207,36 +204,45 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void checkLocationPermissions() {
+    private void checkLocationPermissions(Context context) {
         Log.d(TAG, "checkPermissions");
 
-        if (!PermissionsUtils.isLocationPermissionGranted(mContext)) {
+        if (!PermissionsUtils.isLocationPermissionGranted(context)) {
             requireActivity().finish();
         }
     }
 
-    private void animateCamera(Location location, float zoom) {
+    private void animateCamera(Location location, float zoom, GoogleMap googleMap) {
         Log.d(TAG, "moveCamera");
 
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(location.getLatitude(), location.getLongitude()),
                 zoom));
     }
 
-    private void addRestaurantMarkers(List<NearbySearch.Result> restaurants) {
+    private void addRestaurantMarkers(List<NearbySearch.Result> restaurants, GoogleMap googleMap) {
         Log.d(TAG, "addRestaurantMarkers");
 
-        // todo : markers color should be orange with
-        //  dark-orange knife and fork icon inside.
-        //  Color should change to light green and
-        //  cutlery in white when at least one workmate
-        //  confirms going to the corresponding restaurant
-        for (NearbySearch.Result result : restaurants) {
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.title(result.getName());
-            markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
-            mGoogleMap.addMarker(markerOptions);
-            // todo : bugs when log in
+        if (restaurants != null) {
+            // todo : markers color should be orange with
+            //  dark-orange knife and fork icon inside.
+            //  Color should change to light green and
+            //  cutlery in white when at least one workmate
+            //  confirms going to the corresponding restaurant
+            for (NearbySearch.Result result : restaurants) {
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.title(result.getName());
+                markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
+
+                if (googleMap != null) {
+                    googleMap.addMarker(markerOptions);
+                } else {
+                    Log.e(TAG, "addRestaurantMarkers: GoogleMap is null !");
+                    return;
+                }
+            }
+        } else {
+            Log.e(TAG, "addRestaurantMarkers: List<NearbySearch.Result> is null !");
         }
     }
 

@@ -89,23 +89,32 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     // Called when user clicks on a cell of the recyclerview
     @Override
     public void onRestaurantClick(int position) {
+
         Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
         NearbySearch.Result restaurant = mAdapter.getRestaurants().get(position);
-        String name = restaurant.getName();
-        intent.putExtra("name", name);
-        String vicinity = restaurant.getVicinity();
-        intent.putExtra("vicinity", vicinity);
+
+        String restaurantId = restaurant.getPlaceId();
+        intent.putExtra("restaurantId", restaurantId);
+
+        String restaurantName = restaurant.getName();
+        intent.putExtra("restaurantName", restaurantName);
+
+        String restaurantVicinity = restaurant.getVicinity();
+        intent.putExtra("restaurantVicinity", restaurantVicinity);
+
         if (restaurant.getPhotos() != null) {
-            String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+            String restaurantPhotoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
                     "key=" + BuildConfig.GOOGLE_API_KEY +
                     "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
                     "&maxwidth=400";
-            intent.putExtra("photoUrl", photoUrl);
+            intent.putExtra("restaurantPhotoUrl", restaurantPhotoUrl);
         }
+
         if (restaurant.getRating() != null) {
-            intent.putExtra("rating", ((int) Math.round(restaurant.getRating() / 5 * 3)));
+            int restaurantRating = ((int) Math.round(restaurant.getRating() / 5 * 3));
+            intent.putExtra("restaurantRating", restaurantRating);
         }
-        intent.putExtra("restaurantId", restaurant.getPlaceId());
+
         startActivity(intent);
     }
 
@@ -128,13 +137,17 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                 }
                 mCurrentRestaurants.clear();
                 mCurrentRestaurants.addAll(nearbySearch.getResults());
+                mAdapter.setRestaurants(mCurrentRestaurants);
             }
         });
+
         mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean) {
-                    mAdapter.setRestaurants(mCurrentRestaurants);
+                    if (mCurrentRestaurants != null) {
+                        mAdapter.setRestaurants(mCurrentRestaurants);
+                    }
                 } else {
                     mAdapter.setRestaurants(new ArrayList<>());
                 }
