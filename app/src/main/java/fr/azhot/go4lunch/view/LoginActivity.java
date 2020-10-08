@@ -40,7 +40,7 @@ import java.util.Arrays;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityLoginBinding;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.viewmodel.UserViewModel;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.RC_GOOGLE_SIGN_IN;
 
@@ -59,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
     private CallbackManager mCallbackManager;
     private AuthCredential mUpdatedAuthCredential;
     private LoginManager mLoginManager;
-    private UserViewModel mUserViewModel;
+    private AppViewModel mAppViewModel;
 
 
     // inherited methods
@@ -71,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         mBinding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         mAuth = FirebaseAuth.getInstance();
-        mUserViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
         configureGoogleSignIn();
         configureFacebookSignIn();
     }
@@ -109,6 +109,8 @@ public class LoginActivity extends AppCompatActivity {
 
     // methods
     public void onClick(View view) {
+        Log.d(TAG, "onClick");
+
         switch (view.getId()) {
             case R.id.login_facebook_login_button:
                 Log.d(TAG, "onClick: facebook login button");
@@ -138,11 +140,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
+        Log.d(TAG, "signInWithGoogle");
+
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
     }
 
     private void configureFacebookSignIn() {
+        Log.d(TAG, "configureFacebookSignIn");
+
         mCallbackManager = CallbackManager.Factory.create();
         mLoginManager = LoginManager.getInstance();
         mLoginManager.logOut();
@@ -177,6 +183,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithFacebook() {
+        Log.d(TAG, "signInWithFacebook");
+
         mLoginManager.logInWithReadPermissions(LoginActivity.this, Arrays.asList(
                 "email",
                 "public_profile"));
@@ -240,6 +248,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void makeAlertDialogExistingSignIn(String email, AuthCredential credential) {
+        Log.d(TAG, "makeAlertDialogExistingSignIn");
+
         new AlertDialog.Builder(this)
                 .setTitle("Email address already linked to an existing account.")
                 .setMessage(email + " is already linked to an existing account via Google sign in.\n" +
@@ -258,6 +268,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void createUserInFirestore(FirebaseUser user) {
+        Log.d(TAG, "createUserInFirestore");
+
         String uid = user.getUid();
         String name = user.getDisplayName();
         String email = user.getEmail();
@@ -265,6 +277,6 @@ public class LoginActivity extends AppCompatActivity {
                 ? user.getPhotoUrl().toString()
                 : null;
 
-        mUserViewModel.createUser(new User(uid, name, email, urlPicture));
+        mAppViewModel.createUser(new User(uid, name, email, urlPicture));
     }
 }

@@ -2,6 +2,7 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -9,18 +10,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.viewmodel.UserViewModel;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
+
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_URL_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
 
 
+    // private static
+    private static final String TAG = "RestaurantDetailsActivi";
+
+
     // variables
     private ActivityRestaurantDetailsBinding mBinding;
-    private UserViewModel mUserViewModel;
+    private AppViewModel mAppViewModel;
+    private FirebaseAuth mAuth;
     private User mCurrentUser;
     private String mRestaurantId;
     private String mRestaurantName;
@@ -45,7 +60,19 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
-                // update user chosen restaurant status
+
+                if ((mRestaurantId.equals(mCurrentUser.getChosenRestaurantId()))) {
+                    mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
+                    mCurrentUser.setChosenRestaurantId(null);
+                    mCurrentUser.setChosenRestaurantName(null);
+                } else {
+                    // change button to activated
+                    mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
+                    mCurrentUser.setChosenRestaurantId(mRestaurantId);
+                    mCurrentUser.setChosenRestaurantName(mRestaurantName);
+                }
+
+                mAppViewModel.updateUserChosenRestaurant(mCurrentUser);
 
                 break;
             default:
@@ -54,26 +81,58 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     }
 
     private void init() {
+        Log.d(TAG, "init");
+
         mBinding = ActivityRestaurantDetailsBinding.inflate(getLayoutInflater());
-        mUserViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null) {
+            mAppViewModel.getUser(mAuth.getCurrentUser().getUid()).addOnSuccessListener(this, new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    Log.d(TAG, "onSuccess");
+                    mCurrentUser = documentSnapshot.toObject(User.class);
+                    if (mCurrentUser != null) {
+                        setUpFab(mRestaurantId, mCurrentUser);
+                    }
+                }
+            });
+        }
     }
 
     private void retrieveDataFromIntent() {
-        Intent intent = getIntent();
+        Log.d(TAG, "retrieveDataFromIntent");
 
-        mRestaurantId = intent.getStringExtra("restaurantId");
-        mRestaurantName = intent.getStringExtra("restaurantName");
-        mRestaurantVicinity = intent.getStringExtra("restaurantVicinity");
-        mRestaurantPhotoUrl = intent.getStringExtra("restaurantPhotoUrl");
-        mRestaurantRating = intent.getIntExtra("restaurantRating", 0);
+        Intent intent = getIntent();
+        mRestaurantId = intent.getStringExtra(RESTAURANT_ID_EXTRA);
+        mRestaurantName = intent.getStringExtra(RESTAURANT_NAME_EXTRA);
+        mRestaurantVicinity = intent.getStringExtra(RESTAURANT_VICINITY_EXTRA);
+        mRestaurantPhotoUrl = intent.getStringExtra(RESTAURANT_PHOTO_URL_EXTRA);
+        mRestaurantRating = intent.getIntExtra(RESTAURANT_RATING_EXTRA, 0);
     }
 
     private void updateUIWithRestaurantDetails() {
+        Log.d(TAG, "updateUIWithRestaurantDetails");
+
         mBinding.restaurantDetailsNameTextView.setText(mRestaurantName);
         mBinding.restaurantDetailsVicinity.setText(mRestaurantVicinity);
         Glide.with(this)
                 .load(mRestaurantPhotoUrl)
                 .into(mBinding.restaurantDetailsPhotoImageView);
         mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
+    }
+
+    private void setUpFab(String restaurantId, User user) {
+        Log.d(TAG, "setUpFab");
+
+        Log.d(TAG, "setUpFab: restaurantId = " + restaurantId);
+        Log.d(TAG, "setUpFab: getChosenRestaurantId = " + user.getChosenRestaurantId());
+
+        if (restaurantId.equals(user.getChosenRestaurantId())) {
+            mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
+        } else {
+            mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
+        }
     }
 }

@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/average_margin"
         android:onClick="onClick"
-        android:src="@drawable/ic_check_circle"
+        android:src="@drawable/ic_check_circle_grey"
         app:backgroundTint="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/texts_constraint_layout"
         app:layout_constraintEnd_toEndOf="parent"

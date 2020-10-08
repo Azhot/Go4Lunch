@@ -7,8 +7,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
+
 import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.RestaurantRepository;
+import fr.azhot.go4lunch.repository.UserRepository;
 
 public class AppViewModel extends ViewModel {
 
@@ -19,6 +25,7 @@ public class AppViewModel extends ViewModel {
 
     // variables
     private final RestaurantRepository mRestaurantRepository;
+    private final UserRepository mUserRepository;
     private MutableLiveData<Location> deviceLocation = new MutableLiveData<>();
     private MutableLiveData<Boolean> isLocationActivated = new MutableLiveData<>();
 
@@ -26,6 +33,7 @@ public class AppViewModel extends ViewModel {
     // constructors
     public AppViewModel() {
         mRestaurantRepository = RestaurantRepository.getInstance();
+        mUserRepository = UserRepository.getInstance();
     }
 
 
@@ -64,5 +72,29 @@ public class AppViewModel extends ViewModel {
         Log.d(TAG, "setLocationActivated");
 
         isLocationActivated.setValue(b);
+    }
+
+    public void createUser(User user) {
+        Log.d(TAG, "createUser: " + user.getName());
+
+        mUserRepository.createUser(user);
+    }
+
+    public Task<DocumentSnapshot> getUser(String uid) {
+        Log.d(TAG, "getUser with uid: " + uid);
+
+        return mUserRepository.getUser(uid);
+    }
+
+    public Query getUsersQuery() {
+        Log.d(TAG, "getUsersQuery");
+
+        return mUserRepository.getUsersQuery();
+    }
+
+    public void updateUserChosenRestaurant(User user) {
+        Log.d(TAG, "updateUser: " + user.getName());
+
+        mUserRepository.updateUserChosenRestaurant(user);
     }
 }

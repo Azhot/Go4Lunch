@@ -19,7 +19,7 @@ import com.google.firebase.firestore.Query;
 
 import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.viewmodel.UserViewModel;
+import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 public class WorkmatesFragment extends Fragment {
 
@@ -30,7 +30,7 @@ public class WorkmatesFragment extends Fragment {
 
     // variables
     private FragmentWorkmatesBinding mBinding;
-    private UserViewModel mUserViewModel;
+    private AppViewModel mAppViewModel;
     private Context mContext;
 
 
@@ -59,11 +59,11 @@ public class WorkmatesFragment extends Fragment {
 
         mBinding = FragmentWorkmatesBinding.inflate(inflater);
 
-        mUserViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
 
         mBinding.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         mBinding.workmatesRecyclerView.setAdapter(new WorkmatesAdapter(
-                generateOptionsForAdapter(mUserViewModel.getUsersQuery()),
+                generateOptionsForAdapter(mAppViewModel.getUsersQuery()),
                 Glide.with(this)));
 
         return mBinding.getRoot();

@@ -25,6 +25,12 @@ import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.NearbySearch;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_URL_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
+
 public class ListViewFragment extends Fragment implements ListViewAdapter.OnRestaurantClickListener {
 
 
@@ -94,25 +100,25 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         NearbySearch.Result restaurant = mAdapter.getRestaurants().get(position);
 
         String restaurantId = restaurant.getPlaceId();
-        intent.putExtra("restaurantId", restaurantId);
+        intent.putExtra(RESTAURANT_ID_EXTRA, restaurantId);
 
         String restaurantName = restaurant.getName();
-        intent.putExtra("restaurantName", restaurantName);
+        intent.putExtra(RESTAURANT_NAME_EXTRA, restaurantName);
 
         String restaurantVicinity = restaurant.getVicinity();
-        intent.putExtra("restaurantVicinity", restaurantVicinity);
+        intent.putExtra(RESTAURANT_VICINITY_EXTRA, restaurantVicinity);
 
         if (restaurant.getPhotos() != null) {
             String restaurantPhotoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
                     "key=" + BuildConfig.GOOGLE_API_KEY +
                     "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
                     "&maxwidth=400";
-            intent.putExtra("restaurantPhotoUrl", restaurantPhotoUrl);
+            intent.putExtra(RESTAURANT_PHOTO_URL_EXTRA, restaurantPhotoUrl);
         }
 
         if (restaurant.getRating() != null) {
             int restaurantRating = ((int) Math.round(restaurant.getRating() / 5 * 3));
-            intent.putExtra("restaurantRating", restaurantRating);
+            intent.putExtra(RESTAURANT_RATING_EXTRA, restaurantRating);
         }
 
         startActivity(intent);
@@ -121,6 +127,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     // methods
     // Initializes UI related variables
     private void init(LayoutInflater inflater) {
+        Log.d(TAG, "init");
+
         mBinding = FragmentListViewBinding.inflate(inflater);
         mBinding.cellWorkmatesRecycleView.setLayoutManager(new LinearLayoutManager(mContext));
         mAdapter = new ListViewAdapter(Glide.with(this), this);
@@ -129,6 +137,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
     // Initializes the AppViewModel observers
     private void initObservers() {
+        Log.d(TAG, "initObservers");
+
         mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
             @Override
             public void onChanged(NearbySearch nearbySearch) {

@@ -1,12 +1,16 @@
 package fr.azhot.go4lunch.model;
 
+import androidx.annotation.Nullable;
+
 public class User {
 
     private String uid;
     private String name;
     private String email;
     private String urlPicture;
+    @Nullable
     private String chosenRestaurantId;
+    @Nullable
     private String chosenRestaurantName;
 
 
@@ -55,19 +59,21 @@ public class User {
         this.urlPicture = urlPicture;
     }
 
+    @Nullable
     public String getChosenRestaurantId() {
         return chosenRestaurantId;
     }
 
-    public void setChosenRestaurantId(String chosenRestaurantId) {
+    public void setChosenRestaurantId(@Nullable String chosenRestaurantId) {
         this.chosenRestaurantId = chosenRestaurantId;
     }
 
+    @Nullable
     public String getChosenRestaurantName() {
         return chosenRestaurantName;
     }
 
-    public void setChosenRestaurantName(String chosenRestaurantName) {
+    public void setChosenRestaurantName(@Nullable String chosenRestaurantName) {
         this.chosenRestaurantName = chosenRestaurantName;
     }
 }

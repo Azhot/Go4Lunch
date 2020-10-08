@@ -3,24 +3,19 @@ package fr.azhot.go4lunch.repository;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.List;
+import com.google.firebase.firestore.SetOptions;
 
 import fr.azhot.go4lunch.model.User;
+
+import static fr.azhot.go4lunch.util.AppConstants.USER_COLLECTION_NAME;
 
 public class UserRepository {
 
@@ -42,20 +37,20 @@ public class UserRepository {
 
 
     // variables
-    private FirebaseFirestore firebaseFirestore;
-    private CollectionReference collectionReference;
+    private FirebaseFirestore mFirebaseFirestore;
+    private CollectionReference mCollectionReference;
 
 
     // constructor
     private UserRepository() {
-        this.firebaseFirestore = FirebaseFirestore.getInstance();
-        this.collectionReference = firebaseFirestore.collection("users");
+        this.mFirebaseFirestore = FirebaseFirestore.getInstance();
+        this.mCollectionReference = mFirebaseFirestore.collection(USER_COLLECTION_NAME);
     }
 
 
     // methods
     public void createUser(User user) {
-        collectionReference
+        mCollectionReference
                 .document(user.getUid())
                 .set(user)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -73,43 +68,30 @@ public class UserRepository {
     }
 
     public Query getUsersQuery() {
-        return collectionReference;
+        return mCollectionReference;
     }
 
-    public void updateUserChosenRestaurant(String uid, String restaurantId) {
-        collectionReference
+    public Task<DocumentSnapshot> getUser(String uid) {
+        return mCollectionReference
                 .document(uid)
-                .update("chosenRestaurant", restaurantId)
+                .get();
+    }
+
+    public void updateUserChosenRestaurant(User user) {
+        mCollectionReference
+                .document(user.getUid())
+                .set(user, SetOptions.mergeFields("chosenRestaurantId", "chosenRestaurantName"))
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "updateUserChosenRestaurant: onSuccess");
+                        Log.d(TAG, "updateUser: onSuccess");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "updateUserChosenRestaurant: onFailure");
+                        Log.d(TAG, "updateUser: onFailure");
                     }
                 });
-    }
-
-    public Task<DocumentSnapshot> getUser(String uid) {
-        return collectionReference.document(uid).get();
-    }
-
-    public ListenerRegistration getAllUsersAsLiveData(final MutableLiveData<List<User>> users) {
-        return collectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Log.e(TAG, "onEvent: Listen failed.", error);
-                    return;
-                }
-                if (value != null && !value.isEmpty()) {
-                    users.postValue(value.toObjects(User.class));
-                }
-            }
-        });
     }
 }
