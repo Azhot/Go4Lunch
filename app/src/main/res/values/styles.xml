@@ -36,4 +36,14 @@
         <item name="colorControlActivated">#FFD600</item>
     </style>
 
+    <style name="TextHasDecided">
+        <item name="android:textColor">@color/colorDarkGrey</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TextHasNotDecided">
+        <item name="android:textColor">@color/colorLightGrey</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+
 </resources>

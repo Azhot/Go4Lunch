@@ -10,6 +10,7 @@ import com.bumptech.glide.RequestManager;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.CellWorkmatesBinding;
 import fr.azhot.go4lunch.model.User;
 
@@ -43,18 +44,42 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
     // view holder
     public static class WorkmateViewHolder extends RecyclerView.ViewHolder {
 
-        private CellWorkmatesBinding binding;
+        private CellWorkmatesBinding mBinding;
 
         public WorkmateViewHolder(CellWorkmatesBinding binding) {
             super(binding.getRoot());
-            this.binding = binding;
+            this.mBinding = binding;
         }
 
         public void bindWithUserDetails(User user, RequestManager glide) {
             glide.load(user.getUrlPicture())
                     .circleCrop()
-                    .into(binding.cellWorkmatesProfilePicture);
-            binding.cellWorkmatesTextView.setText(user.getName() + " is eating french (Le Zinc)");
+                    .into(mBinding.cellWorkmatesProfilePicture);
+
+            String firstName = user.getName().split(" ")[0];
+            String restaurantName = user.getChosenRestaurantName();
+            String stringHasDecided = mBinding
+                    .getRoot()
+                    .getContext()
+                    .getResources()
+                    .getString(R.string.has_decided, firstName, restaurantName);
+            String stringHasNotDecided = mBinding
+                    .getRoot()
+                    .getContext()
+                    .getResources()
+                    .getString(R.string.has_not_decided, firstName);
+
+            if (user.getChosenRestaurantId() != null) {
+                mBinding.cellWorkmatesTextView.setText(stringHasDecided);
+                mBinding.cellWorkmatesTextView.setTextAppearance(
+                        mBinding.getRoot().getContext(),
+                        R.style.TextHasDecided);
+            } else {
+                mBinding.cellWorkmatesTextView.setText(stringHasNotDecided);
+                mBinding.cellWorkmatesTextView.setTextAppearance(
+                        mBinding.getRoot().getContext(),
+                        R.style.TextHasNotDecided);
+            }
         }
     }
 }
