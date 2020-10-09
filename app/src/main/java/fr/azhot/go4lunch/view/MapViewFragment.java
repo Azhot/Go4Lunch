@@ -29,7 +29,7 @@ import java.util.List;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
-import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
@@ -66,7 +66,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Location mDeviceLastKnownLocation;
     private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
-    private List<NearbySearch.Result> mCurrentRestaurants;
+    private List<NearbyRestaurantsPOJO.Result> mCurrentRestaurants;
 
 
     // inherited methods
@@ -159,18 +159,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void initObserver() {
         Log.d(TAG, "initObserver");
 
-        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
+        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
             @Override
-            public void onChanged(NearbySearch nearbySearch) {
+            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
                 Log.d(TAG, "getNearbyRestaurants: onChanged");
 
+                // todo : if connection was not available on first call then it never gets nearby restaurants
                 if (mCurrentRestaurants == null) {
                     mCurrentRestaurants = new ArrayList<>();
                 }
                 mCurrentRestaurants.clear();
-                // todo : will crash if no connection available
-                //  Attempt to invoke virtual method 'java.util.List fr.azhot.go4lunch.model.NearbySearch.getResults()' on a null object reference
-                mCurrentRestaurants.addAll(nearbySearch.getResults());
+                if (nearbyRestaurantsPOJO != null) {
+                    mCurrentRestaurants.addAll(nearbyRestaurantsPOJO.getResults());
+                }
                 addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
             }
         });
@@ -194,6 +195,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     mGoogleMap.setMyLocationEnabled(true);
                     if (mCurrentRestaurants != null) {
                         addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                    } else {
+                        // todo : check if connection is available or else show message to user
                     }
                 } else {
                     mGoogleMap.setMyLocationEnabled(false);
@@ -220,7 +223,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 zoom));
     }
 
-    private void addRestaurantMarkers(List<NearbySearch.Result> restaurants, GoogleMap googleMap) {
+    private void addRestaurantMarkers(List<NearbyRestaurantsPOJO.Result> restaurants, GoogleMap googleMap) {
         Log.d(TAG, "addRestaurantMarkers");
 
         if (restaurants != null) {
@@ -229,7 +232,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             //  Color should change to light green and
             //  cutlery in white when at least one workmate
             //  confirms going to the corresponding restaurant
-            for (NearbySearch.Result result : restaurants) {
+            for (NearbyRestaurantsPOJO.Result result : restaurants) {
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.title(result.getName());
                 markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
@@ -242,7 +245,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         } else {
-            Log.e(TAG, "addRestaurantMarkers: List<NearbySearch.Result> is null !");
+            Log.e(TAG, "addRestaurantMarkers: List<NearbyRestaurantsPOJO.Result> is null !");
         }
     }
 

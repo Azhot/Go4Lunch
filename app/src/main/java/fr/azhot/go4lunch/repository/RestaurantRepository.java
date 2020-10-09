@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import fr.azhot.go4lunch.api.GoogleMapsApi;
-import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.service.RetrofitService;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,7 +34,7 @@ public class RestaurantRepository {
 
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
-    private final MutableLiveData<NearbySearch> mNearbyRestaurants = new MutableLiveData<>();
+    private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurants = new MutableLiveData<>();
 
 
     // constructor
@@ -45,17 +45,17 @@ public class RestaurantRepository {
     public void setNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        Call<NearbySearch> restaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
-        restaurants.enqueue(new Callback<NearbySearch>() {
+        Call<NearbyRestaurantsPOJO> restaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
+        restaurants.enqueue(new Callback<NearbyRestaurantsPOJO>() {
             @Override
-            public void onResponse(@NonNull Call<NearbySearch> call, @NonNull Response<NearbySearch> response) {
+            public void onResponse(@NonNull Call<NearbyRestaurantsPOJO> call, @NonNull Response<NearbyRestaurantsPOJO> response) {
                 Log.d(TAG, "setNearbyRestaurants: onResponse");
 
                 mNearbyRestaurants.setValue(response.body());
             }
 
             @Override
-            public void onFailure(@NonNull Call<NearbySearch> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<NearbyRestaurantsPOJO> call, @NonNull Throwable t) {
                 Log.d(TAG, "setNearbyRestaurants: onFailure");
 
                 mNearbyRestaurants.postValue(null);
@@ -63,7 +63,7 @@ public class RestaurantRepository {
         });
     }
 
-    public LiveData<NearbySearch> getNearbyRestaurants() {
+    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurants() {
         Log.d(TAG, "getNearbyRestaurants");
 
         return mNearbyRestaurants;

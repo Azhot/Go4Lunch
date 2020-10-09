@@ -1,6 +1,9 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,7 +24,7 @@ import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_URL_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
@@ -40,7 +43,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private String mRestaurantId;
     private String mRestaurantName;
     private String mRestaurantVicinity;
-    private String mRestaurantPhotoUrl;
+    private Bitmap mRestaurantPhoto;
     private int mRestaurantRating;
 
 
@@ -75,6 +78,18 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 mAppViewModel.updateUserChosenRestaurant(mCurrentUser);
 
                 break;
+            case R.id.restaurant_details_call_button:
+                // intent to phone with restaurant number
+                break;
+            case R.id.restaurant_details_like_button:
+                // todo : question to Virgile : what is it to do here ?
+                break;
+            case R.id.restaurant_details_website_button:
+                String url = "http://www.example.com";
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                startActivity(intent);
+                break;
             default:
                 break;
         }
@@ -108,7 +123,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mRestaurantId = intent.getStringExtra(RESTAURANT_ID_EXTRA);
         mRestaurantName = intent.getStringExtra(RESTAURANT_NAME_EXTRA);
         mRestaurantVicinity = intent.getStringExtra(RESTAURANT_VICINITY_EXTRA);
-        mRestaurantPhotoUrl = intent.getStringExtra(RESTAURANT_PHOTO_URL_EXTRA);
+        byte[] byteArray = getIntent().getByteArrayExtra(RESTAURANT_PHOTO_EXTRA);
+        if (byteArray != null) {
+            mRestaurantPhoto = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        }
         mRestaurantRating = intent.getIntExtra(RESTAURANT_RATING_EXTRA, 0);
     }
 
@@ -118,7 +136,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mBinding.restaurantDetailsNameTextView.setText(mRestaurantName);
         mBinding.restaurantDetailsVicinity.setText(mRestaurantVicinity);
         Glide.with(this)
-                .load(mRestaurantPhotoUrl)
+                .load(mRestaurantPhoto)
                 .into(mBinding.restaurantDetailsPhotoImageView);
         mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
     }

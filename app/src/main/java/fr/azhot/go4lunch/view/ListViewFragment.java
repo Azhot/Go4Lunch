@@ -2,6 +2,7 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,17 +18,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
-import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_URL_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
@@ -54,7 +56,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private Context mContext;
     private AppViewModel mAppViewModel;
     private ListViewAdapter mAdapter;
-    private List<NearbySearch.Result> mCurrentRestaurants;
+    private List<NearbyRestaurantsPOJO.Result> mResults;
 
 
     // inherited methods
@@ -97,29 +99,20 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     public void onRestaurantClick(int position) {
 
         Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
-        NearbySearch.Result restaurant = mAdapter.getRestaurants().get(position);
+        Restaurant restaurant = mAdapter.getRestaurants().get(position);
+        NearbyRestaurantsPOJO.Result result = restaurant.getResult();
 
-        String restaurantId = restaurant.getPlaceId();
-        intent.putExtra(RESTAURANT_ID_EXTRA, restaurantId);
+        intent.putExtra(RESTAURANT_ID_EXTRA, result.getPlaceId());
+        intent.putExtra(RESTAURANT_NAME_EXTRA, result.getName());
+        intent.putExtra(RESTAURANT_VICINITY_EXTRA, result.getVicinity());
 
-        String restaurantName = restaurant.getName();
-        intent.putExtra(RESTAURANT_NAME_EXTRA, restaurantName);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        restaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
 
-        String restaurantVicinity = restaurant.getVicinity();
-        intent.putExtra(RESTAURANT_VICINITY_EXTRA, restaurantVicinity);
-
-        if (restaurant.getPhotos() != null) {
-            String restaurantPhotoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                    "key=" + BuildConfig.GOOGLE_API_KEY +
-                    "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
-                    "&maxwidth=400";
-            intent.putExtra(RESTAURANT_PHOTO_URL_EXTRA, restaurantPhotoUrl);
-        }
-
-        if (restaurant.getRating() != null) {
-            int restaurantRating = ((int) Math.round(restaurant.getRating() / 5 * 3));
-            intent.putExtra(RESTAURANT_RATING_EXTRA, restaurantRating);
-        }
+        int restaurantRating = ((int) Math.round(result.getRating() / 5 * 3));
+        intent.putExtra(RESTAURANT_RATING_EXTRA, restaurantRating);
 
         startActivity(intent);
     }
@@ -139,27 +132,36 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbySearch>() {
+        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
             @Override
-            public void onChanged(NearbySearch nearbySearch) {
-                if (mCurrentRestaurants == null) {
-                    mCurrentRestaurants = new ArrayList<>();
+            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
+                Log.d(TAG, "getNearbyRestaurants: onChanged");
+
+                // todo : bug if connection was not available on first call then it never gets nearby restaurants
+                if (mResults == null) {
+                    mResults = new ArrayList<>();
                 }
-                mCurrentRestaurants.clear();
-                mCurrentRestaurants.addAll(nearbySearch.getResults());
-                mAdapter.setRestaurants(mCurrentRestaurants);
+                mResults.clear();
+                if (nearbyRestaurantsPOJO != null) {
+                    mResults.addAll(nearbyRestaurantsPOJO.getResults());
+                } else {
+                    // todo : check if connection is available or else show message to user that no nearby restaurants
+                }
+                mAdapter.setRestaurants(mResults);
             }
         });
 
         mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
+                Log.d(TAG, "getLocationActivated: onChanged");
+
                 if (aBoolean) {
-                    if (mCurrentRestaurants != null) {
-                        mAdapter.setRestaurants(mCurrentRestaurants);
-                    }
+                    Log.d(TAG, "showRestaurants");
+                    mAdapter.showRestaurants();
                 } else {
-                    mAdapter.setRestaurants(new ArrayList<>());
+                    Log.d(TAG, "hideRestaurants");
+                    mAdapter.hideRestaurants();
                 }
             }
         });

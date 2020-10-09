@@ -11,7 +11,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
-import fr.azhot.go4lunch.model.NearbySearch;
+import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.RestaurantRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
@@ -44,7 +44,7 @@ public class AppViewModel extends ViewModel {
         mRestaurantRepository.setNearbyRestaurants(location, radius);
     }
 
-    public LiveData<NearbySearch> getNearbyRestaurants() {
+    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurants() {
         Log.d(TAG, "getNearbyRestaurants");
 
         return mRestaurantRepository.getNearbyRestaurants();

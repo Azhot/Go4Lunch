@@ -6,9 +6,9 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
- * POJO of a NearbySearch API request
+ * POJO of a NearbyRestaurantsPOJO API request
  */
-public class NearbySearch {
+public class NearbyRestaurantsPOJO {
 
     @SerializedName("html_attributions")
     @Expose
