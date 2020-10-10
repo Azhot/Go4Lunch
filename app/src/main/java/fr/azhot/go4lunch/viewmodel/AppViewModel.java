@@ -11,9 +11,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.repository.RestaurantRepository;
+import fr.azhot.go4lunch.repository.NearbyRestaurantsRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
 
 public class AppViewModel extends ViewModel {
@@ -24,16 +28,22 @@ public class AppViewModel extends ViewModel {
 
 
     // variables
-    private final RestaurantRepository mRestaurantRepository;
+    private final NearbyRestaurantsRepository mNearbyRestaurantsRepository;
     private final UserRepository mUserRepository;
-    private MutableLiveData<Location> deviceLocation = new MutableLiveData<>();
-    private MutableLiveData<Boolean> isLocationActivated = new MutableLiveData<>();
+    private List<NearbyRestaurantsPOJO.Result> mPreviousResults;
+    private List<Restaurant> mRestaurants;
+    private MutableLiveData<Location> deviceLocation;
+    private MutableLiveData<Boolean> isLocationActivated;
 
 
     // constructors
     public AppViewModel() {
-        mRestaurantRepository = RestaurantRepository.getInstance();
+        mNearbyRestaurantsRepository = NearbyRestaurantsRepository.getInstance();
         mUserRepository = UserRepository.getInstance();
+        mPreviousResults = new ArrayList<>();
+        mRestaurants = new ArrayList<>();
+        deviceLocation = new MutableLiveData<>();
+        isLocationActivated = new MutableLiveData<>();
     }
 
 
@@ -41,13 +51,31 @@ public class AppViewModel extends ViewModel {
     public void setNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        mRestaurantRepository.setNearbyRestaurants(location, radius);
+        mNearbyRestaurantsRepository.setNearbyRestaurants(location, radius);
     }
 
     public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurants() {
         Log.d(TAG, "getNearbyRestaurants");
 
-        return mRestaurantRepository.getNearbyRestaurants();
+        return mNearbyRestaurantsRepository.getNearbyRestaurants();
+    }
+
+    public List<NearbyRestaurantsPOJO.Result> getPreviousResults() {
+        Log.d(TAG, "getPreviousResults");
+
+        return mPreviousResults;
+    }
+
+    public void setPreviousResults(List<NearbyRestaurantsPOJO.Result> previousResults) {
+        Log.d(TAG, "setPreviousResults");
+
+        mPreviousResults = previousResults;
+    }
+
+    public List<Restaurant> getRestaurants() {
+        Log.d(TAG, "getRestaurants");
+
+        return mRestaurants;
     }
 
     public MutableLiveData<Location> getDeviceLocation() {

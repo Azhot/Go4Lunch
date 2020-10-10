@@ -72,7 +72,7 @@ public class NearbyRestaurantsPOJO {
         private String name;
         @SerializedName("photos")
         @Expose
-        private List<Photo> photos = null;
+        private List<Photo> photos;
         @SerializedName("place_id")
         @Expose
         private String placeId;
@@ -84,7 +84,7 @@ public class NearbyRestaurantsPOJO {
         private String scope;
         @SerializedName("types")
         @Expose
-        private List<String> types = null;
+        private List<String> types;
         @SerializedName("vicinity")
         @Expose
         private String vicinity;
@@ -103,6 +103,26 @@ public class NearbyRestaurantsPOJO {
         @SerializedName("user_ratings_total")
         @Expose
         private Integer userRatingsTotal;
+
+        public Result(Geometry geometry, String icon, String name, List<Photo> photos,
+                      String placeId, String reference, String scope, List<String> types,
+                      String vicinity, String businessStatus, OpeningHours openingHours,
+                      PlusCode plusCode, Double rating, Integer userRatingsTotal) {
+            this.geometry = geometry;
+            this.icon = icon;
+            this.name = name;
+            this.photos = photos;
+            this.placeId = placeId;
+            this.reference = reference;
+            this.scope = scope;
+            this.types = types;
+            this.vicinity = vicinity;
+            this.businessStatus = businessStatus;
+            this.openingHours = openingHours;
+            this.plusCode = plusCode;
+            this.rating = rating;
+            this.userRatingsTotal = userRatingsTotal;
+        }
 
         public Geometry getGeometry() {
             return geometry;

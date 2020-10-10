@@ -13,40 +13,36 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RestaurantRepository {
+public class NearbyRestaurantsRepository {
 
 
     // private static
-    private static final String TAG = "RestaurantRepository";
-    private static RestaurantRepository RESTAURANT_REPOSITORY;
-
-
-    // public static
-    public static RestaurantRepository getInstance() {
-        Log.d(TAG, "getInstance");
-
-        if (RESTAURANT_REPOSITORY == null) {
-            RESTAURANT_REPOSITORY = new RestaurantRepository();
-        }
-        return RESTAURANT_REPOSITORY;
-    }
-
-
+    private static final String TAG = "NearbyRestaurantsRepo";
+    private static NearbyRestaurantsRepository RESTAURANT_REPOSITORY;
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurants = new MutableLiveData<>();
 
-
     // constructor
-    private RestaurantRepository() {
+    private NearbyRestaurantsRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
+    }
+
+    // public static
+    public static NearbyRestaurantsRepository getInstance() {
+        Log.d(TAG, "getInstance");
+
+        if (RESTAURANT_REPOSITORY == null) {
+            RESTAURANT_REPOSITORY = new NearbyRestaurantsRepository();
+        }
+        return RESTAURANT_REPOSITORY;
     }
 
     public void setNearbyRestaurants(String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        Call<NearbyRestaurantsPOJO> restaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
-        restaurants.enqueue(new Callback<NearbyRestaurantsPOJO>() {
+        Call<NearbyRestaurantsPOJO> nearbyRestaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
+        nearbyRestaurants.enqueue(new Callback<NearbyRestaurantsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<NearbyRestaurantsPOJO> call, @NonNull Response<NearbyRestaurantsPOJO> response) {
                 Log.d(TAG, "setNearbyRestaurants: onResponse");

@@ -1,37 +1,30 @@
 package fr.azhot.go4lunch.view;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.CellListViewBinding;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
+    // private static
     private static final String TAG = "ListViewAdapter";
-    private OnRestaurantClickListener mListener;
-
 
     // variables
     private RequestManager mGlide;
+    private OnRestaurantClickListener mListener;
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mHiddenRestaurants;
 
@@ -53,41 +46,17 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         return mRestaurants;
     }
 
-    public void setRestaurants(List<NearbyRestaurantsPOJO.Result> results) {
+    public void setRestaurants(List<Restaurant> restaurants) {
         Log.d(TAG, "setRestaurants");
 
         mRestaurants.clear();
-
-        for (NearbyRestaurantsPOJO.Result result : results) {
-            if (result.getPhotos() != null) {
-                Restaurant restaurant = new Restaurant(result, null);
-                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                        "key=" + BuildConfig.GOOGLE_API_KEY +
-                        "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
-                        "&maxwidth=400";
-
-                Log.d(TAG, "setRestaurants: " + result.getName() + ", photo : " + photoUrl);
-
-                mGlide.asBitmap()
-                        .load(photoUrl)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                restaurant.setPhoto(resource);
-                                mRestaurants.add(restaurant);
-                                notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                            }
-                        });
-            }
-        }
+        mRestaurants.addAll(restaurants);
+        notifyDataSetChanged();
     }
 
     public void hideRestaurants() {
+        Log.d(TAG, "hideRestaurants");
+
         mHiddenRestaurants.clear();
         mHiddenRestaurants.addAll(mRestaurants);
         mRestaurants.clear();
@@ -95,6 +64,8 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     }
 
     public void showRestaurants() {
+        Log.d(TAG, "showRestaurants");
+
         mRestaurants.addAll(mHiddenRestaurants);
         notifyDataSetChanged();
     }
@@ -137,12 +108,11 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         }
 
         public void onBindData(Restaurant restaurant, RequestManager glide) {
-            NearbyRestaurantsPOJO.Result result = restaurant.getResult();
-            mBinding.cellListViewNameTextView.setText(result.getName());
+            mBinding.cellListViewNameTextView.setText(restaurant.getName());
             // mBinding.distanceTextView.setText(); // todo : calculate distance
-            mBinding.cellListViewVicinityTextView.setText(result.getVicinity());
-            if (result.getOpeningHours() != null) {
-                if (result.getOpeningHours().getOpenNow()) {
+            mBinding.cellListViewVicinityTextView.setText(restaurant.getVicinity());
+            if (restaurant.getOpeningHours() != null) {
+                if (restaurant.getOpeningHours().getOpenNow()) {
                     mBinding.cellListViewOpeningHoursTextView.setText(R.string.open);
                 } else {
                     mBinding.cellListViewOpeningHoursTextView.setText(R.string.closed);
@@ -150,7 +120,9 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
             } else {
                 mBinding.cellListViewOpeningHoursTextView.setText(R.string.info_not_available);
             }
-            mBinding.cellListViewRatingBar.setRating((int) Math.round(result.getRating() / 5 * 3));
+            if (restaurant.getRating() != null) {
+                mBinding.cellListViewRatingBar.setRating((int) Math.round(restaurant.getRating() / 5 * 3));
+            }
 
             // todo : count workmates (hide imageview if none)
 
