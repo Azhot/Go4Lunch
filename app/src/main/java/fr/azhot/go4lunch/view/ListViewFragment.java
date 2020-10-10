@@ -3,7 +3,6 @@ package fr.azhot.go4lunch.view;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,12 +17,9 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 
 import java.io.ByteArrayOutputStream;
 
-import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -132,22 +128,21 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
+        mAppViewModel.getNearbyRestaurantsPOJO().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
             @Override
             public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-                Log.d(TAG, "getNearbyRestaurants: onChanged");
-                if (nearbyRestaurantsPOJO == null) {
-                    // todo : check if connection is available or else show message to user that no nearby restaurants
-                } else {
-                    // todo : bugs if connection was not available on first call then it never gets nearby restaurants
-                    if (mAppViewModel.getPreviousResults().equals(nearbyRestaurantsPOJO.getResults())) {
-                        mAdapter.setRestaurants(mAppViewModel.getRestaurants());
-                    } else {
-                        mAppViewModel.setPreviousResults(nearbyRestaurantsPOJO.getResults());
-                        mAppViewModel.getRestaurants().clear();
-                        createRestaurantsListAndLoadToAdapter(nearbyRestaurantsPOJO);
-                    }
-                }
+                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged: ");
+
+                mAdapter.setRestaurants(mAppViewModel.getRestaurants());
+            }
+        });
+
+        mAppViewModel.getRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+            @Override
+            public void onChanged(Restaurant restaurant) {
+                Log.d(TAG, "getRestaurant: onChanged: ");
+
+                mAdapter.addRestaurant(restaurant);
             }
         });
 
@@ -165,39 +160,5 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                 }
             }
         });
-    }
-
-    private void createRestaurantsListAndLoadToAdapter(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-        Log.d(TAG, "downloadRestaurantsPhotos");
-
-        // todo : compare lists in order to only download what is necessary ?
-
-        for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
-            if (result.getPhotos() != null) {
-                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                        "key=" + BuildConfig.GOOGLE_API_KEY +
-                        "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
-                        "&maxwidth=400";
-
-                Log.d(TAG, "setRestaurants: " + result.getName() + ", photo : " + photoUrl);
-
-                Glide.with(mContext).asBitmap()
-                        .load(photoUrl)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                Restaurant restaurant = new Restaurant(result, resource);
-                                mAppViewModel.getRestaurants().add(restaurant);
-                                mAdapter.getRestaurants().add(restaurant);
-                                mAdapter.notifyItemChanged(mAdapter.getItemCount());
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                            }
-                        });
-            }
-        }
     }
 }

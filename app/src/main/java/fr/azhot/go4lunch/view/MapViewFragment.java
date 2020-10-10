@@ -66,7 +66,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Location mDeviceLastKnownLocation;
     private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
-    private List<NearbyRestaurantsPOJO.Result> mCurrentRestaurants;
+    private List<NearbyRestaurantsPOJO.Result> mCurrentResults;
 
 
     // inherited methods
@@ -94,7 +94,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         super.onActivityCreated(savedInstanceState);
         mAppViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
-        initObserver();
+        initObservers();
     }
 
     @Override
@@ -130,7 +130,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     DEFAULT_ZOOM));
             if (mIsLocationActivated) {
                 mGoogleMap.setMyLocationEnabled(true);
-                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                addRestaurantMarkers(mCurrentResults, mGoogleMap);
             }
         }
     }
@@ -146,6 +146,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //todo : should activate or deactivate the auto animateCamera
                 LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
                 if (mDeviceLastKnownLocation != null) {
                     animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
@@ -156,23 +157,23 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void initObserver() {
-        Log.d(TAG, "initObserver");
+    private void initObservers() {
+        Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
+        mAppViewModel.getNearbyRestaurantsPOJO().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
             @Override
             public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-                Log.d(TAG, "getNearbyRestaurants: onChanged");
+                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
 
                 // todo : if connection was not available on first call then it never gets nearby restaurants
-                if (mCurrentRestaurants == null) {
-                    mCurrentRestaurants = new ArrayList<>();
+                if (mCurrentResults == null) {
+                    mCurrentResults = new ArrayList<>();
                 }
-                mCurrentRestaurants.clear();
+                mCurrentResults.clear();
                 if (nearbyRestaurantsPOJO != null) {
-                    mCurrentRestaurants.addAll(nearbyRestaurantsPOJO.getResults());
+                    mCurrentResults.addAll(nearbyRestaurantsPOJO.getResults());
                 }
-                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                addRestaurantMarkers(mCurrentResults, mGoogleMap);
             }
         });
         mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
@@ -193,8 +194,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
                 if (aBoolean) {
                     mGoogleMap.setMyLocationEnabled(true);
-                    if (mCurrentRestaurants != null) {
-                        addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                    if (mCurrentResults != null) {
+                        addRestaurantMarkers(mCurrentResults, mGoogleMap);
                     } else {
                         // todo : check if connection is available or else show message to user
                     }

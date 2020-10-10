@@ -7,17 +7,17 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.bumptech.glide.RequestManager;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.repository.NearbyRestaurantsRepository;
+import fr.azhot.go4lunch.repository.RestaurantRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
 
 public class AppViewModel extends ViewModel {
@@ -28,64 +28,72 @@ public class AppViewModel extends ViewModel {
 
 
     // variables
-    private final NearbyRestaurantsRepository mNearbyRestaurantsRepository;
+    private final RestaurantRepository mRestaurantRepository;
     private final UserRepository mUserRepository;
-    private List<NearbyRestaurantsPOJO.Result> mPreviousResults;
-    private List<Restaurant> mRestaurants;
     private MutableLiveData<Location> deviceLocation;
     private MutableLiveData<Boolean> isLocationActivated;
 
 
     // constructors
     public AppViewModel() {
-        mNearbyRestaurantsRepository = NearbyRestaurantsRepository.getInstance();
+        mRestaurantRepository = RestaurantRepository.getInstance();
         mUserRepository = UserRepository.getInstance();
-        mPreviousResults = new ArrayList<>();
-        mRestaurants = new ArrayList<>();
         deviceLocation = new MutableLiveData<>();
         isLocationActivated = new MutableLiveData<>();
     }
 
 
     // methods
-    public void setNearbyRestaurants(String location, int radius) {
-        Log.d(TAG, "setNearbyRestaurants");
+    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurantsPOJO() {
+        Log.d(TAG, "getNearbyRestaurantsPOJO");
 
-        mNearbyRestaurantsRepository.setNearbyRestaurants(location, radius);
+        return mRestaurantRepository.getNearbyRestaurantsPOJO();
     }
 
-    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurants() {
-        Log.d(TAG, "getNearbyRestaurants");
+    public void setNearbyRestaurantsPOJO(String location, int radius) {
+        Log.d(TAG, "setNearbyRestaurantsPOJO");
 
-        return mNearbyRestaurantsRepository.getNearbyRestaurants();
+        mRestaurantRepository.setNearbyRestaurantsPOJO(location, radius);
     }
 
     public List<NearbyRestaurantsPOJO.Result> getPreviousResults() {
         Log.d(TAG, "getPreviousResults");
 
-        return mPreviousResults;
+        return mRestaurantRepository.getPreviousResults();
     }
 
     public void setPreviousResults(List<NearbyRestaurantsPOJO.Result> previousResults) {
         Log.d(TAG, "setPreviousResults");
 
-        mPreviousResults = previousResults;
+        mRestaurantRepository.setPreviousResults(previousResults);
+    }
+
+    public LiveData<Restaurant> getRestaurant() {
+        Log.d(TAG, "getRestaurant");
+
+        return mRestaurantRepository.getRestaurant();
     }
 
     public List<Restaurant> getRestaurants() {
         Log.d(TAG, "getRestaurants");
 
-        return mRestaurants;
+        return mRestaurantRepository.getRestaurants();
+    }
+
+    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
+        Log.d(TAG, "setRestaurants");
+
+        mRestaurantRepository.setRestaurants(nearbyRestaurantsPOJO, glide);
     }
 
     public MutableLiveData<Location> getDeviceLocation() {
-        Log.d(TAG, "getLocation");
+        Log.d(TAG, "getDeviceLocation");
 
         return deviceLocation;
     }
 
     public void setDeviceLocation(Location location) {
-        Log.d(TAG, "setLocationActivated");
+        Log.d(TAG, "setDeviceLocation");
 
         deviceLocation.setValue(location);
     }
@@ -121,7 +129,7 @@ public class AppViewModel extends ViewModel {
     }
 
     public void updateUserChosenRestaurant(User user) {
-        Log.d(TAG, "updateUser: " + user.getName());
+        Log.d(TAG, "updateUserChosenRestaurant: " + user.getName());
 
         mUserRepository.updateUserChosenRestaurant(user);
     }

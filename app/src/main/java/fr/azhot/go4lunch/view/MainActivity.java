@@ -21,6 +21,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
@@ -37,6 +38,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
+import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         PermissionsUtils.checkLocationPermissions(this);
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
             launchFragment();
+            initObservers();
         }
     }
 
@@ -214,26 +217,26 @@ public class MainActivity extends AppCompatActivity {
     // configuring nav drawer header
     private void setUpDrawerWithUserDetails() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        AppCompatImageView userPicture = mBinding.mainNavView
-                .getHeaderView(0)
-                .findViewById(R.id.drawer_header_user_picture);
-        Glide.with(this)
-                // todo : add a "no image" picture here instead of null
-                .load((currentUser != null)
-                        ? currentUser.getPhotoUrl()
-                        : null)
-                .circleCrop()
-                .into(userPicture);
+        if (currentUser != null) {
+            AppCompatImageView userPicture = mBinding.mainNavView
+                    .getHeaderView(0)
+                    .findViewById(R.id.drawer_header_user_picture);
+            Glide.with(this)
+                    // todo : add a "no image" picture here instead of null
+                    .load((currentUser.getPhotoUrl()))
+                    .circleCrop()
+                    .into(userPicture);
 
-        AppCompatTextView userName = mBinding.mainNavView
-                .getHeaderView(0)
-                .findViewById(R.id.drawer_header_user_name);
-        userName.setText(currentUser.getDisplayName());
+            AppCompatTextView userName = mBinding.mainNavView
+                    .getHeaderView(0)
+                    .findViewById(R.id.drawer_header_user_name);
+            userName.setText(currentUser.getDisplayName());
 
-        AppCompatTextView userEmail = mBinding.mainNavView
-                .getHeaderView(0)
-                .findViewById(R.id.drawer_header_user_email);
-        userEmail.setText(currentUser.getEmail());
+            AppCompatTextView userEmail = mBinding.mainNavView
+                    .getHeaderView(0)
+                    .findViewById(R.id.drawer_header_user_email);
+            userEmail.setText(currentUser.getEmail());
+        }
     }
 
     private void setUpBottomNavigation() {
@@ -300,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
                     mAppViewModel.setDeviceLocation(currentLocation);
                     if (mDeviceLastKnownLocation == null || mDeviceLastKnownLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
                         mDeviceLastKnownLocation = currentLocation;
-                        mAppViewModel.setNearbyRestaurants(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                        mAppViewModel.setNearbyRestaurantsPOJO(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
                     }
                 }
 
@@ -330,5 +333,26 @@ public class MainActivity extends AppCompatActivity {
         } else {
             PermissionsUtils.checkLocationPermissions(this);
         }
+    }
+
+    private void initObservers() {
+        Log.d(TAG, "initObservers");
+
+        mAppViewModel.getNearbyRestaurantsPOJO().observe(this, new Observer<NearbyRestaurantsPOJO>() {
+            @Override
+            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
+                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
+                if (nearbyRestaurantsPOJO == null) {
+                    // todo : check if connection is available or else show message to user that no nearby restaurants
+                } else {
+                    // todo : bugs if connection was not available on first call then it never gets nearby restaurants
+                    if (!mAppViewModel.getPreviousResults().equals(nearbyRestaurantsPOJO.getResults())) {
+                        mAppViewModel.setPreviousResults(nearbyRestaurantsPOJO.getResults());
+                        mAppViewModel.getRestaurants().clear();
+                        mAppViewModel.setRestaurants(nearbyRestaurantsPOJO, Glide.with(MainActivity.this));
+                    }
+                }
+            }
+        });
     }
 }

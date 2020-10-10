@@ -40,6 +40,13 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     }
 
     // methods
+    public void addRestaurant(Restaurant restaurant) {
+        if (!mRestaurants.contains(restaurant)) {
+            mRestaurants.add(restaurant);
+            notifyItemChanged(mRestaurants.size());
+        }
+    }
+
     public List<Restaurant> getRestaurants() {
         Log.d(TAG, "getRestaurants");
 
