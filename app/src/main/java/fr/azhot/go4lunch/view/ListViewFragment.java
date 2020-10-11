@@ -102,10 +102,12 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         intent.putExtra(RESTAURANT_NAME_EXTRA, restaurant.getName());
         intent.putExtra(RESTAURANT_VICINITY_EXTRA, restaurant.getVicinity());
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        restaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] byteArray = stream.toByteArray();
-        intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
+        if (restaurant.getPhoto() != null) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            restaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
+        }
 
         int restaurantRating = ((int) Math.round(restaurant.getRating() / 5 * 3));
         intent.putExtra(RESTAURANT_RATING_EXTRA, restaurantRating);

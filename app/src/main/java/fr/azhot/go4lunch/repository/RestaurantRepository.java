@@ -14,6 +14,8 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -99,6 +101,13 @@ public class RestaurantRepository {
     public List<Restaurant> getRestaurants() {
         Log.d(TAG, "getRestaurants");
 
+        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
+            @Override
+            public int compare(Restaurant o1, Restaurant o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
         return mRestaurants;
     }
 
@@ -106,6 +115,7 @@ public class RestaurantRepository {
         Log.d(TAG, "setRestaurants");
 
         // todo : compare lists in order to only download what is necessary ?
+        // todo : order list Alphabetically at set-up
 
         mRestaurants.clear();
         for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
@@ -132,6 +142,11 @@ public class RestaurantRepository {
 
                             }
                         });
+            } else {
+                // todo: add standard "no photo" image
+                Restaurant restaurant = new Restaurant(result, null);
+                mRestaurants.add(restaurant);
+                mRestaurant.setValue(restaurant);
             }
         }
     }

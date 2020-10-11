@@ -135,10 +135,12 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         mBinding.restaurantDetailsNameTextView.setText(mRestaurantName);
         mBinding.restaurantDetailsVicinity.setText(mRestaurantVicinity);
-        Glide.with(this)
-                .load(mRestaurantPhoto)
-                .into(mBinding.restaurantDetailsPhotoImageView);
-        mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
+        if (mRestaurantPhoto != null) {
+            Glide.with(this)
+                    .load(mRestaurantPhoto)
+                    .into(mBinding.restaurantDetailsPhotoImageView);
+            mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
+        }
     }
 
     private void setUpFab(String restaurantId, User user) {

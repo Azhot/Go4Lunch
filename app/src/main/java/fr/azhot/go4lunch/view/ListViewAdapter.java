@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import fr.azhot.go4lunch.R;
@@ -43,7 +45,13 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     public void addRestaurant(Restaurant restaurant) {
         if (!mRestaurants.contains(restaurant)) {
             mRestaurants.add(restaurant);
-            notifyItemChanged(mRestaurants.size());
+            Collections.sort(mRestaurants, new Comparator<Restaurant>() {
+                @Override
+                public int compare(Restaurant o1, Restaurant o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            notifyDataSetChanged();
         }
     }
 
