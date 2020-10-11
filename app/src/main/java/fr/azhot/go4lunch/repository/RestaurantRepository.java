@@ -115,50 +115,63 @@ public class RestaurantRepository {
     public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
         Log.d(TAG, "setRestaurants");
 
-        // todo : compare lists in order to only download what is necessary ?
-        // todo : order list Alphabetically at set-up
-
+        final List<Restaurant> previousSearchRestaurants = new ArrayList<>(mRestaurants);
         mRestaurants.clear();
+        boolean isExisting;
+
         for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
-            if (result.getPhotos() != null) {
-                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                        "key=" + BuildConfig.GOOGLE_API_KEY +
-                        "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
-                        "&maxwidth=400";
 
-                Log.d(TAG, "setRestaurants: " + result.getName() + ", photo : " + photoUrl);
+            isExisting = false;
+            for (Restaurant restaurant : previousSearchRestaurants) {
+                if (restaurant.getPlaceId().equals(result.getPlaceId())) {
+                    mRestaurants.add(restaurant);
+                    isExisting = true;
+                    break;
+                }
+            }
 
-                glide.asBitmap()
-                        .load(photoUrl)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                Restaurant restaurant = new Restaurant(result, resource);
-                                mRestaurants.add(restaurant);
-                                mRestaurant.setValue(restaurant);
-                            }
+            if (!isExisting) {
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                if (result.getPhotos() != null) {
+                    String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                            "key=" + BuildConfig.GOOGLE_API_KEY +
+                            "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
+                            "&maxwidth=400";
 
-                            }
-                        });
-            } else {
-                glide.asBitmap()
-                        .load(R.drawable.ic_no_image)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                Restaurant restaurant = new Restaurant(result, resource);
-                                mRestaurants.add(restaurant);
-                                mRestaurant.setValue(restaurant);
-                            }
+                    Log.d(TAG, "setRestaurants: " + result.getName() + ", photo : " + photoUrl);
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
+                    glide.asBitmap()
+                            .load(photoUrl)
+                            .into(new CustomTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                    Restaurant restaurant = new Restaurant(result, resource);
+                                    mRestaurants.add(restaurant);
+                                    mRestaurant.setValue(restaurant);
+                                }
 
-                            }
-                        });
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                                }
+                            });
+                } else {
+                    glide.asBitmap()
+                            .load(R.drawable.ic_no_image)
+                            .into(new CustomTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                    Restaurant restaurant = new Restaurant(result, resource);
+                                    mRestaurants.add(restaurant);
+                                    mRestaurant.setValue(restaurant);
+                                }
+
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                                }
+                            });
+                }
             }
         }
     }
