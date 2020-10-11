@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             launchFragment();
+            initObservers();
         }
     }
 

@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -143,10 +144,21 @@ public class RestaurantRepository {
                             }
                         });
             } else {
-                // todo: add standard "no photo" image
-                Restaurant restaurant = new Restaurant(result, null);
-                mRestaurants.add(restaurant);
-                mRestaurant.setValue(restaurant);
+                glide.asBitmap()
+                        .load(R.drawable.ic_no_image)
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                Restaurant restaurant = new Restaurant(result, resource);
+                                mRestaurants.add(restaurant);
+                                mRestaurant.setValue(restaurant);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
             }
         }
     }
