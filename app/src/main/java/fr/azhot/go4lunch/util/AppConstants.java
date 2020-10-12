@@ -16,4 +16,5 @@ public abstract class AppConstants {
     public static final String RESTAURANT_PHOTO_EXTRA = "restaurantPhoto";
     public static final String RESTAURANT_RATING_EXTRA = "restaurantRating";
     public static final String CHOSEN_RESTAURANT_NAME_FIELD = "chosenRestaurantName";
+    public static final String CHOSEN_RESTAURANT_ID_FIELD = "chosenRestaurantId";
 }

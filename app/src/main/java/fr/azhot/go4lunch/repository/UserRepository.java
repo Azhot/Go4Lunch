@@ -62,7 +62,7 @@ public class UserRepository {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "createUser: onFailure");
+                        Log.e(TAG, "createUser: onFailure" + e.getMessage());
                     }
                 });
     }

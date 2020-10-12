@@ -11,17 +11,21 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_ID_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
@@ -56,6 +60,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         setContentView(mBinding.getRoot());
         retrieveDataFromIntent();
         updateUIWithRestaurantDetails();
+        setUpRecyclerView();
     }
 
 
@@ -154,5 +159,19 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         } else {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
         }
+    }
+
+    private void setUpRecyclerView() {
+        mBinding.restaurantDetailsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mBinding.restaurantDetailsRecyclerView.setAdapter(new RestaurantDetailsAdapter(
+                generateOptionsForAdapter(mAppViewModel.getUsersQuery().whereEqualTo(CHOSEN_RESTAURANT_ID_FIELD, mRestaurantId)),
+                Glide.with(this)));
+    }
+
+    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query) {
+        return new FirestoreRecyclerOptions.Builder<User>()
+                .setQuery(query, User.class)
+                .setLifecycleOwner(this)
+                .build();
     }
 }
