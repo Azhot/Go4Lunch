@@ -1,5 +1,7 @@
 package fr.azhot.go4lunch.view;
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +28,10 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
     // variables
     private RequestManager mGlide;
-    private OnRestaurantClickListener mListener;
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mHiddenRestaurants;
+    private Location mDeviceLocation;
+    private OnRestaurantClickListener mListener;
 
 
     // constructor
@@ -38,20 +41,15 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         this.mGlide = glide;
         this.mRestaurants = new ArrayList<>();
         this.mHiddenRestaurants = new ArrayList<>();
+        this.mDeviceLocation = new Location(LocationManager.GPS_PROVIDER);
         this.mListener = listener;
     }
 
     // methods
     public void setRestaurants(List<Restaurant> restaurants) {
         mRestaurants.clear();
-        Collections.sort(restaurants, new Comparator<Restaurant>() {
-            @Override
-            public int compare(Restaurant o1, Restaurant o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
         mRestaurants.addAll(restaurants);
-        notifyDataSetChanged();
+        sortRestaurants();
     }
 
     public List<Restaurant> getRestaurants() {
@@ -76,6 +74,21 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         notifyDataSetChanged();
     }
 
+    public void setDeviceLocation(Location location) {
+        mDeviceLocation = location;
+        sortRestaurants();
+    }
+
+    private void sortRestaurants() {
+        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
+            @Override
+            public int compare(Restaurant o1, Restaurant o2) {
+                return Float.compare(o1.getLocation().distanceTo(mDeviceLocation), o2.getLocation().distanceTo(mDeviceLocation));
+            }
+        });
+        notifyDataSetChanged();
+    }
+
     // inherited methods
     @NonNull
     @Override
@@ -85,7 +98,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
-        holder.onBindData(mRestaurants.get(position), mGlide);
+        holder.onBindData(mRestaurants.get(position), mGlide, mDeviceLocation);
     }
 
     @Override
@@ -113,9 +126,10 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
             binding.getRoot().setOnClickListener(this);
         }
 
-        public void onBindData(Restaurant restaurant, RequestManager glide) {
+        public void onBindData(Restaurant restaurant, RequestManager glide, Location deviceLocation) {
             mBinding.cellListViewNameTextView.setText(restaurant.getName());
-            // mBinding.distanceTextView.setText(); // todo : calculate distance
+            String distance = Math.round(deviceLocation.distanceTo(restaurant.getLocation())) + "m";
+            mBinding.cellListViewDistanceTextView.setText(distance);
             mBinding.cellListViewVicinityTextView.setText(restaurant.getVicinity());
             if (restaurant.getOpeningHours() != null) {
                 if (restaurant.getOpeningHours().getOpenNow()) {

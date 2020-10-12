@@ -2,6 +2,8 @@ package fr.azhot.go4lunch.repository;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -110,6 +112,10 @@ public class RestaurantRepository {
             }
 
             if (!isExisting) {
+                Location location = new Location(LocationManager.GPS_PROVIDER);
+                location.setLatitude(result.getGeometry().getLocation().getLat());
+                location.setLongitude(result.getGeometry().getLocation().getLng());
+
                 if (result.getPhotos() != null) {
                     String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
                             "key=" + BuildConfig.GOOGLE_API_KEY +
@@ -123,7 +129,7 @@ public class RestaurantRepository {
                             .into(new CustomTarget<Bitmap>() {
                                 @Override
                                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    Restaurant restaurant = new Restaurant(result, resource);
+                                    Restaurant restaurant = new Restaurant(result, resource, location);
                                     mExistingRestaurants.add(restaurant);
                                     mRestaurant.setValue(restaurant);
                                 }
@@ -141,7 +147,7 @@ public class RestaurantRepository {
                             .into(new CustomTarget<Bitmap>() {
                                 @Override
                                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    Restaurant restaurant = new Restaurant(result, resource);
+                                    Restaurant restaurant = new Restaurant(result, resource, location);
                                     mExistingRestaurants.add(restaurant);
                                     mRestaurant.setValue(restaurant);
                                 }

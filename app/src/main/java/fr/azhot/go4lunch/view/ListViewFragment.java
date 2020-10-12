@@ -3,6 +3,7 @@ package fr.azhot.go4lunch.view;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -150,6 +151,13 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                     Log.d(TAG, "hideRestaurants");
                     mAdapter.hideRestaurants();
                 }
+            }
+        });
+
+        mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+            @Override
+            public void onChanged(Location location) {
+                mAdapter.setDeviceLocation(location);
             }
         });
     }

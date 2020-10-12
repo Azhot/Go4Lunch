@@ -208,9 +208,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void animateCamera(Location location, float zoom, GoogleMap googleMap) {
         Log.d(TAG, "moveCamera");
 
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(location.getLatitude(), location.getLongitude()),
-                zoom));
+        if (googleMap != null) {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(location.getLatitude(), location.getLongitude()),
+                    zoom));
+        }
     }
 
     private void addRestaurantMarkers(List<Restaurant> restaurants, GoogleMap googleMap) {
