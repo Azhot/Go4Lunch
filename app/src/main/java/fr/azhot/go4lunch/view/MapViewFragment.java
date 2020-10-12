@@ -24,12 +24,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
@@ -66,7 +65,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Location mDeviceLastKnownLocation;
     private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
-    private List<NearbyRestaurantsPOJO.Result> mCurrentResults;
 
 
     // inherited methods
@@ -130,7 +128,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     DEFAULT_ZOOM));
             if (mIsLocationActivated) {
                 mGoogleMap.setMyLocationEnabled(true);
-                addRestaurantMarkers(mCurrentResults, mGoogleMap);
+                addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
             }
         }
     }
@@ -142,7 +140,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
-        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,22 +158,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurantsPOJO().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
+        mAppViewModel.getRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
-            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
+            public void onChanged(Restaurant restaurant) {
+                Log.d(TAG, "getRestaurant");
 
-                // todo : if connection was not available on first call then it never gets nearby restaurants
-                if (mCurrentResults == null) {
-                    mCurrentResults = new ArrayList<>();
-                }
-                mCurrentResults.clear();
-                if (nearbyRestaurantsPOJO != null) {
-                    mCurrentResults.addAll(nearbyRestaurantsPOJO.getResults());
-                }
-                addRestaurantMarkers(mCurrentResults, mGoogleMap);
+                addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
             }
         });
+
         mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
@@ -185,6 +176,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
             }
         });
+
         mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
@@ -194,11 +186,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
                 if (aBoolean) {
                     mGoogleMap.setMyLocationEnabled(true);
-                    if (mCurrentResults != null) {
-                        addRestaurantMarkers(mCurrentResults, mGoogleMap);
-                    } else {
-                        // todo : check if connection is available or else show message to user
-                    }
+                    // todo : should check if connection is available or else show message to user
+                    addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
                 } else {
                     mGoogleMap.setMyLocationEnabled(false);
                     mGoogleMap.clear();
@@ -224,29 +213,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 zoom));
     }
 
-    private void addRestaurantMarkers(List<NearbyRestaurantsPOJO.Result> restaurants, GoogleMap googleMap) {
+    private void addRestaurantMarkers(List<Restaurant> restaurants, GoogleMap googleMap) {
         Log.d(TAG, "addRestaurantMarkers");
 
-        if (restaurants != null) {
-            // todo : markers color should be orange with
-            //  dark-orange knife and fork icon inside.
-            //  Color should change to light green and
-            //  cutlery in white when at least one workmate
-            //  confirms going to the corresponding restaurant
-            for (NearbyRestaurantsPOJO.Result result : restaurants) {
+        if (restaurants != null && googleMap != null) {
+            // todo : adapt markers as project requires
+            googleMap.clear();
+            for (Restaurant restaurant : restaurants) {
                 MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.title(result.getName());
-                markerOptions.position(new LatLng(result.getGeometry().getLocation().getLat(), result.getGeometry().getLocation().getLng()));
-
-                if (googleMap != null) {
-                    googleMap.addMarker(markerOptions);
-                } else {
-                    Log.e(TAG, "addRestaurantMarkers: GoogleMap is null !");
-                    return;
-                }
+                markerOptions.title(restaurant.getName());
+                markerOptions.position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()));
+                googleMap.addMarker(markerOptions);
             }
-        } else {
-            Log.e(TAG, "addRestaurantMarkers: List<NearbyRestaurantsPOJO.Result> is null !");
         }
     }
 

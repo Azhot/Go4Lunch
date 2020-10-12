@@ -56,34 +56,20 @@ public class AppViewModel extends ViewModel {
         mRestaurantRepository.setNearbyRestaurantsPOJO(location, radius);
     }
 
-    public List<NearbyRestaurantsPOJO.Result> getPreviousResults() {
-        Log.d(TAG, "getPreviousResults");
-
-        return mRestaurantRepository.getPreviousResults();
-    }
-
-    public void setPreviousResults(List<NearbyRestaurantsPOJO.Result> previousResults) {
-        Log.d(TAG, "setPreviousResults");
-
-        mRestaurantRepository.setPreviousResults(previousResults);
-    }
-
     public LiveData<Restaurant> getRestaurant() {
         Log.d(TAG, "getRestaurant");
 
         return mRestaurantRepository.getRestaurant();
     }
 
-    public List<Restaurant> getRestaurants() {
-        Log.d(TAG, "getRestaurants");
-
-        return mRestaurantRepository.getRestaurants();
-    }
-
     public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
         Log.d(TAG, "setRestaurants");
 
         mRestaurantRepository.setRestaurants(nearbyRestaurantsPOJO, glide);
+    }
+
+    public List<Restaurant> getExistingRestaurants() {
+        return mRestaurantRepository.getExistingRestaurants();
     }
 
     public MutableLiveData<Location> getDeviceLocation() {

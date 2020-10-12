@@ -21,7 +21,6 @@ import com.bumptech.glide.Glide;
 import java.io.ByteArrayOutputStream;
 
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -130,21 +129,12 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurantsPOJO().observe(getViewLifecycleOwner(), new Observer<NearbyRestaurantsPOJO>() {
-            @Override
-            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged: ");
-
-                mAdapter.setRestaurants(mAppViewModel.getRestaurants());
-            }
-        });
-
         mAppViewModel.getRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
             public void onChanged(Restaurant restaurant) {
                 Log.d(TAG, "getRestaurant: onChanged: ");
 
-                mAdapter.addRestaurant(restaurant);
+                mAdapter.setRestaurants(mAppViewModel.getExistingRestaurants());
             }
         });
 

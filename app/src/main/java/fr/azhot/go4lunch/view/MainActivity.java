@@ -343,15 +343,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
                 Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
+
                 if (nearbyRestaurantsPOJO == null) {
                     // todo : check if connection is available or else show message to user that no nearby restaurants
                 } else {
                     // todo : bugs if connection was not available on first call then it never gets nearby restaurants
-                    if (!mAppViewModel.getPreviousResults().equals(nearbyRestaurantsPOJO.getResults())) {
-                        mAppViewModel.setPreviousResults(nearbyRestaurantsPOJO.getResults());
-                        mAppViewModel.getRestaurants().clear();
-                        mAppViewModel.setRestaurants(nearbyRestaurantsPOJO, Glide.with(MainActivity.this));
-                    }
+                    mAppViewModel.setRestaurants(nearbyRestaurantsPOJO, Glide.with(MainActivity.this));
                 }
             }
         });

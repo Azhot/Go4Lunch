@@ -42,17 +42,16 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     }
 
     // methods
-    public void addRestaurant(Restaurant restaurant) {
-        if (!mRestaurants.contains(restaurant)) {
-            mRestaurants.add(restaurant);
-            Collections.sort(mRestaurants, new Comparator<Restaurant>() {
-                @Override
-                public int compare(Restaurant o1, Restaurant o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
-            notifyDataSetChanged();
-        }
+    public void setRestaurants(List<Restaurant> restaurants) {
+        mRestaurants.clear();
+        Collections.sort(restaurants, new Comparator<Restaurant>() {
+            @Override
+            public int compare(Restaurant o1, Restaurant o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        mRestaurants.addAll(restaurants);
+        notifyDataSetChanged();
     }
 
     public List<Restaurant> getRestaurants() {
@@ -61,18 +60,9 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         return mRestaurants;
     }
 
-    public void setRestaurants(List<Restaurant> restaurants) {
-        Log.d(TAG, "setRestaurants");
-
-        mRestaurants.clear();
-        mRestaurants.addAll(restaurants);
-        notifyDataSetChanged();
-    }
-
     public void hideRestaurants() {
         Log.d(TAG, "hideRestaurants");
 
-        mHiddenRestaurants.clear();
         mHiddenRestaurants.addAll(mRestaurants);
         mRestaurants.clear();
         notifyDataSetChanged();
@@ -82,6 +72,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         Log.d(TAG, "showRestaurants");
 
         mRestaurants.addAll(mHiddenRestaurants);
+        mHiddenRestaurants.clear();
         notifyDataSetChanged();
     }
 
@@ -141,7 +132,6 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
             // todo : count workmates (hide imageview if none)
 
-            // todo : add a "no-image" icon if null
             glide.load(restaurant.getPhoto())
                     .into(mBinding.cellListViewPhotoImageView);
         }

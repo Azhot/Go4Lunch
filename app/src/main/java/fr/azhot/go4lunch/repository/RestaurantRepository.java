@@ -14,8 +14,6 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -40,8 +38,7 @@ public class RestaurantRepository {
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurantsPOJO;
     private final MutableLiveData<Restaurant> mRestaurant;
-    private List<Restaurant> mRestaurants;
-    private List<NearbyRestaurantsPOJO.Result> mPreviousResults;
+    private List<Restaurant> mExistingRestaurants;
 
 
     // constructor
@@ -49,8 +46,7 @@ public class RestaurantRepository {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
         mNearbyRestaurantsPOJO = new MutableLiveData<>();
         mRestaurant = new MutableLiveData<>();
-        mRestaurants = new ArrayList<>();
-        mPreviousResults = new ArrayList<>();
+        mExistingRestaurants = new ArrayList<>();
     }
 
 
@@ -99,46 +95,28 @@ public class RestaurantRepository {
         return mRestaurant;
     }
 
-    public List<Restaurant> getRestaurants() {
-        Log.d(TAG, "getRestaurants");
-
-        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
-            @Override
-            public int compare(Restaurant o1, Restaurant o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        return mRestaurants;
-    }
-
     public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
         Log.d(TAG, "setRestaurants");
 
-        final List<Restaurant> previousSearchRestaurants = new ArrayList<>(mRestaurants);
-        mRestaurants.clear();
         boolean isExisting;
 
         for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
-
             isExisting = false;
-            for (Restaurant restaurant : previousSearchRestaurants) {
+            for (Restaurant restaurant : mExistingRestaurants) {
                 if (restaurant.getPlaceId().equals(result.getPlaceId())) {
-                    mRestaurants.add(restaurant);
                     isExisting = true;
                     break;
                 }
             }
 
             if (!isExisting) {
-
                 if (result.getPhotos() != null) {
                     String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
                             "key=" + BuildConfig.GOOGLE_API_KEY +
                             "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
                             "&maxwidth=400";
 
-                    Log.d(TAG, "setRestaurants: " + result.getName() + ", photo : " + photoUrl);
+                    Log.d(TAG, "setRestaurants: " + result.getName() + ", downloaded photo : " + photoUrl);
 
                     glide.asBitmap()
                             .load(photoUrl)
@@ -146,7 +124,7 @@ public class RestaurantRepository {
                                 @Override
                                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                                     Restaurant restaurant = new Restaurant(result, resource);
-                                    mRestaurants.add(restaurant);
+                                    mExistingRestaurants.add(restaurant);
                                     mRestaurant.setValue(restaurant);
                                 }
 
@@ -156,13 +134,15 @@ public class RestaurantRepository {
                                 }
                             });
                 } else {
+                    Log.d(TAG, "setRestaurants: " + result.getName() + ", no photo");
+
                     glide.asBitmap()
                             .load(R.drawable.ic_no_image)
                             .into(new CustomTarget<Bitmap>() {
                                 @Override
                                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                                     Restaurant restaurant = new Restaurant(result, resource);
-                                    mRestaurants.add(restaurant);
+                                    mExistingRestaurants.add(restaurant);
                                     mRestaurant.setValue(restaurant);
                                 }
 
@@ -176,15 +156,7 @@ public class RestaurantRepository {
         }
     }
 
-    public List<NearbyRestaurantsPOJO.Result> getPreviousResults() {
-        Log.d(TAG, "getPreviousResults");
-
-        return mPreviousResults;
-    }
-
-    public void setPreviousResults(List<NearbyRestaurantsPOJO.Result> previousResults) {
-        Log.d(TAG, "setPreviousResults");
-
-        mPreviousResults = previousResults;
+    public List<Restaurant> getExistingRestaurants() {
+        return mExistingRestaurants;
     }
 }
