@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
@@ -27,12 +27,12 @@ import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
-import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_ID_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
 
@@ -71,31 +71,28 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
 
-                if ((mRestaurantId.equals(mCurrentUser.getChosenRestaurantId()))) {
+                if ((mRestaurantId.equals(mCurrentUser.getSelectedRestaurantId()))) {
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
-                    mCurrentUser.setChosenRestaurantId(null);
-                    mCurrentUser.setChosenRestaurantName(null);
+                    mCurrentUser.setSelectedRestaurantId(null);
+                    mCurrentUser.setSelectedRestaurantName(null);
                 } else {
                     // change button to activated
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
-                    mCurrentUser.setChosenRestaurantId(mRestaurantId);
-                    mCurrentUser.setChosenRestaurantName(mRestaurantName);
+                    mCurrentUser.setSelectedRestaurantId(mRestaurantId);
+                    mCurrentUser.setSelectedRestaurantName(mRestaurantName);
                 }
 
-                mAppViewModel.updateUserChosenRestaurant(mCurrentUser)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                mAppViewModel.createOrUpdateUser(mCurrentUser)
+                        .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                             @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d(TAG, "updateUserChosenRestaurant: onSuccess");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "updateUserChosenRestaurant: onFailure");
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "createOrUpdateUser: onSuccess");
+                                } else {
+                                    Log.d(TAG, "createOrUpdateUser: onFailure");
+                                }
                             }
                         });
-
                 break;
             case R.id.restaurant_details_call_button:
                 // intent to phone with restaurant number
@@ -122,16 +119,21 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() != null) {
-            mAppViewModel.getUser(mAuth.getCurrentUser().getUid()).addOnSuccessListener(this, new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    Log.d(TAG, "onSuccess");
-                    mCurrentUser = documentSnapshot.toObject(User.class);
-                    if (mCurrentUser != null) {
-                        setUpFab(mRestaurantId, mCurrentUser);
-                    }
-                }
-            });
+            mAppViewModel.getUser(mAuth.getCurrentUser().getUid())
+                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "getUser: onSuccess");
+                                mCurrentUser = task.getResult().toObject(User.class);
+                                if (mCurrentUser != null) {
+                                    setUpFab(mRestaurantId, mCurrentUser);
+                                }
+                            } else {
+                                Log.d(TAG, "getUser: onFailure");
+                            }
+                        }
+                    });
         }
     }
 
@@ -165,10 +167,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private void setUpFab(String restaurantId, User user) {
         Log.d(TAG, "setUpFab");
 
-        Log.d(TAG, "setUpFab: restaurantId = " + restaurantId);
-        Log.d(TAG, "setUpFab: getChosenRestaurantId = " + user.getChosenRestaurantId());
-
-        if (restaurantId.equals(user.getChosenRestaurantId())) {
+        if (restaurantId.equals(user.getSelectedRestaurantId())) {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
         } else {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
@@ -178,7 +177,9 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private void setUpRecyclerView() {
         mBinding.restaurantDetailsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mBinding.restaurantDetailsRecyclerView.setAdapter(new RestaurantDetailsAdapter(
-                generateOptionsForAdapter(mAppViewModel.getUsersQuery().whereEqualTo(CHOSEN_RESTAURANT_ID_FIELD, mRestaurantId)),
+                generateOptionsForAdapter(mAppViewModel
+                        .getUsersQuery()
+                        .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, mRestaurantId)),
                 Glide.with(this)));
     }
 

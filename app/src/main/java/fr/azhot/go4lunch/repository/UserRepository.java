@@ -7,13 +7,11 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.SetOptions;
 
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 
-import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_ID_FIELD;
-import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_NAME_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.USER_COLLECTION_NAME;
 
 public class UserRepository {
@@ -48,8 +46,8 @@ public class UserRepository {
 
 
     // methods
-    public Task<Void> createUser(User user) {
-        Log.d(TAG, "createUser");
+    public Task<Void> createOrUpdateUser(User user) {
+        Log.d(TAG, "createOrUpdateUser");
 
         return mCollectionReference
                 .document(user.getUid())
@@ -70,18 +68,10 @@ public class UserRepository {
         return mCollectionReference;
     }
 
-    public Task<Void> updateUserChosenRestaurant(User user) {
-        Log.d(TAG, "updateUserChosenRestaurant");
-
-        return mCollectionReference
-                .document(user.getUid())
-                .set(user, SetOptions.mergeFields(CHOSEN_RESTAURANT_ID_FIELD, CHOSEN_RESTAURANT_NAME_FIELD));
-    }
-
     public Query loadWorkmatesInRestaurants(Restaurant restaurant) {
         Log.d(TAG, "loadWorkmatesInRestaurants");
 
         return mCollectionReference
-                .whereEqualTo(CHOSEN_RESTAURANT_ID_FIELD, restaurant.getPlaceId());
+                .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, restaurant.getPlaceId());
     }
 }

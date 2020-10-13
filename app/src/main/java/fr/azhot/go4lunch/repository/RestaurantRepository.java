@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -121,6 +122,20 @@ public class RestaurantRepository {
 
                 glide.asBitmap()
                         .load("https://source.unsplash.com/random/400x400?sig=" + i++) // todo : REPLACE AT THE END OF PROJECT
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                restaurant.setPhoto(resource);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+            } else {
+                glide.asBitmap()
+                        .load(R.drawable.ic_no_image)
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {

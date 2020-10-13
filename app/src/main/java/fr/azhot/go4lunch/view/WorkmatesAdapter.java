@@ -57,7 +57,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
                     .into(mBinding.cellWorkmatesProfilePicture);
 
             String firstName = user.getName().split(" ")[0];
-            String restaurantName = user.getChosenRestaurantName();
+            String restaurantName = user.getSelectedRestaurantName();
             String stringHasDecided = mBinding
                     .getRoot()
                     .getContext()
@@ -69,7 +69,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
                     .getResources()
                     .getString(R.string.has_not_decided, firstName);
 
-            if (user.getChosenRestaurantId() != null) {
+            if (user.getSelectedRestaurantId() != null) {
                 mBinding.cellWorkmatesTextView.setText(stringHasDecided);
                 mBinding.cellWorkmatesTextView.setTextAppearance(
                         mBinding.getRoot().getContext(),

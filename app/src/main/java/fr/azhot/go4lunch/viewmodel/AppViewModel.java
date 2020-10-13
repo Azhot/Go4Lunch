@@ -92,10 +92,10 @@ public class AppViewModel extends ViewModel {
         isLocationActivated.setValue(b);
     }
 
-    public Task<Void> createUser(User user) {
-        Log.d(TAG, "createUser");
+    public Task<Void> createOrUpdateUser(User user) {
+        Log.d(TAG, "createOrUpdateUser");
 
-        return mUserRepository.createUser(user);
+        return mUserRepository.createOrUpdateUser(user);
     }
 
     public Task<DocumentSnapshot> getUser(String uid) {
@@ -108,12 +108,6 @@ public class AppViewModel extends ViewModel {
         Log.d(TAG, "getUsersQuery");
 
         return mUserRepository.getUsersQuery();
-    }
-
-    public Task<Void> updateUserChosenRestaurant(User user) {
-        Log.d(TAG, "updateUserChosenRestaurant");
-
-        return mUserRepository.updateUserChosenRestaurant(user);
     }
 
     public Query loadWorkmatesInRestaurants(Restaurant restaurant) {

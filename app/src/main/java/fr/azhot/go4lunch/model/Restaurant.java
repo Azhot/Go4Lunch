@@ -19,16 +19,6 @@ public class Restaurant extends NearbyRestaurantsPOJO.Result {
         this.mWorkmatesJoining = 0;
     }
 
-    public Restaurant(NearbyRestaurantsPOJO.Result result, Bitmap photo, Location location) {
-        super(result.getGeometry(), result.getIcon(), result.getName(), result.getPhotos(),
-                result.getPlaceId(), result.getReference(), result.getScope(), result.getTypes(),
-                result.getVicinity(), result.getBusinessStatus(), result.getOpeningHours(),
-                result.getPlusCode(), result.getRating(), result.getUserRatingsTotal());
-        this.mPhoto = photo;
-        this.mLocation = location;
-        this.mWorkmatesJoining = 0;
-    }
-
     public Bitmap getPhoto() {
         return mPhoto;
     }

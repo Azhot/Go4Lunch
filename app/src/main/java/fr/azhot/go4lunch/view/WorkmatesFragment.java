@@ -21,7 +21,7 @@ import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
-import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_NAME_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
 public class WorkmatesFragment extends Fragment {
 
@@ -66,7 +66,7 @@ public class WorkmatesFragment extends Fragment {
         mBinding.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         mBinding.workmatesRecyclerView.setAdapter(new WorkmatesAdapter(
                 generateOptionsForAdapter(mAppViewModel.getUsersQuery()
-                        .orderBy(CHOSEN_RESTAURANT_NAME_FIELD, Query.Direction.DESCENDING)),
+                        .orderBy(SELECTED_RESTAURANT_ID_FIELD, Query.Direction.DESCENDING)),
                 Glide.with(this)));
 
         return mBinding.getRoot();

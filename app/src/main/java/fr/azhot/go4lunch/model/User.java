@@ -9,9 +9,9 @@ public class User {
     private String email;
     private String urlPicture;
     @Nullable
-    private String chosenRestaurantId;
+    private String selectedRestaurantId;
     @Nullable
-    private String chosenRestaurantName;
+    private String selectedRestaurantName;
 
 
     public User() {
@@ -23,8 +23,8 @@ public class User {
         this.name = name;
         this.email = email;
         this.urlPicture = urlPicture;
-        this.chosenRestaurantId = null;
-        this.chosenRestaurantName = null;
+        this.selectedRestaurantId = null;
+        this.selectedRestaurantName = null;
     }
 
     public String getUid() {
@@ -60,20 +60,20 @@ public class User {
     }
 
     @Nullable
-    public String getChosenRestaurantId() {
-        return chosenRestaurantId;
+    public String getSelectedRestaurantId() {
+        return selectedRestaurantId;
     }
 
-    public void setChosenRestaurantId(@Nullable String chosenRestaurantId) {
-        this.chosenRestaurantId = chosenRestaurantId;
+    public void setSelectedRestaurantId(@Nullable String selectedRestaurantId) {
+        this.selectedRestaurantId = selectedRestaurantId;
     }
 
     @Nullable
-    public String getChosenRestaurantName() {
-        return chosenRestaurantName;
+    public String getSelectedRestaurantName() {
+        return selectedRestaurantName;
     }
 
-    public void setChosenRestaurantName(@Nullable String chosenRestaurantName) {
-        this.chosenRestaurantName = chosenRestaurantName;
+    public void setSelectedRestaurantName(@Nullable String selectedRestaurantName) {
+        this.selectedRestaurantName = selectedRestaurantName;
     }
 }

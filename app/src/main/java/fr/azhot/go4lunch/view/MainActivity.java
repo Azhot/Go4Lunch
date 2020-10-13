@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -31,17 +33,23 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
+import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -50,6 +58,11 @@ import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -65,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback mLocationCallback;
     private Location mDeviceLastKnownLocation;
-
+    private User mCurrentUser;
+    private List<Restaurant> mCurrentRestaurants;
 
     // inherited methods
     @Override
@@ -75,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
+        mCurrentRestaurants = new ArrayList<>();
         mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(mBinding.getRoot());
@@ -160,8 +175,26 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "onResume");
+
         super.onResume();
         initLocationUpdates();
+
+        if (mAuth.getCurrentUser() != null) {
+            mAppViewModel.getUser(mAuth.getCurrentUser().getUid())
+                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "getUser: onSuccess");
+                                mCurrentUser = task.getResult().toObject(User.class);
+                            } else {
+                                Log.d(TAG, "getUser: onFailure");
+                            }
+                        }
+                    });
+        }
+
     }
 
     @Override
@@ -193,7 +226,35 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.nav_your_lunch:
-                        // launch details about the restaurant selected by the user
+                        if (mCurrentRestaurants != null) {
+                            Restaurant selectedRestaurant = null;
+                            for (Restaurant restaurant : mCurrentRestaurants) {
+                                if (restaurant.getPlaceId().equals(mCurrentUser.getSelectedRestaurantId())) {
+                                    selectedRestaurant = restaurant;
+                                    break;
+                                }
+                            }
+
+                            if (selectedRestaurant != null) {
+                                Intent intent = new Intent(MainActivity.this, RestaurantDetailsActivity.class);
+                                intent.putExtra(RESTAURANT_ID_EXTRA, selectedRestaurant.getPlaceId());
+                                intent.putExtra(RESTAURANT_NAME_EXTRA, selectedRestaurant.getName());
+                                intent.putExtra(RESTAURANT_VICINITY_EXTRA, selectedRestaurant.getVicinity());
+
+                                if (selectedRestaurant.getPhoto() != null) {
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                    selectedRestaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                    byte[] byteArray = stream.toByteArray();
+                                    intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
+                                }
+
+                                intent.putExtra(RESTAURANT_RATING_EXTRA, (int) Math.round(selectedRestaurant.getRating() / 5 * 3));
+
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_LONG).show();
+                            }
+                        }
                         break;
                     case R.id.nav_settings:
                         // launch settings, e.g. to set up notifications
@@ -356,6 +417,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 mAppViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
+            }
+        });
+
+        mAppViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                mCurrentRestaurants = restaurants;
             }
         });
     }
