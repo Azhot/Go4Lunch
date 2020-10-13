@@ -224,7 +224,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "addRestaurantMarkers");
 
         if (restaurants != null && googleMap != null) {
-            // todo : adapt markers as project requires
+            // todo : Tous les restaurants des alentours sont affichés sur la carte
+            //  en utilisant une punaise personnalisée. Si au moins un collègue s’est
+            //  déjà manifesté pour aller dans un restaurant donné, la punaise est
+            //  affichée dans une couleur différente (verte). L’utilisateur peut appuyer
+            //  sur une punaise pour afficher la fiche du restaurant.
             googleMap.clear();
             for (Restaurant restaurant : restaurants) {
                 MarkerOptions markerOptions = new MarkerOptions();

@@ -2,7 +2,6 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,19 +22,13 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.Restaurant;
+import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
-
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
 public class ListViewFragment extends Fragment implements ListViewAdapter.OnRestaurantClickListener {
 
@@ -105,23 +98,11 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     // Called when user clicks on a cell of the recyclerview
     @Override
     public void onRestaurantClick(int position) {
-
-        Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
         Restaurant restaurant = mAdapter.getRestaurantByPosition(position);
-
-        intent.putExtra(RESTAURANT_ID_EXTRA, restaurant.getPlaceId());
-        intent.putExtra(RESTAURANT_NAME_EXTRA, restaurant.getName());
-        intent.putExtra(RESTAURANT_VICINITY_EXTRA, restaurant.getVicinity());
-
-        if (restaurant.getPhoto() != null) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            restaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
-        }
-
-        intent.putExtra(RESTAURANT_RATING_EXTRA, (int) Math.round(restaurant.getRating() / 5 * 3));
-
+        Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                mContext,
+                RestaurantDetailsActivity.class,
+                restaurant);
         startActivity(intent);
     }
 

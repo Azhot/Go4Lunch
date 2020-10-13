@@ -4,7 +4,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -41,7 +40,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +48,7 @@ import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
+import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -58,11 +57,6 @@ import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_NAME_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_RATING_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_VICINITY_EXTRA;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -236,20 +230,10 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             if (selectedRestaurant != null) {
-                                Intent intent = new Intent(MainActivity.this, RestaurantDetailsActivity.class);
-                                intent.putExtra(RESTAURANT_ID_EXTRA, selectedRestaurant.getPlaceId());
-                                intent.putExtra(RESTAURANT_NAME_EXTRA, selectedRestaurant.getName());
-                                intent.putExtra(RESTAURANT_VICINITY_EXTRA, selectedRestaurant.getVicinity());
-
-                                if (selectedRestaurant.getPhoto() != null) {
-                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                    selectedRestaurant.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, stream);
-                                    byte[] byteArray = stream.toByteArray();
-                                    intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
-                                }
-
-                                intent.putExtra(RESTAURANT_RATING_EXTRA, (int) Math.round(selectedRestaurant.getRating() / 5 * 3));
-
+                                Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                                        MainActivity.this,
+                                        RestaurantDetailsActivity.class,
+                                        selectedRestaurant);
                                 startActivity(intent);
                             } else {
                                 Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_LONG).show();
