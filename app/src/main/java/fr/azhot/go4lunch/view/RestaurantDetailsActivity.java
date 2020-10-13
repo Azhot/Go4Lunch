@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -80,7 +82,19 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                     mCurrentUser.setChosenRestaurantName(mRestaurantName);
                 }
 
-                mAppViewModel.updateUserChosenRestaurant(mCurrentUser);
+                mAppViewModel.updateUserChosenRestaurant(mCurrentUser)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "updateUserChosenRestaurant: onSuccess");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "updateUserChosenRestaurant: onFailure");
+                            }
+                        });
 
                 break;
             case R.id.restaurant_details_call_button:

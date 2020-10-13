@@ -18,8 +18,14 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -54,6 +60,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private Context mContext;
     private AppViewModel mAppViewModel;
     private ListViewAdapter mAdapter;
+    private List<ListenerRegistration> mListenerRegistrations;
 
 
     // inherited methods
@@ -89,6 +96,10 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
         super.onDetach();
         mContext = null;
+        for (ListenerRegistration registration : mListenerRegistrations) {
+            registration.remove();
+        }
+        mListenerRegistrations.clear();
     }
 
     // Called when user clicks on a cell of the recyclerview
@@ -96,7 +107,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     public void onRestaurantClick(int position) {
 
         Intent intent = new Intent(mContext, RestaurantDetailsActivity.class);
-        Restaurant restaurant = mAdapter.getRestaurants().get(position);
+        Restaurant restaurant = mAdapter.getRestaurantByPosition(position);
 
         intent.putExtra(RESTAURANT_ID_EXTRA, restaurant.getPlaceId());
         intent.putExtra(RESTAURANT_NAME_EXTRA, restaurant.getName());
@@ -109,8 +120,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             intent.putExtra(RESTAURANT_PHOTO_EXTRA, byteArray);
         }
 
-        int restaurantRating = ((int) Math.round(restaurant.getRating() / 5 * 3));
-        intent.putExtra(RESTAURANT_RATING_EXTRA, restaurantRating);
+        intent.putExtra(RESTAURANT_RATING_EXTRA, (int) Math.round(restaurant.getRating() / 5 * 3));
 
         startActivity(intent);
     }
@@ -130,12 +140,35 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+        mAppViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
-            public void onChanged(Restaurant restaurant) {
-                Log.d(TAG, "getRestaurant: onChanged: ");
+            public void onChanged(List<Restaurant> restaurants) {
+                mAdapter.setRestaurants(restaurants);
 
-                mAdapter.setRestaurants(mAppViewModel.getExistingRestaurants());
+                if (mListenerRegistrations == null) {
+                    mListenerRegistrations = new ArrayList<>();
+                } else {
+                    for (ListenerRegistration registration : mListenerRegistrations) {
+                        registration.remove();
+                    }
+                    mListenerRegistrations.clear();
+                }
+
+                for (Restaurant restaurant : restaurants) {
+                    ListenerRegistration registration =
+                            mAppViewModel.loadWorkmatesInRestaurants(restaurant)
+                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                                            if (snapshot != null && e == null) {
+                                                Log.d(TAG, "added EventListener to : " + restaurant.getName());
+                                                restaurant.setWorkmatesJoining(snapshot.size());
+                                                mAdapter.notifyDataSetChanged();
+                                            }
+                                        }
+                                    });
+                    mListenerRegistrations.add(registration);
+                }
             }
         });
 
@@ -145,10 +178,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                 Log.d(TAG, "getLocationActivated: onChanged");
 
                 if (aBoolean) {
-                    Log.d(TAG, "showRestaurants");
                     mAdapter.showRestaurants();
                 } else {
-                    Log.d(TAG, "hideRestaurants");
                     mAdapter.hideRestaurants();
                 }
             }

@@ -47,15 +47,17 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
     // methods
     public void setRestaurants(List<Restaurant> restaurants) {
+        Log.d(TAG, "setRestaurants");
+
         mRestaurants.clear();
         mRestaurants.addAll(restaurants);
         sortRestaurants();
     }
 
-    public List<Restaurant> getRestaurants() {
-        Log.d(TAG, "getRestaurants");
+    public Restaurant getRestaurantByPosition(int position) {
+        Log.d(TAG, "getRestaurantByPosition");
 
-        return mRestaurants;
+        return mRestaurants.get(position);
     }
 
     public void hideRestaurants() {
@@ -75,11 +77,15 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     }
 
     public void setDeviceLocation(Location location) {
+        Log.d(TAG, "setDeviceLocation");
+
         mDeviceLocation = location;
         sortRestaurants();
     }
 
     private void sortRestaurants() {
+        Log.d(TAG, "sortRestaurants");
+
         Collections.sort(mRestaurants, new Comparator<Restaurant>() {
             @Override
             public int compare(Restaurant o1, Restaurant o2) {
@@ -141,13 +147,24 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
                 mBinding.cellListViewOpeningHoursTextView.setText(R.string.info_not_available);
             }
             if (restaurant.getRating() != null) {
-                mBinding.cellListViewRatingBar.setRating((int) Math.round(restaurant.getRating() / 5 * 3));
+                mBinding.cellListViewRatingBar.setRating(Math.round(restaurant.getRating() / 5 * 3));
             }
 
-            // todo : count workmates (hide imageview if none)
+            if (restaurant.getWorkmatesJoining() != 0) {
+                String workmatesJoiningString = "(" + restaurant.getWorkmatesJoining() + ")";
+                mBinding.cellListViewWorkmatesTextView.setText(workmatesJoiningString);
+                mBinding.cellListViewWorkmatesImageView.setVisibility(View.VISIBLE);
+            } else {
+                mBinding.cellListViewWorkmatesTextView.setText(null);
+                mBinding.cellListViewWorkmatesImageView.setVisibility(View.INVISIBLE);
+            }
 
-            glide.load(restaurant.getPhoto())
-                    .into(mBinding.cellListViewPhotoImageView);
+            if (restaurant.getPhoto() != null) {
+                glide.load(restaurant.getPhoto())
+                        .into(mBinding.cellListViewPhotoImageView);
+            } else {
+                mBinding.cellListViewPhotoImageView.setImageResource(R.drawable.ic_no_image);
+            }
         }
 
         @Override

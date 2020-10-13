@@ -24,6 +24,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.R;
@@ -65,6 +66,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private Location mDeviceLastKnownLocation;
     private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
+    private List<Restaurant> mCurrentRestaurants;
 
 
     // inherited methods
@@ -126,10 +128,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(mDeviceLastKnownLocation.getLatitude(), mDeviceLastKnownLocation.getLongitude()),
                     DEFAULT_ZOOM));
-            if (mIsLocationActivated) {
-                mGoogleMap.setMyLocationEnabled(true);
-                addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
-            }
+            mGoogleMap.setMyLocationEnabled(true);
+            addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
         }
     }
 
@@ -140,6 +140,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         mBinding = FragmentMapViewBinding.inflate(inflater);
         mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
+        mCurrentRestaurants = new ArrayList<>();
 
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,12 +159,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getRestaurant().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
+        mAppViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
-            public void onChanged(Restaurant restaurant) {
-                Log.d(TAG, "getRestaurant");
+            public void onChanged(List<Restaurant> restaurants) {
+                Log.d(TAG, "getRestaurants: onChanged");
 
-                addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
+                mCurrentRestaurants.clear();
+                mCurrentRestaurants.addAll(restaurants);
+                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
             }
         });
 
@@ -182,16 +185,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onChanged(Boolean aBoolean) {
                 Log.d(TAG, "getLocationActivated: onChanged");
 
-                mIsLocationActivated = aBoolean;
+                if (mGoogleMap != null) {
+                    mIsLocationActivated = aBoolean;
 
-                if (aBoolean) {
-                    mGoogleMap.setMyLocationEnabled(true);
-                    // todo : should check if connection is available or else show message to user
-                    addRestaurantMarkers(mAppViewModel.getExistingRestaurants(), mGoogleMap);
-                } else {
-                    mGoogleMap.setMyLocationEnabled(false);
-                    mGoogleMap.clear();
-                    Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
+                    if (mIsLocationActivated) {
+                        // todo : should check if connection is available or else show message to user
+                        mGoogleMap.setMyLocationEnabled(true);
+                        addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                    } else {
+                        mGoogleMap.setMyLocationEnabled(false);
+                        mGoogleMap.clear();
+                        Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });

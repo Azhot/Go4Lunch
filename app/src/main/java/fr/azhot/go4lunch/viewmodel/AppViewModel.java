@@ -56,20 +56,16 @@ public class AppViewModel extends ViewModel {
         mRestaurantRepository.setNearbyRestaurantsPOJO(location, radius);
     }
 
-    public LiveData<Restaurant> getRestaurant() {
-        Log.d(TAG, "getRestaurant");
-
-        return mRestaurantRepository.getRestaurant();
+    public MutableLiveData<List<Restaurant>> getRestaurants() {
+        return mRestaurantRepository.getRestaurants();
     }
 
-    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
-        Log.d(TAG, "setRestaurants");
-
-        mRestaurantRepository.setRestaurants(nearbyRestaurantsPOJO, glide);
+    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
+        mRestaurantRepository.setRestaurants(nearbyRestaurantsPOJO);
     }
 
-    public List<Restaurant> getExistingRestaurants() {
-        return mRestaurantRepository.getExistingRestaurants();
+    public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
+        mRestaurantRepository.loadRestaurantsPhotos(restaurants, glide);
     }
 
     public MutableLiveData<Location> getDeviceLocation() {
@@ -96,14 +92,14 @@ public class AppViewModel extends ViewModel {
         isLocationActivated.setValue(b);
     }
 
-    public void createUser(User user) {
-        Log.d(TAG, "createUser: " + user.getName());
+    public Task<Void> createUser(User user) {
+        Log.d(TAG, "createUser");
 
-        mUserRepository.createUser(user);
+        return mUserRepository.createUser(user);
     }
 
     public Task<DocumentSnapshot> getUser(String uid) {
-        Log.d(TAG, "getUser with uid: " + uid);
+        Log.d(TAG, "getUser");
 
         return mUserRepository.getUser(uid);
     }
@@ -114,9 +110,15 @@ public class AppViewModel extends ViewModel {
         return mUserRepository.getUsersQuery();
     }
 
-    public void updateUserChosenRestaurant(User user) {
-        Log.d(TAG, "updateUserChosenRestaurant: " + user.getName());
+    public Task<Void> updateUserChosenRestaurant(User user) {
+        Log.d(TAG, "updateUserChosenRestaurant");
 
-        mUserRepository.updateUserChosenRestaurant(user);
+        return mUserRepository.updateUserChosenRestaurant(user);
+    }
+
+    public Query loadWorkmatesInRestaurants(Restaurant restaurant) {
+        Log.d(TAG, "loadWorkmatesInRestaurants");
+
+        return mUserRepository.loadWorkmatesInRestaurants(restaurant);
     }
 }

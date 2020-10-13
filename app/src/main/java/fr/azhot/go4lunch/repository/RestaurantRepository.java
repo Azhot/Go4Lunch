@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
-import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -39,16 +38,14 @@ public class RestaurantRepository {
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurantsPOJO;
-    private final MutableLiveData<Restaurant> mRestaurant;
-    private List<Restaurant> mExistingRestaurants;
+    private MutableLiveData<List<Restaurant>> mRestaurants;
 
 
     // constructor
     private RestaurantRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
         mNearbyRestaurantsPOJO = new MutableLiveData<>();
-        mRestaurant = new MutableLiveData<>();
-        mExistingRestaurants = new ArrayList<>();
+        mRestaurants = new MutableLiveData<>();
     }
 
 
@@ -91,78 +88,51 @@ public class RestaurantRepository {
         });
     }
 
-    public LiveData<Restaurant> getRestaurant() {
-        Log.d(TAG, "getRestaurant");
-
-        return mRestaurant;
+    public MutableLiveData<List<Restaurant>> getRestaurants() {
+        return mRestaurants;
     }
 
-    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO, RequestManager glide) {
-        Log.d(TAG, "setRestaurants");
-
-        boolean isExisting;
+    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
+        List<Restaurant> restaurants = new ArrayList<>();
 
         for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
-            isExisting = false;
-            for (Restaurant restaurant : mExistingRestaurants) {
-                if (restaurant.getPlaceId().equals(result.getPlaceId())) {
-                    isExisting = true;
-                    break;
-                }
-            }
+            Location location = new Location(LocationManager.GPS_PROVIDER);
+            location.setLatitude(result.getGeometry().getLocation().getLat());
+            location.setLongitude(result.getGeometry().getLocation().getLng());
 
-            if (!isExisting) {
-                Location location = new Location(LocationManager.GPS_PROVIDER);
-                location.setLatitude(result.getGeometry().getLocation().getLat());
-                location.setLongitude(result.getGeometry().getLocation().getLng());
+            Restaurant restaurant = new Restaurant(result, location);
 
-                if (result.getPhotos() != null) {
-                    String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                            "key=" + BuildConfig.GOOGLE_API_KEY +
-                            "&photoreference=" + result.getPhotos().get(0).getPhotoReference() +
-                            "&maxwidth=400";
-
-                    Log.d(TAG, "setRestaurants: " + result.getName() + ", downloaded photo : " + photoUrl);
-
-                    glide.asBitmap()
-                            .load(photoUrl)
-                            .into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    Restaurant restaurant = new Restaurant(result, resource, location);
-                                    mExistingRestaurants.add(restaurant);
-                                    mRestaurant.setValue(restaurant);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                }
-                            });
-                } else {
-                    Log.d(TAG, "setRestaurants: " + result.getName() + ", no photo");
-
-                    glide.asBitmap()
-                            .load(R.drawable.ic_no_image)
-                            .into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    Restaurant restaurant = new Restaurant(result, resource, location);
-                                    mExistingRestaurants.add(restaurant);
-                                    mRestaurant.setValue(restaurant);
-                                }
-
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                }
-                            });
-                }
-            }
+            restaurants.add(restaurant);
         }
+
+        mRestaurants.setValue(restaurants);
     }
 
-    public List<Restaurant> getExistingRestaurants() {
-        return mExistingRestaurants;
+    public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
+        int i = 1; // todo : DELETE AT THE END OF PROJECT
+        for (Restaurant restaurant : restaurants) {
+            if (restaurant.getPhotos() != null) {
+                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                        "key=" + BuildConfig.GOOGLE_API_KEY +
+                        "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
+                        "&maxwidth=400";
+
+                Log.d(TAG, "setRestaurants: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
+
+                glide.asBitmap()
+                        .load("https://source.unsplash.com/random/400x400?sig=" + i++) // todo : REPLACE AT THE END OF PROJECT
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                restaurant.setPhoto(resource);
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+            }
+        }
     }
 }

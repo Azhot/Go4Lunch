@@ -2,10 +2,6 @@ package fr.azhot.go4lunch.repository;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -13,8 +9,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.SetOptions;
 
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 
+import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_ID_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.CHOSEN_RESTAURANT_NAME_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.USER_COLLECTION_NAME;
 
 public class UserRepository {
@@ -49,49 +48,40 @@ public class UserRepository {
 
 
     // methods
-    public void createUser(User user) {
-        mCollectionReference
-                .document(user.getUid())
-                .set(user)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "createUser: onSuccess");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "createUser: onFailure" + e.getMessage());
-                    }
-                });
-    }
+    public Task<Void> createUser(User user) {
+        Log.d(TAG, "createUser");
 
-    public Query getUsersQuery() {
-        return mCollectionReference;
+        return mCollectionReference
+                .document(user.getUid())
+                .set(user);
     }
 
     public Task<DocumentSnapshot> getUser(String uid) {
+        Log.d(TAG, "getUser");
+
         return mCollectionReference
                 .document(uid)
                 .get();
     }
 
-    public void updateUserChosenRestaurant(User user) {
-        mCollectionReference
+    public Query getUsersQuery() {
+        Log.d(TAG, "getUsersQuery");
+
+        return mCollectionReference;
+    }
+
+    public Task<Void> updateUserChosenRestaurant(User user) {
+        Log.d(TAG, "updateUserChosenRestaurant");
+
+        return mCollectionReference
                 .document(user.getUid())
-                .set(user, SetOptions.mergeFields("chosenRestaurantId", "chosenRestaurantName"))
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "updateUser: onSuccess");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "updateUser: onFailure");
-                    }
-                });
+                .set(user, SetOptions.mergeFields(CHOSEN_RESTAURANT_ID_FIELD, CHOSEN_RESTAURANT_NAME_FIELD));
+    }
+
+    public Query loadWorkmatesInRestaurants(Restaurant restaurant) {
+        Log.d(TAG, "loadWorkmatesInRestaurants");
+
+        return mCollectionReference
+                .whereEqualTo(CHOSEN_RESTAURANT_ID_FIELD, restaurant.getPlaceId());
     }
 }

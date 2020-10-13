@@ -36,9 +36,12 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.List;
+
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -57,9 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
     // variables
     private ActivityMainBinding mBinding;
-    private MapViewFragment mMapViewFragment;
-    private ListViewFragment mListViewFragment;
-    private WorkmatesFragment mWorkmatesFragment;
     private FirebaseAuth mAuth;
     private AppViewModel mAppViewModel;
     private FusedLocationProviderClient mFusedLocationProviderClient;
@@ -250,22 +250,22 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.list_view:
                         Log.d(TAG, "onNavigationItemSelected: list view fragment");
-                        selectedFragment = (mListViewFragment == null) ? ListViewFragment.newInstance() : mListViewFragment;
+                        selectedFragment = ListViewFragment.newInstance();
                         setTitle(R.string.list_view_title);
                         break;
                     case R.id.workmates:
                         Log.d(TAG, "onNavigationItemSelected: workmates fragment");
-                        selectedFragment = (mWorkmatesFragment == null) ? WorkmatesFragment.newInstance() : mWorkmatesFragment;
+                        selectedFragment = WorkmatesFragment.newInstance();
                         setTitle(R.string.workmates_title);
                         break;
                     case R.id.map_view:
                         Log.d(TAG, "onNavigationItemSelected: map view fragment");
-                        selectedFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
+                        selectedFragment = MapViewFragment.newInstance();
                         setTitle(R.string.map_view_title);
                         break;
                     default:
                         Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");
-                        selectedFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
+                        selectedFragment = MapViewFragment.newInstance();
                         setTitle(R.string.map_view_title);
                         break;
                 }
@@ -325,10 +325,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "launchFragment");
 
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
-            mMapViewFragment = (mMapViewFragment == null) ? MapViewFragment.newInstance() : mMapViewFragment;
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(mBinding.mainNavHostFragment.getId(), mMapViewFragment)
+                    .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
                     .commit();
             setTitle(R.string.list_view_title);
         } else {
@@ -348,8 +347,15 @@ public class MainActivity extends AppCompatActivity {
                     // todo : check if connection is available or else show message to user that no nearby restaurants
                 } else {
                     // todo : bugs if connection was not available on first call then it never gets nearby restaurants
-                    mAppViewModel.setRestaurants(nearbyRestaurantsPOJO, Glide.with(MainActivity.this));
+                    mAppViewModel.setRestaurants(nearbyRestaurantsPOJO);
                 }
+            }
+        });
+
+        mAppViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                mAppViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
             }
         });
     }
