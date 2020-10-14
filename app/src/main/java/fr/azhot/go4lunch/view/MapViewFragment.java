@@ -1,6 +1,7 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,25 +23,30 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentMapViewBinding;
 import fr.azhot.go4lunch.model.Restaurant;
+import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.CENTER_FRANCE;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_ZOOM;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.INIT_ZOOM;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 @SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
-public class MapViewFragment extends Fragment implements OnMapReadyCallback {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
     // private static
@@ -64,9 +70,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment mMapFragment;
     private GoogleMap mGoogleMap;
     private Location mDeviceLastKnownLocation;
-    private boolean mIsLocationActivated;
     private AppViewModel mAppViewModel;
-    private List<Restaurant> mCurrentRestaurants;
+    private Map<MarkerOptions, Restaurant> mRestaurants;
 
 
     // inherited methods
@@ -84,7 +89,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "onCreateView");
 
         init(inflater);
-        LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+        LocationUtils.checkLocationSettings(
+                (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
         return mBinding.getRoot();
     }
 
@@ -94,7 +100,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         super.onActivityCreated(savedInstanceState);
         mAppViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
-        initObservers();
     }
 
     @Override
@@ -123,14 +128,31 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "onMapReady");
 
         mGoogleMap = googleMap;
+        initObservers();
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                CENTER_FRANCE,
+                INIT_ZOOM));
+        mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (mDeviceLastKnownLocation != null) {
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(mDeviceLastKnownLocation.getLatitude(), mDeviceLastKnownLocation.getLongitude()),
                     DEFAULT_ZOOM));
             mGoogleMap.setMyLocationEnabled(true);
-            addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
         }
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Log.d(TAG, "onMarkerClick");
+        for (Map.Entry<MarkerOptions, Restaurant> entry : mRestaurants.entrySet()) {
+            if (marker.getTag() == entry.getValue().getPlaceId()) {
+                Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                        mContext, RestaurantDetailsActivity.class, entry.getValue());
+                startActivity(intent);
+            }
+        }
+        return true;
     }
 
 
@@ -139,14 +161,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "init");
 
         mBinding = FragmentMapViewBinding.inflate(inflater);
-        mMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.cell_workmates_fragment_container);
-        mCurrentRestaurants = new ArrayList<>();
+        mMapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.cell_workmates_fragment_container);
+        mRestaurants = new HashMap<>();
 
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //todo : should activate or deactivate the auto animateCamera
-                LocationUtils.checkLocationSettings((AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+                LocationUtils.checkLocationSettings(
+                        (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
                 if (mDeviceLastKnownLocation != null) {
                     animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
                 } else {
@@ -163,10 +186,17 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 Log.d(TAG, "getRestaurants: onChanged");
+                // todo : should check if connection is available or else show message to user
 
-                mCurrentRestaurants.clear();
-                mCurrentRestaurants.addAll(restaurants);
-                addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
+                mRestaurants.clear();
+                for (Restaurant restaurant : restaurants) {
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .position(new LatLng(restaurant.getLocation().getLatitude(),
+                                    restaurant.getLocation().getLongitude()));
+                    Marker marker = mGoogleMap.addMarker(markerOptions);
+                    marker.setTag(restaurant.getPlaceId());
+                    mRestaurants.put(markerOptions, restaurant);
+                }
             }
         });
 
@@ -175,8 +205,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onChanged(Location location) {
                 Log.d(TAG, "getDeviceLocation: onChanged");
 
+                if (mDeviceLastKnownLocation == null) {
+                    animateCamera(location, DEFAULT_ZOOM, mGoogleMap);
+                }
                 mDeviceLastKnownLocation = location;
-                animateCamera(mDeviceLastKnownLocation, DEFAULT_ZOOM, mGoogleMap);
             }
         });
 
@@ -186,16 +218,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 Log.d(TAG, "getLocationActivated: onChanged");
 
                 if (mGoogleMap != null) {
-                    mIsLocationActivated = aBoolean;
-
-                    if (mIsLocationActivated) {
-                        // todo : should check if connection is available or else show message to user
-                        mGoogleMap.setMyLocationEnabled(true);
-                        addRestaurantMarkers(mCurrentRestaurants, mGoogleMap);
-                    } else {
-                        mGoogleMap.setMyLocationEnabled(false);
-                        mGoogleMap.clear();
-                        Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_LONG).show();
+                    mGoogleMap.setMyLocationEnabled(aBoolean);
+                    mGoogleMap.clear();
+                    for (Map.Entry<MarkerOptions, Restaurant> entry : mRestaurants.entrySet()) {
+                        entry.getKey().visible(aBoolean);
+                        Marker marker = mGoogleMap.addMarker(entry.getKey());
+                        marker.setTag(entry.getValue().getPlaceId());
                     }
                 }
             }
@@ -220,32 +248,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    private void addRestaurantMarkers(List<Restaurant> restaurants, GoogleMap googleMap) {
-        Log.d(TAG, "addRestaurantMarkers");
-
-        if (restaurants != null && googleMap != null) {
-            // todo : Tous les restaurants des alentours sont affichés sur la carte
-            //  en utilisant une punaise personnalisée. Si au moins un collègue s’est
-            //  déjà manifesté pour aller dans un restaurant donné, la punaise est
-            //  affichée dans une couleur différente (verte). L’utilisateur peut appuyer
-            //  sur une punaise pour afficher la fiche du restaurant.
-            googleMap.clear();
-            for (Restaurant restaurant : restaurants) {
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.title(restaurant.getName());
-                markerOptions.position(new LatLng(restaurant.getGeometry().getLocation().getLat(), restaurant.getGeometry().getLocation().getLng()));
-                googleMap.addMarker(markerOptions);
-            }
-        }
-    }
-
     private void closeKeyboard() {
         Log.d(TAG, "closeKeyboard");
 
         View view = requireActivity().getCurrentFocus();
 
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) requireActivity()
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }

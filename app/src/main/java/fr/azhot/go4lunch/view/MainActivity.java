@@ -358,6 +358,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "LocationCallback: onLocationAvailability");
 
                     super.onLocationAvailability(locationAvailability);
+                    if (!locationAvailability.isLocationAvailable()) {
+                        Toast.makeText(MainActivity.this, R.string.get_location_error, Toast.LENGTH_SHORT).show();
+                    }
                     mAppViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
                 }
             };
