@@ -8,7 +8,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
-import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
@@ -68,10 +67,10 @@ public class UserRepository {
         return mCollectionReference;
     }
 
-    public Query loadWorkmatesInRestaurants(Restaurant restaurant) {
+    public Query loadWorkmatesInRestaurants(String placeId) {
         Log.d(TAG, "loadWorkmatesInRestaurants");
 
         return mCollectionReference
-                .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, restaurant.getPlaceId());
+                .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, placeId);
     }
 }

@@ -68,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
     // variables
     private ActivityMainBinding mBinding;
     private FirebaseAuth mAuth;
-    private AppViewModel mAppViewModel;
+    private AppViewModel mViewModel;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback mLocationCallback;
-    private Location mDeviceLastKnownLocation;
-    private User mCurrentUser;
-    private List<Restaurant> mCurrentRestaurants;
+    private Location mDeviceLocation;
+    private User mUser;
+    private List<Restaurant> mRestaurants;
 
     // inherited methods
     @Override
@@ -83,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
-        mCurrentRestaurants = new ArrayList<>();
-        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mRestaurants = new ArrayList<>();
+        mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mainToolbar);
@@ -175,13 +175,13 @@ public class MainActivity extends AppCompatActivity {
         initLocationUpdates();
 
         if (mAuth.getCurrentUser() != null) {
-            mAppViewModel.getUser(mAuth.getCurrentUser().getUid())
+            mViewModel.getUser(mAuth.getCurrentUser().getUid())
                     .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "getUser: onSuccess");
-                                mCurrentUser = task.getResult().toObject(User.class);
+                                mUser = task.getResult().toObject(User.class);
                             } else {
                                 Log.d(TAG, "getUser: onFailure");
                             }
@@ -220,10 +220,10 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.nav_your_lunch:
-                        if (mCurrentRestaurants != null) {
+                        if (mRestaurants != null) {
                             Restaurant selectedRestaurant = null;
-                            for (Restaurant restaurant : mCurrentRestaurants) {
-                                if (restaurant.getPlaceId().equals(mCurrentUser.getSelectedRestaurantId())) {
+                            for (Restaurant restaurant : mRestaurants) {
+                                if (restaurant.getPlaceId().equals(mUser.getSelectedRestaurantId())) {
                                     selectedRestaurant = restaurant;
                                     break;
                                 }
@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                                         selectedRestaurant);
                                 startActivity(intent);
                             } else {
-                                Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
                             }
                         }
                         break;
@@ -346,10 +346,12 @@ public class MainActivity extends AppCompatActivity {
 
                     super.onLocationResult(locationResult);
                     Location currentLocation = locationResult.getLastLocation();
-                    mAppViewModel.setDeviceLocation(currentLocation);
-                    if (mDeviceLastKnownLocation == null || mDeviceLastKnownLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
-                        mDeviceLastKnownLocation = currentLocation;
-                        mAppViewModel.setNearbyRestaurantsPOJO(mDeviceLastKnownLocation.getLatitude() + "," + mDeviceLastKnownLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                    mViewModel.setDeviceLocation(currentLocation);
+                    if (mDeviceLocation == null || mDeviceLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
+                        mDeviceLocation = currentLocation;
+                        // todo : check if connection is available or else show message to user that no connection
+                        //  otherwise it bugs if connection was not available on first call then it never gets nearby restaurants
+                        mViewModel.setNearbyRestaurantsPOJO(mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
                     }
                 }
 
@@ -361,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!locationAvailability.isLocationAvailable()) {
                         Toast.makeText(MainActivity.this, R.string.get_location_error, Toast.LENGTH_SHORT).show();
                     }
-                    mAppViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
+                    mViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
                 }
             };
         }
@@ -386,31 +388,34 @@ public class MainActivity extends AppCompatActivity {
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getNearbyRestaurantsPOJO().observe(this, new Observer<NearbyRestaurantsPOJO>() {
+        mViewModel.getNearbyRestaurantsPOJO().observe(this, new Observer<NearbyRestaurantsPOJO>() {
             @Override
             public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
                 Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
 
-                if (nearbyRestaurantsPOJO == null) {
-                    // todo : check if connection is available or else show message to user that no nearby restaurants
+                if (nearbyRestaurantsPOJO != null) {
+                    mViewModel.setRestaurants(nearbyRestaurantsPOJO);
                 } else {
-                    // todo : bugs if connection was not available on first call then it never gets nearby restaurants
-                    mAppViewModel.setRestaurants(nearbyRestaurantsPOJO);
+                    Toast.makeText(MainActivity.this, R.string.no_nearby_restaurants, Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        mAppViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+        mViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                mAppViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
+                Log.d(TAG, "onChanged");
+
+                mViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
             }
         });
 
-        mAppViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+        mViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                mCurrentRestaurants = restaurants;
+                Log.d(TAG, "onChanged");
+
+                mRestaurants = restaurants;
             }
         });
     }

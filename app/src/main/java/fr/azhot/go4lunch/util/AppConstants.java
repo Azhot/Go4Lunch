@@ -11,7 +11,7 @@ public abstract class AppConstants {
     public static final float DEFAULT_ZOOM = 14.5f;
     public static final LatLng CENTER_FRANCE = new LatLng(46.3432097, 2.5733245);
     public static final float INIT_ZOOM = 5f;
-    public static final int NEARBY_SEARCH_RADIUS = 1000;
+    public static final int NEARBY_SEARCH_RADIUS = 500;
     public static final float DISTANCE_UNTIL_UPDATE = 50f;
     public static final String USER_COLLECTION_NAME = "users";
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";

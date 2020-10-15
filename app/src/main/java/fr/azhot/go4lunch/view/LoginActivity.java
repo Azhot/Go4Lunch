@@ -164,7 +164,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onCancel() {
                 Log.d(TAG, "facebook sign in: onCancel");
 
-                Toast.makeText(LoginActivity.this, R.string.sign_in_canceled, Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, R.string.sign_in_canceled, Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -174,9 +174,9 @@ public class LoginActivity extends AppCompatActivity {
                 // todo : just a patch-up - should check doc for new implementation since deprecated
                 ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting()) {
-                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -223,15 +223,15 @@ public class LoginActivity extends AppCompatActivity {
                                 if (e.getErrorCode().equals("ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL")) {
                                     makeAlertDialogExistingSignIn(e.getEmail(), e.getUpdatedCredential());
                                 } else {
-                                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_SHORT).show();
                                 }
                             } else {
                                 // todo : just a patch-up - should check doc for new implementation since deprecated
                                 ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                                 if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnectedOrConnecting()) {
-                                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(LoginActivity.this, R.string.unkown_sign_in_error, Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(LoginActivity.this, R.string.no_connection_error, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }

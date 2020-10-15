@@ -43,9 +43,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
     // variables
     private ActivityRestaurantDetailsBinding mBinding;
-    private AppViewModel mAppViewModel;
-    private FirebaseAuth mAuth;
-    private User mCurrentUser;
+    private AppViewModel mViewModel;
+    private User mUser;
     private String mRestaurantId;
     private String mRestaurantName;
     private String mRestaurantVicinity;
@@ -71,18 +70,18 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
 
-                if ((mRestaurantId.equals(mCurrentUser.getSelectedRestaurantId()))) {
+                if ((mRestaurantId.equals(mUser.getSelectedRestaurantId()))) {
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
-                    mCurrentUser.setSelectedRestaurantId(null);
-                    mCurrentUser.setSelectedRestaurantName(null);
+                    mUser.setSelectedRestaurantId(null);
+                    mUser.setSelectedRestaurantName(null);
                 } else {
                     // change button to activated
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
-                    mCurrentUser.setSelectedRestaurantId(mRestaurantId);
-                    mCurrentUser.setSelectedRestaurantName(mRestaurantName);
+                    mUser.setSelectedRestaurantId(mRestaurantId);
+                    mUser.setSelectedRestaurantName(mRestaurantName);
                 }
 
-                mAppViewModel.createOrUpdateUser(mCurrentUser)
+                mViewModel.createOrUpdateUser(mUser)
                         .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
@@ -115,19 +114,19 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         Log.d(TAG, "init");
 
         mBinding = ActivityRestaurantDetailsBinding.inflate(getLayoutInflater());
-        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
-        mAuth = FirebaseAuth.getInstance();
+        mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
 
-        if (mAuth.getCurrentUser() != null) {
-            mAppViewModel.getUser(mAuth.getCurrentUser().getUid())
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            mViewModel.getUser(auth.getCurrentUser().getUid())
                     .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "getUser: onSuccess");
-                                mCurrentUser = task.getResult().toObject(User.class);
-                                if (mCurrentUser != null) {
-                                    setUpFab(mRestaurantId, mCurrentUser);
+                                mUser = task.getResult().toObject(User.class);
+                                if (mUser != null) {
+                                    setUpFab(mRestaurantId, mUser);
                                 }
                             } else {
                                 Log.d(TAG, "getUser: onFailure");
@@ -177,7 +176,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private void setUpRecyclerView() {
         mBinding.restaurantDetailsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mBinding.restaurantDetailsRecyclerView.setAdapter(new RestaurantDetailsAdapter(
-                generateOptionsForAdapter(mAppViewModel
+                generateOptionsForAdapter(mViewModel
                         .getUsersQuery()
                         .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, mRestaurantId)),
                 Glide.with(this)));

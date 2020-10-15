@@ -110,9 +110,9 @@ public class AppViewModel extends ViewModel {
         return mUserRepository.getUsersQuery();
     }
 
-    public Query loadWorkmatesInRestaurants(Restaurant restaurant) {
+    public Query loadWorkmatesInRestaurants(String placeId) {
         Log.d(TAG, "loadWorkmatesInRestaurants");
 
-        return mUserRepository.loadWorkmatesInRestaurants(restaurant);
+        return mUserRepository.loadWorkmatesInRestaurants(placeId);
     }
 }

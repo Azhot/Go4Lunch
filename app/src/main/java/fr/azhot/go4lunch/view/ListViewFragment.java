@@ -51,7 +51,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     // variables
     private FragmentListViewBinding mBinding;
     private Context mContext;
-    private AppViewModel mAppViewModel;
+    private AppViewModel mViewModel;
     private ListViewAdapter mAdapter;
     private List<ListenerRegistration> mListenerRegistrations;
 
@@ -79,7 +79,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         Log.d(TAG, "onActivityCreated");
 
         super.onActivityCreated(savedInstanceState);
-        mAppViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
+        mViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
         initObservers();
     }
 
@@ -115,29 +115,26 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         mBinding.cellWorkmatesRecycleView.setLayoutManager(new LinearLayoutManager(mContext));
         mAdapter = new ListViewAdapter(Glide.with(this), this);
         mBinding.cellWorkmatesRecycleView.setAdapter(mAdapter);
+        mListenerRegistrations = new ArrayList<>();
     }
 
     // Initializes the AppViewModel observers
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mAppViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 mAdapter.setRestaurants(restaurants);
 
-                if (mListenerRegistrations == null) {
-                    mListenerRegistrations = new ArrayList<>();
-                } else {
-                    for (ListenerRegistration registration : mListenerRegistrations) {
-                        registration.remove();
-                    }
-                    mListenerRegistrations.clear();
+                for (ListenerRegistration registration : mListenerRegistrations) {
+                    registration.remove();
                 }
+                mListenerRegistrations.clear();
 
                 for (Restaurant restaurant : restaurants) {
                     ListenerRegistration registration =
-                            mAppViewModel.loadWorkmatesInRestaurants(restaurant)
+                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
                                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                                         @Override
                                         public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
@@ -153,7 +150,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
-        mAppViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        mViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 Log.d(TAG, "getLocationActivated: onChanged");
@@ -166,7 +163,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
-        mAppViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+        mViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
                 mAdapter.setDeviceLocation(location);
