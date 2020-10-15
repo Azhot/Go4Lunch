@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private User mUser;
     private List<Restaurant> mRestaurants;
 
+
     // inherited methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -406,16 +407,9 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(List<Restaurant> restaurants) {
                 Log.d(TAG, "onChanged");
 
+                mRestaurants.clear();
+                mRestaurants.addAll(restaurants);
                 mViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
-            }
-        });
-
-        mViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "onChanged");
-
-                mRestaurants = restaurants;
             }
         });
     }
