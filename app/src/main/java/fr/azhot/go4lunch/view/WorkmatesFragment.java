@@ -1,6 +1,7 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,20 +11,26 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
+import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
-public class WorkmatesFragment extends Fragment {
+public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWorkmateClickListener {
 
 
     // private static
@@ -32,8 +39,9 @@ public class WorkmatesFragment extends Fragment {
 
     // variables
     private FragmentWorkmatesBinding mBinding;
-    private AppViewModel mAppViewModel;
     private Context mContext;
+    private AppViewModel mViewModel;
+    private List<Restaurant> mRestaurants;
 
 
     // public static
@@ -50,6 +58,8 @@ public class WorkmatesFragment extends Fragment {
     // inherited methods
     @Override
     public void onAttach(@NonNull Context context) {
+        Log.d(TAG, "onAttach");
+
         super.onAttach(context);
         this.mContext = context;
     }
@@ -60,27 +70,74 @@ public class WorkmatesFragment extends Fragment {
         Log.d(TAG, "onCreateView");
 
         mBinding = FragmentWorkmatesBinding.inflate(inflater);
-
-        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-
         mBinding.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-        mBinding.workmatesRecyclerView.setAdapter(new WorkmatesAdapter(
-                generateOptionsForAdapter(mAppViewModel.getUsersQuery()
-                        .orderBy(SELECTED_RESTAURANT_ID_FIELD, Query.Direction.DESCENDING)),
-                Glide.with(this)));
-
         return mBinding.getRoot();
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated");
+
+        super.onActivityCreated(savedInstanceState);
+        mViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
+        initObservers();
+    }
+
+    @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach");
+
         super.onDetach();
         mContext = null;
     }
 
+    @Override
+    public void OnWorkmateClick(String restaurantId) {
+        Log.d(TAG, "OnWorkmateClick");
+
+        if (restaurantId != null) {
+            for (Restaurant restaurant : mRestaurants) {
+                if (restaurant.getPlaceId().equals(restaurantId)) {
+                    Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                            mContext,
+                            RestaurantDetailsActivity.class,
+                            restaurant);
+                    startActivity(intent);
+                    break;
+                }
+            }
+        }
+    }
+
 
     // methods
+    private void initObservers() {
+        Log.d(TAG, "initObservers");
+
+        mBinding.workmatesRecyclerView.setAdapter(new WorkmatesAdapter(
+                generateOptionsForAdapter(mViewModel.getUsersQuery()
+                        .orderBy(SELECTED_RESTAURANT_ID_FIELD, Query.Direction.DESCENDING)),
+                Glide.with(this),
+                this));
+
+        mViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurants) {
+                Log.d(TAG, "getRestaurants");
+
+                if (mRestaurants == null) {
+                    mRestaurants = new ArrayList<>();
+                }
+
+                mRestaurants.clear();
+                mRestaurants.addAll(restaurants);
+            }
+        });
+    }
+
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query) {
+        Log.d(TAG, "generateOptionsForAdapter");
+
         return new FirestoreRecyclerOptions.Builder<User>()
                 .setQuery(query, User.class)
                 .setLifecycleOwner(this)

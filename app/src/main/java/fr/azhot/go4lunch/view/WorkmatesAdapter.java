@@ -1,6 +1,7 @@
 package fr.azhot.go4lunch.view;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -17,22 +18,32 @@ import fr.azhot.go4lunch.model.User;
 public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAdapter.WorkmateViewHolder> {
 
 
+    // private static
+    private static final String TAG = "WorkmatesAdapter";
+    private OnWorkmateClickListener mListener;
+
+
     // variables
     private final RequestManager glide;
 
-
     // constructor
-    public WorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide) {
+    public WorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, OnWorkmateClickListener listener) {
         super(options);
         this.glide = glide;
+        this.mListener = listener;
     }
-
 
     // inherited methods
     @NonNull
     @Override
     public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new WorkmateViewHolder(CellWorkmatesBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new WorkmateViewHolder(CellWorkmatesBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+    }
+
+
+    // interface
+    public interface OnWorkmateClickListener {
+        void OnWorkmateClick(String restaurantId);
     }
 
     @Override
@@ -40,18 +51,23 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
         holder.bindWithUserDetails(model, glide);
     }
 
-
     // view holder
-    public static class WorkmateViewHolder extends RecyclerView.ViewHolder {
+    public static class WorkmateViewHolder extends RecyclerView.ViewHolder implements ViewGroup.OnClickListener {
 
         private CellWorkmatesBinding mBinding;
+        private OnWorkmateClickListener mListener;
+        private User mUser;
 
-        public WorkmateViewHolder(CellWorkmatesBinding binding) {
+        public WorkmateViewHolder(CellWorkmatesBinding binding, OnWorkmateClickListener listener) {
             super(binding.getRoot());
             this.mBinding = binding;
+            this.mListener = listener;
+            this.mUser = null;
+            binding.getRoot().setOnClickListener(this);
         }
 
         public void bindWithUserDetails(User user, RequestManager glide) {
+            mUser = user;
             glide.load(user.getUrlPicture())
                     .circleCrop()
                     .into(mBinding.cellWorkmatesProfilePicture);
@@ -80,6 +96,11 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
                         mBinding.getRoot().getContext(),
                         R.style.TextHasNotDecided);
             }
+        }
+
+        @Override
+        public void onClick(View v) {
+            mListener.OnWorkmateClick(mUser.getSelectedRestaurantId());
         }
     }
 }

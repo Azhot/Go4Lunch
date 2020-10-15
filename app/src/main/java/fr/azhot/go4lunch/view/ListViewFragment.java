@@ -97,8 +97,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
     // Called when user clicks on a cell of the recyclerview
     @Override
-    public void onRestaurantClick(int position) {
-        Restaurant restaurant = mAdapter.getRestaurantByPosition(position);
+    public void onRestaurantClick(Restaurant restaurant) {
         Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
                 mContext,
                 RestaurantDetailsActivity.class,

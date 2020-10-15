@@ -23,19 +23,18 @@ import fr.azhot.go4lunch.model.Restaurant;
 
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
+
     // private static
     private static final String TAG = "ListViewAdapter";
-
     // variables
-    private RequestManager mGlide;
+    private final RequestManager mGlide;
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mHiddenRestaurants;
     private Location mDeviceLocation;
     private OnRestaurantClickListener mListener;
 
-
     // constructor
-    public ListViewAdapter(RequestManager glide, ListViewAdapter.OnRestaurantClickListener listener) {
+    public ListViewAdapter(RequestManager glide, OnRestaurantClickListener listener) {
         Log.d(TAG, "constructor");
 
         this.mGlide = glide;
@@ -45,6 +44,29 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         this.mListener = listener;
     }
 
+    // inherited methods
+    @NonNull
+    @Override
+    public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new RestaurantViewHolder(CellListViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
+        holder.onBindData(mRestaurants.get(position), mGlide, mDeviceLocation);
+    }
+
+    @Override
+    public int getItemCount() {
+        return mRestaurants.size();
+    }
+
+    // interface
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(Restaurant restaurant);
+    }
+
+
     // methods
     public void setRestaurants(List<Restaurant> restaurants) {
         Log.d(TAG, "setRestaurants");
@@ -52,12 +74,6 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         mRestaurants.clear();
         mRestaurants.addAll(restaurants);
         sortRestaurants();
-    }
-
-    public Restaurant getRestaurantByPosition(int position) {
-        Log.d(TAG, "getRestaurantByPosition");
-
-        return mRestaurants.get(position);
     }
 
     public void hideRestaurants() {
@@ -95,44 +111,23 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         notifyDataSetChanged();
     }
 
-    // inherited methods
-    @NonNull
-    @Override
-    public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RestaurantViewHolder(CellListViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
-        holder.onBindData(mRestaurants.get(position), mGlide, mDeviceLocation);
-    }
-
-    @Override
-    public int getItemCount() {
-        return mRestaurants.size();
-    }
-
-
-    // interface
-    public interface OnRestaurantClickListener {
-        void onRestaurantClick(int position);
-    }
-
-
     // view holder
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private CellListViewBinding mBinding;
-        private ListViewAdapter.OnRestaurantClickListener mListener;
+        private OnRestaurantClickListener mListener;
+        private Restaurant mRestaurant;
 
         public RestaurantViewHolder(CellListViewBinding binding, ListViewAdapter.OnRestaurantClickListener listener) {
             super(binding.getRoot());
             this.mBinding = binding;
             this.mListener = listener;
+            this.mRestaurant = null;
             binding.getRoot().setOnClickListener(this);
         }
 
         public void onBindData(Restaurant restaurant, RequestManager glide, Location deviceLocation) {
+            mRestaurant = restaurant;
             mBinding.cellListViewNameTextView.setText(restaurant.getName());
             String distance = Math.round(deviceLocation.distanceTo(restaurant.getLocation())) + "m";
             mBinding.cellListViewDistanceTextView.setText(distance);
@@ -169,7 +164,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
         @Override
         public void onClick(View v) {
-            mListener.onRestaurantClick(getAdapterPosition());
+            mListener.onRestaurantClick(mRestaurant);
         }
     }
 }
