@@ -3,9 +3,10 @@ package fr.azhot.go4lunch.util;
 import com.google.android.gms.maps.model.LatLng;
 
 public abstract class AppConstants {
-    public static final int RC_PERMISSIONS = 1234;
-    public static final int RC_CHECK_SETTINGS = 2345;
-    public static final int RC_GOOGLE_SIGN_IN = 3456;
+    public static final int RC_LOCATION_PERMISSIONS = 1234;
+    public static final int RC_CALL_PHONE_PERMISSION = 2345;
+    public static final int RC_CHECK_SETTINGS = 3456;
+    public static final int RC_GOOGLE_SIGN_IN = 4567;
     public static final int DEFAULT_INTERVAL = 10000;
     public static final int FASTEST_INTERVAL = 5000;
     public static final float DEFAULT_ZOOM = 14.5f;

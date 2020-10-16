@@ -57,7 +57,6 @@ import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.INIT_ZOOM;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
-@SuppressWarnings("MissingPermission") // ok since permissions are forced to the user @ onResume
 public class MapViewFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
@@ -120,7 +119,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onResume");
 
         super.onResume();
-        checkLocationPermissions(mContext); // should NOT be remove without removing @SuppressWarnings("MissingPermission")
         mMapFragment.getMapAsync(this);
     }
 
@@ -155,6 +153,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                     new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
                     DEFAULT_ZOOM));
+            checkLocationPermission(mContext);
             mGoogleMap.setMyLocationEnabled(true);
         }
     }
@@ -164,7 +163,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onMarkerClick");
         for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
             if (marker.getTag() == entry.getValue().getTag()) {
-                Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
                         mContext, RestaurantDetailsActivity.class, entry.getKey());
                 startActivity(intent);
                 return true;
@@ -259,6 +258,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                 Log.d(TAG, "getLocationActivated: onChanged");
 
                 if (mGoogleMap != null) {
+                    checkLocationPermission(mContext);
                     mGoogleMap.setMyLocationEnabled(aBoolean);
                     for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
                         entry.getValue().setVisible(aBoolean);
@@ -268,7 +268,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         });
     }
 
-    private void checkLocationPermissions(Context context) {
+    private void checkLocationPermission(Context context) {
         Log.d(TAG, "checkPermissions");
 
         if (!PermissionsUtils.isLocationPermissionGranted(context)) {

@@ -56,7 +56,7 @@ import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
-import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         setUpDrawerNavigation();
         setUpDrawerWithUserDetails();
         setUpBottomNavigation();
-        PermissionsUtils.checkLocationPermissions(this);
+        PermissionsUtils.checkLocationPermission(this);
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
             launchFragment();
             initObservers();
@@ -104,18 +104,19 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onRequestPermissionsResult");
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_PERMISSIONS) {
+        if (requestCode == RC_LOCATION_PERMISSIONS) {
             if (grantResults.length > 0) {
                 for (int i : grantResults) {
                     if (i != PackageManager.PERMISSION_GRANTED) {
                         Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
-                        PermissionsUtils.forceUserChoiceOnPermissions(this);
+                        PermissionsUtils.forceUserChoiceOnLocationPermissions(this);
                         return;
+                    } else {
+                        launchFragment();
+                        initObservers();
                     }
                 }
             }
-            launchFragment();
-            initObservers();
         }
     }
 
@@ -231,10 +232,8 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             if (selectedRestaurant != null) {
-                                Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                                        MainActivity.this,
-                                        RestaurantDetailsActivity.class,
-                                        selectedRestaurant);
+                                Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
+                                        MainActivity.this, RestaurantDetailsActivity.class, selectedRestaurant);
                                 startActivity(intent);
                             } else {
                                 Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
@@ -327,9 +326,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // ok since permissions are forced onto the user @ onRequestPermissionsResult and
-    // checkLocationPermissions is called @ onCreate
-    @SuppressWarnings("MissingPermission")
+    @SuppressWarnings("MissingPermission") // ok since we are calling isLocationPermissionGranted
     private void initLocationUpdates() {
         Log.d(TAG, "initLocationUpdates");
 
@@ -369,21 +366,19 @@ public class MainActivity extends AppCompatActivity {
             };
         }
 
-        mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            mFusedLocationProviderClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
+        }
     }
 
     private void launchFragment() {
         Log.d(TAG, "launchFragment");
 
-        if (PermissionsUtils.isLocationPermissionGranted(this)) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
-                    .commit();
-            setTitle(R.string.list_view_title);
-        } else {
-            PermissionsUtils.checkLocationPermissions(this);
-        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
+                .commit();
+        setTitle(R.string.list_view_title);
     }
 
     private void initObservers() {

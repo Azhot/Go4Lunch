@@ -98,10 +98,8 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
         if (restaurantId != null) {
             for (Restaurant restaurant : mRestaurants) {
                 if (restaurant.getPlaceId().equals(restaurantId)) {
-                    Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                            mContext,
-                            RestaurantDetailsActivity.class,
-                            restaurant);
+                    Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
+                            mContext, RestaurantDetailsActivity.class, restaurant);
                     startActivity(intent);
                     break;
                 }

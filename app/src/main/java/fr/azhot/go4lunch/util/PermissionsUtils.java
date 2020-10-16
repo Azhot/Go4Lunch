@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import fr.azhot.go4lunch.R;
 
-import static fr.azhot.go4lunch.util.AppConstants.RC_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 
 public class PermissionsUtils {
 
@@ -22,6 +22,7 @@ public class PermissionsUtils {
 
     public static void getLocationPermission(AppCompatActivity activity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -33,20 +34,21 @@ public class PermissionsUtils {
 
     public static boolean isLocationPermissionGranted(Context context) {
         Log.d(TAG, "isLocationPermissionGranted");
+
         return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void checkLocationPermissions(AppCompatActivity appCompatActivity) {
-        Log.d(TAG, "checkPermissions");
+    public static void checkLocationPermission(AppCompatActivity appCompatActivity) {
+        Log.d(TAG, "checkLocationPermission");
 
         if (!PermissionsUtils.isLocationPermissionGranted(appCompatActivity)) {
-            PermissionsUtils.getLocationPermission(appCompatActivity, RC_PERMISSIONS);
+            PermissionsUtils.getLocationPermission(appCompatActivity, RC_LOCATION_PERMISSIONS);
         }
     }
 
-    public static void forceUserChoiceOnPermissions(AppCompatActivity appCompatActivity) {
-        Log.d(TAG, "forceUserChoiceOnPermissions");
+    public static void forceUserChoiceOnLocationPermissions(AppCompatActivity appCompatActivity) {
+        Log.d(TAG, "forceUserChoiceOnLocationPermissions");
 
         new AlertDialog.Builder(appCompatActivity)
                 .setTitle(R.string.permissions_dialog_title)
@@ -54,7 +56,7 @@ public class PermissionsUtils {
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        checkLocationPermissions(appCompatActivity);
+                        checkLocationPermission(appCompatActivity);
                     }
                 })
                 .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
@@ -70,12 +72,35 @@ public class PermissionsUtils {
                                 event.getAction() == KeyEvent.ACTION_UP &&
                                 !event.isCanceled()) {
                             dialog.cancel();
-                            checkLocationPermissions(appCompatActivity);
+                            checkLocationPermission(appCompatActivity);
                             return true;
                         }
                         return false;
                     }
                 })
                 .show();
+    }
+
+    public static void getCallPhonePermission(AppCompatActivity activity, int requestCode) {
+        Log.d(TAG, "getLocationPermission");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] permissions = new String[]{Manifest.permission.CALL_PHONE,};
+            activity.requestPermissions(permissions, requestCode);
+        }
+    }
+
+    public static boolean isCallPhonePermissionGranted(Context context) {
+        Log.d(TAG, "isLocationPermissionGranted");
+
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void checkCallPhonePermission(AppCompatActivity appCompatActivity) {
+        Log.d(TAG, "checkLocationPermission");
+
+        if (!PermissionsUtils.isCallPhonePermissionGranted(appCompatActivity)) {
+            PermissionsUtils.getCallPhonePermission(appCompatActivity, RC_LOCATION_PERMISSIONS);
+        }
     }
 }

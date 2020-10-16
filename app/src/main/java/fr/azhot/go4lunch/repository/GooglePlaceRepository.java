@@ -21,6 +21,7 @@ import java.util.List;
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
+import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.service.RetrofitService;
@@ -28,36 +29,38 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RestaurantRepository {
+public class GooglePlaceRepository {
 
 
     // private static
-    private static final String TAG = "NearbyRestaurantsRepo";
-    private static RestaurantRepository RESTAURANT_REPOSITORY;
+    private static final String TAG = "GooglePlaceRepository";
+    private static GooglePlaceRepository GOOGLE_PLACE_REPOSITORY;
 
 
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurantsPOJO;
-    private MutableLiveData<List<Restaurant>> mRestaurants;
+    private final MutableLiveData<List<Restaurant>> mRestaurants;
+    private final MutableLiveData<DetailsPOJO> mDetailsPOJO;
 
 
     // constructor
-    private RestaurantRepository() {
+    private GooglePlaceRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
         mNearbyRestaurantsPOJO = new MutableLiveData<>();
         mRestaurants = new MutableLiveData<>();
+        mDetailsPOJO = new MutableLiveData<>();
     }
 
 
     // public static
-    public static RestaurantRepository getInstance() {
+    public static GooglePlaceRepository getInstance() {
         Log.d(TAG, "getInstance");
 
-        if (RESTAURANT_REPOSITORY == null) {
-            RESTAURANT_REPOSITORY = new RestaurantRepository();
+        if (GOOGLE_PLACE_REPOSITORY == null) {
+            GOOGLE_PLACE_REPOSITORY = new GooglePlaceRepository();
         }
-        return RESTAURANT_REPOSITORY;
+        return GOOGLE_PLACE_REPOSITORY;
     }
 
 
@@ -89,7 +92,7 @@ public class RestaurantRepository {
         });
     }
 
-    public MutableLiveData<List<Restaurant>> getRestaurants() {
+    public LiveData<List<Restaurant>> getRestaurants() {
         return mRestaurants;
     }
 
@@ -149,5 +152,32 @@ public class RestaurantRepository {
                         });
             }
         }
+    }
+
+    public LiveData<DetailsPOJO> getDetailsPOJO() {
+        Log.d(TAG, "getDetailsPOJO");
+
+        return mDetailsPOJO;
+    }
+
+    public void setDetailsPOJO(String placeId) {
+        Log.d(TAG, "setDetailsPOJO");
+
+        Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getPlaceDetails(placeId);
+        placeDetails.enqueue(new Callback<DetailsPOJO>() {
+            @Override
+            public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
+                Log.d(TAG, "setDetailsPOJO: onResponse");
+
+                mDetailsPOJO.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
+                Log.d(TAG, "setDetailsPOJO: onFailure");
+
+                mDetailsPOJO.postValue(null);
+            }
+        });
     }
 }

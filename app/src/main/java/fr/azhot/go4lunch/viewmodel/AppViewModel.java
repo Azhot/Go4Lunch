@@ -14,10 +14,11 @@ import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
+import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.repository.RestaurantRepository;
+import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
 
 public class AppViewModel extends ViewModel {
@@ -28,18 +29,18 @@ public class AppViewModel extends ViewModel {
 
 
     // variables
-    private final RestaurantRepository mRestaurantRepository;
+    private final GooglePlaceRepository mGooglePlaceRepository;
     private final UserRepository mUserRepository;
-    private MutableLiveData<Location> deviceLocation;
-    private MutableLiveData<Boolean> isLocationActivated;
+    private MutableLiveData<Location> mDeviceLocation;
+    private MutableLiveData<Boolean> mIsLocationActivated;
 
 
     // constructors
     public AppViewModel() {
-        mRestaurantRepository = RestaurantRepository.getInstance();
+        mGooglePlaceRepository = GooglePlaceRepository.getInstance();
         mUserRepository = UserRepository.getInstance();
-        deviceLocation = new MutableLiveData<>();
-        isLocationActivated = new MutableLiveData<>();
+        mDeviceLocation = new MutableLiveData<>();
+        mIsLocationActivated = new MutableLiveData<>();
     }
 
 
@@ -47,49 +48,67 @@ public class AppViewModel extends ViewModel {
     public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurantsPOJO() {
         Log.d(TAG, "getNearbyRestaurantsPOJO");
 
-        return mRestaurantRepository.getNearbyRestaurantsPOJO();
+        return mGooglePlaceRepository.getNearbyRestaurantsPOJO();
     }
 
     public void setNearbyRestaurantsPOJO(String location, int radius) {
         Log.d(TAG, "setNearbyRestaurantsPOJO");
 
-        mRestaurantRepository.setNearbyRestaurantsPOJO(location, radius);
+        mGooglePlaceRepository.setNearbyRestaurantsPOJO(location, radius);
     }
 
-    public MutableLiveData<List<Restaurant>> getRestaurants() {
-        return mRestaurantRepository.getRestaurants();
+    public LiveData<List<Restaurant>> getRestaurants() {
+        Log.d(TAG, "getRestaurants");
+
+        return mGooglePlaceRepository.getRestaurants();
     }
 
     public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-        mRestaurantRepository.setRestaurants(nearbyRestaurantsPOJO);
+        Log.d(TAG, "setRestaurants");
+
+        mGooglePlaceRepository.setRestaurants(nearbyRestaurantsPOJO);
     }
 
     public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
-        mRestaurantRepository.loadRestaurantsPhotos(restaurants, glide);
+        Log.d(TAG, "loadRestaurantsPhotos");
+
+        mGooglePlaceRepository.loadRestaurantsPhotos(restaurants, glide);
     }
 
-    public MutableLiveData<Location> getDeviceLocation() {
+    public LiveData<DetailsPOJO> getDetailsPOJO() {
+        Log.d(TAG, "getDetailsPOJO");
+
+        return mGooglePlaceRepository.getDetailsPOJO();
+    }
+
+    public void setDetailsPOJO(String placeId) {
+        Log.d(TAG, "setDetailsPOJO");
+
+        mGooglePlaceRepository.setDetailsPOJO(placeId);
+    }
+
+    public LiveData<Location> getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation");
 
-        return deviceLocation;
+        return mDeviceLocation;
     }
 
     public void setDeviceLocation(Location location) {
         Log.d(TAG, "setDeviceLocation");
 
-        deviceLocation.setValue(location);
+        mDeviceLocation.setValue(location);
     }
 
-    public MutableLiveData<Boolean> getLocationActivated() {
+    public LiveData<Boolean> getLocationActivated() {
         Log.d(TAG, "getLocationActivated");
 
-        return isLocationActivated;
+        return mIsLocationActivated;
     }
 
     public void setLocationActivated(boolean b) {
         Log.d(TAG, "setLocationActivated");
 
-        isLocationActivated.setValue(b);
+        mIsLocationActivated.setValue(b);
     }
 
     public Task<Void> createOrUpdateUser(User user) {
