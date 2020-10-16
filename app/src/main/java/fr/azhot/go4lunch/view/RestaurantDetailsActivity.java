@@ -1,10 +1,8 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +17,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -81,18 +77,11 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_CALL_PHONE_PERMISSION) {
-            if (grantResults.length > 0) {
-                for (int i : grantResults) {
-                    if (i != PackageManager.PERMISSION_GRANTED) {
-                        Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
-                        return;
-                    }
-                }
+            if (PermissionsUtils.checkCallPhonePermission(this)) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
+                startActivity(intent);
             }
-            PermissionsUtils.checkCallPhonePermission(this);
-            Intent intent = new Intent(Intent.ACTION_CALL);
-            intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
-            startActivity(intent);
         }
     }
 
@@ -133,46 +122,24 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                     mRestaurantWebsite = mResult.getWebsite();
                     mRestaurantPhoneNumber = mResult.getInternationalPhoneNumber();
 
-                    if (mResult.getPhotos() != null) {
-                        if (mRestaurantPhoto == null) {
-                            String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                                    "key=" + BuildConfig.GOOGLE_API_KEY +
-                                    "&photoreference=" + mResult.getPhotos().get(0).getPhotoReference() +
-                                    "&maxwidth=400";
-                            Glide.with(RestaurantDetailsActivity.this)
-                                    .asBitmap()
-                                    .load(photoUrl)
-                                    .into(new CustomTarget<Bitmap>() {
-                                        @Override
-                                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                            mBinding.restaurantDetailsPhotoImageView.setImageBitmap(resource);
-                                        }
-
-                                        @Override
-                                        public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                        }
-                                    });
-                        }
+                    if (mResult.getPhotos() != null && mRestaurantPhoto == null) {
+                        String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                                "key=" + BuildConfig.GOOGLE_API_KEY +
+                                "&photoreference=" + mResult.getPhotos().get(0).getPhotoReference() +
+                                "&maxwidth=400";
+                        Glide.with(RestaurantDetailsActivity.this)
+                                .load(photoUrl)
+                                .into(mBinding.restaurantDetailsPhotoImageView);
                     } else {
                         Glide.with(RestaurantDetailsActivity.this)
                                 .asBitmap()
                                 .load(R.drawable.ic_no_image)
-                                .into(new CustomTarget<Bitmap>() {
-                                    @Override
-                                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                        mBinding.restaurantDetailsPhotoImageView.setImageBitmap(resource);
-                                    }
-
-                                    @Override
-                                    public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                    }
-                                });
+                                .into(mBinding.restaurantDetailsPhotoImageView);
                     }
                     updateUIWithRestaurantDetails();
                 } else {
-                    // todo : could not find restaurant with this ID
+                    // could not find restaurant with this ID (which should not happen)
+                    // or connection is not available
                 }
             }
         });
@@ -267,10 +234,11 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 Log.d(TAG, "onClick");
 
                 if (mRestaurantPhoneNumber != null) {
-                    PermissionsUtils.checkCallPhonePermission(this);
-                    Intent intent = new Intent(Intent.ACTION_CALL);
-                    intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
-                    startActivity(intent);
+                    if (PermissionsUtils.checkCallPhonePermission(this)) {
+                        Intent intent = new Intent(Intent.ACTION_CALL);
+                        intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
+                        startActivity(intent);
+                    }
                 } else {
                     Toast.makeText(this, R.string.no_phone_number, Toast.LENGTH_SHORT).show();
                 }

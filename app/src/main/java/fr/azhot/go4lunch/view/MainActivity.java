@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -222,22 +223,19 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.nav_your_lunch:
-                        if (mRestaurants != null) {
-                            Restaurant selectedRestaurant = null;
+                        if (mUser.getSelectedRestaurantId() != null) {
+                            Bitmap restaurantPhoto = null;
                             for (Restaurant restaurant : mRestaurants) {
                                 if (restaurant.getPlaceId().equals(mUser.getSelectedRestaurantId())) {
-                                    selectedRestaurant = restaurant;
+                                    restaurantPhoto = restaurant.getPhoto();
                                     break;
                                 }
                             }
-
-                            if (selectedRestaurant != null) {
-                                Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
-                                        MainActivity.this, RestaurantDetailsActivity.class, selectedRestaurant);
-                                startActivity(intent);
-                            } else {
-                                Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
-                            }
+                            Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                                    MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId(), restaurantPhoto);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
                         }
                         break;
                     case R.id.nav_settings:
@@ -268,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
                     .getHeaderView(0)
                     .findViewById(R.id.drawer_header_user_picture);
             Glide.with(this)
-                    // todo : add a "no image" picture here instead of null
                     .load((currentUser.getPhotoUrl()))
                     .circleCrop()
                     .into(userPicture);
@@ -347,8 +344,10 @@ public class MainActivity extends AppCompatActivity {
                     mViewModel.setDeviceLocation(currentLocation);
                     if (mDeviceLocation == null || mDeviceLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
                         mDeviceLocation = currentLocation;
-                        // todo : check if connection is available or else show message to user that no connection
-                        //  otherwise it bugs if connection was not available on first call then it never gets nearby restaurants
+                        // should check connection status to send a "no connection"
+                        // message to user if not available.
+                        // otherwise if connection was not available on first
+                        // call then observer never gets nearby restaurants for current location.
                         mViewModel.setNearbyRestaurantsPOJO(mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
                     }
                 }

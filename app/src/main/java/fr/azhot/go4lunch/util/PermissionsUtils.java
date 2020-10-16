@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import fr.azhot.go4lunch.R;
 
+import static fr.azhot.go4lunch.util.AppConstants.RC_CALL_PHONE_PERMISSION;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 
 public class PermissionsUtils {
@@ -90,17 +91,13 @@ public class PermissionsUtils {
         }
     }
 
-    public static boolean isCallPhonePermissionGranted(Context context) {
-        Log.d(TAG, "isLocationPermissionGranted");
-
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public static void checkCallPhonePermission(AppCompatActivity appCompatActivity) {
+    public static boolean checkCallPhonePermission(AppCompatActivity appCompatActivity) {
         Log.d(TAG, "checkLocationPermission");
 
-        if (!PermissionsUtils.isCallPhonePermissionGranted(appCompatActivity)) {
-            PermissionsUtils.getCallPhonePermission(appCompatActivity, RC_LOCATION_PERMISSIONS);
+        if (!(ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED)) {
+            PermissionsUtils.getCallPhonePermission(appCompatActivity, RC_CALL_PHONE_PERMISSION);
         }
+
+        return ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
     }
 }

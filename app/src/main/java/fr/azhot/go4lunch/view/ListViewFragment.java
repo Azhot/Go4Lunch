@@ -2,6 +2,7 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -97,9 +98,9 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
     // Called when user clicks on a cell of the recyclerview
     @Override
-    public void onRestaurantClick(Restaurant restaurant) {
-        Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
-                mContext, RestaurantDetailsActivity.class, restaurant);
+    public void onRestaurantClick(String restaurantId, Bitmap restaurantPhoto) {
+        Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                mContext, RestaurantDetailsActivity.class, restaurantId, restaurantPhoto);
         startActivity(intent);
     }
 

@@ -163,8 +163,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onMarkerClick");
         for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
             if (marker.getTag() == entry.getValue().getTag()) {
-                Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
-                        mContext, RestaurantDetailsActivity.class, entry.getKey());
+                Restaurant restaurant = entry.getKey();
+                Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                        mContext, RestaurantDetailsActivity.class, restaurant.getPlaceId(), restaurant.getPhoto());
                 startActivity(intent);
                 return true;
             }

@@ -1,5 +1,6 @@
 package fr.azhot.go4lunch.view;
 
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
@@ -24,14 +25,23 @@ import fr.azhot.go4lunch.model.Restaurant;
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
 
+    // interface
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(String restaurantId, Bitmap restaurantPhoto);
+    }
+
+
     // private static
     private static final String TAG = "ListViewAdapter";
+
+
     // variables
     private final RequestManager mGlide;
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mHiddenRestaurants;
     private Location mDeviceLocation;
     private OnRestaurantClickListener mListener;
+
 
     // constructor
     public ListViewAdapter(RequestManager glide, OnRestaurantClickListener listener) {
@@ -59,11 +69,6 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     @Override
     public int getItemCount() {
         return mRestaurants.size();
-    }
-
-    // interface
-    public interface OnRestaurantClickListener {
-        void onRestaurantClick(Restaurant restaurant);
     }
 
 
@@ -164,7 +169,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
         @Override
         public void onClick(View v) {
-            mListener.onRestaurantClick(mRestaurant);
+            mListener.onRestaurantClick(mRestaurant.getPlaceId(), mRestaurant.getPhoto());
         }
     }
 }

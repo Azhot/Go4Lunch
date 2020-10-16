@@ -2,11 +2,13 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +24,7 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
@@ -92,18 +95,23 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
     }
 
     @Override
-    public void OnWorkmateClick(String restaurantId) {
+    public void OnWorkmateClick(String restaurantId, String userName) {
         Log.d(TAG, "OnWorkmateClick");
 
         if (restaurantId != null) {
+            Bitmap restaurantPhoto = null;
             for (Restaurant restaurant : mRestaurants) {
                 if (restaurant.getPlaceId().equals(restaurantId)) {
-                    Intent intent = IntentUtils.loadRestaurantPhotoIntoIntent(
-                            mContext, RestaurantDetailsActivity.class, restaurant);
-                    startActivity(intent);
+                    restaurantPhoto = restaurant.getPhoto();
                     break;
                 }
             }
+            Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                    mContext, RestaurantDetailsActivity.class, restaurantId, restaurantPhoto);
+            startActivity(intent);
+        } else {
+            String firstName = userName.split(" ")[0];
+            Toast.makeText(mContext, getString(R.string.has_not_decided, firstName), Toast.LENGTH_SHORT).show();
         }
     }
 

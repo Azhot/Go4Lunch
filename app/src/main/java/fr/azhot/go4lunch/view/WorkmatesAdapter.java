@@ -18,6 +18,12 @@ import fr.azhot.go4lunch.model.User;
 public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAdapter.WorkmateViewHolder> {
 
 
+    // interface
+    public interface OnWorkmateClickListener {
+        void OnWorkmateClick(String restaurantId, String userName);
+    }
+
+
     // private static
     private static final String TAG = "WorkmatesAdapter";
     private OnWorkmateClickListener mListener;
@@ -25,6 +31,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
 
     // variables
     private final RequestManager glide;
+
 
     // constructor
     public WorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, OnWorkmateClickListener listener) {
@@ -38,12 +45,6 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
     @Override
     public WorkmateViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new WorkmateViewHolder(CellWorkmatesBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false), mListener);
-    }
-
-
-    // interface
-    public interface OnWorkmateClickListener {
-        void OnWorkmateClick(String restaurantId);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
 
         @Override
         public void onClick(View v) {
-            mListener.OnWorkmateClick(mUser.getSelectedRestaurantId());
+            mListener.OnWorkmateClick(mUser.getSelectedRestaurantId(), mUser.getName());
         }
     }
 }
