@@ -3,13 +3,13 @@ package fr.azhot.go4lunch.model;
 import android.graphics.Bitmap;
 import android.location.Location;
 
-public class Restaurant extends NearbyRestaurantsPOJO.Result {
+public class Restaurant extends NearbySearchPOJO.Result {
 
     private Bitmap mPhoto;
     private Location mLocation;
     private int mWorkmatesJoining;
 
-    public Restaurant(NearbyRestaurantsPOJO.Result result, Location location) {
+    public Restaurant(NearbySearchPOJO.Result result, Location location) {
         super(result.getGeometry(), result.getIcon(), result.getName(), result.getPhotos(),
                 result.getPlaceId(), result.getReference(), result.getScope(), result.getTypes(),
                 result.getVicinity(), result.getBusinessStatus(), result.getOpeningHours(),

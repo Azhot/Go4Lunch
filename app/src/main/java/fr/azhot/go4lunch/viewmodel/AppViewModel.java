@@ -14,8 +14,9 @@ import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
+import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.DetailsPOJO;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.GooglePlaceRepository;
@@ -45,28 +46,28 @@ public class AppViewModel extends ViewModel {
 
 
     // methods
-    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurantsPOJO() {
-        Log.d(TAG, "getNearbyRestaurantsPOJO");
+    public LiveData<NearbySearchPOJO> getNearbySearchPOJO() {
+        Log.d(TAG, "getNearbySearchPOJO");
 
-        return mGooglePlaceRepository.getNearbyRestaurantsPOJO();
+        return mGooglePlaceRepository.getNearbySearchPOJO();
     }
 
-    public void setNearbyRestaurantsPOJO(String location, int radius) {
-        Log.d(TAG, "setNearbyRestaurantsPOJO");
+    public void setNearbySearchPOJO(String keyword, String location, int radius) {
+        Log.d(TAG, "setNearbySearchPOJO");
 
-        mGooglePlaceRepository.setNearbyRestaurantsPOJO(location, radius);
+        mGooglePlaceRepository.setNearbySearchPOJO(keyword, location, radius);
     }
 
-    public LiveData<List<Restaurant>> getRestaurants() {
-        Log.d(TAG, "getRestaurants");
+    public LiveData<List<Restaurant>> getNearbyRestaurants() {
+        Log.d(TAG, "getNearbyRestaurants");
 
-        return mGooglePlaceRepository.getRestaurants();
+        return mGooglePlaceRepository.getNearbyRestaurants();
     }
 
-    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-        Log.d(TAG, "setRestaurants");
+    public void setNearbyRestaurants(NearbySearchPOJO nearbySearchPOJO) {
+        Log.d(TAG, "setNearbyRestaurants");
 
-        mGooglePlaceRepository.setRestaurants(nearbyRestaurantsPOJO);
+        mGooglePlaceRepository.setNearbyRestaurants(nearbySearchPOJO);
     }
 
     public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
@@ -85,6 +86,18 @@ public class AppViewModel extends ViewModel {
         Log.d(TAG, "setDetailsPOJO");
 
         mGooglePlaceRepository.setDetailsPOJO(placeId);
+    }
+
+    public LiveData<AutocompletePOJO> getAutocompletePOJO() {
+        Log.d(TAG, "getAutocompletePOJO");
+
+        return mGooglePlaceRepository.getAutocompletePOJO();
+    }
+
+    public void setAutocompletePOJO(String input, String types, String location, int radius) {
+        Log.d(TAG, "setAutocompletePOJO");
+
+        mGooglePlaceRepository.setAutocompletePOJO(input, types, location, radius);
     }
 
     public LiveData<Location> getDeviceLocation() {

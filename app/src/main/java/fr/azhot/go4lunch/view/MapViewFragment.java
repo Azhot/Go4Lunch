@@ -200,10 +200,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getRestaurants: onChanged");
+                Log.d(TAG, "getNearbyRestaurants: onChanged");
 
                 for (ListenerRegistration registration : mListenerRegistrations) {
                     registration.remove();
@@ -225,7 +225,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                                         @Override
                                         public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
                                             if (snapshot != null && e == null) {
-                                                Log.d(TAG, "getRestaurants: added EventListener to : " + restaurant.getName());
+                                                Log.d(TAG, "loadWorkmatesInRestaurants: added EventListener to : " + restaurant.getName());
                                                 if (snapshot.size() != 0) {
                                                     marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_cyan));
                                                 } else {

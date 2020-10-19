@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
- * POJO of a DetailsPOJO API request
+ * POJO of a Details API request
  */
 public class DetailsPOJO {
 

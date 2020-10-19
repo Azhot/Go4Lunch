@@ -126,10 +126,10 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
                 Glide.with(this),
                 this));
 
-        mViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getRestaurants");
+                Log.d(TAG, "getNearbyRestaurants");
 
                 if (mRestaurants == null) {
                     mRestaurants = new ArrayList<>();

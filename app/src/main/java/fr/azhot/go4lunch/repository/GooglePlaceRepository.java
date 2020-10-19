@@ -21,8 +21,9 @@ import java.util.List;
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
+import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.DetailsPOJO;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.service.RetrofitService;
 import retrofit2.Call;
@@ -39,9 +40,10 @@ public class GooglePlaceRepository {
 
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
-    private final MutableLiveData<NearbyRestaurantsPOJO> mNearbyRestaurantsPOJO;
+    private final MutableLiveData<NearbySearchPOJO> mNearbyRestaurantsPOJO;
     private final MutableLiveData<List<Restaurant>> mRestaurants;
     private final MutableLiveData<DetailsPOJO> mDetailsPOJO;
+    private final MutableLiveData<AutocompletePOJO> mAutocompletePOJO;
 
 
     // constructor
@@ -50,6 +52,7 @@ public class GooglePlaceRepository {
         mNearbyRestaurantsPOJO = new MutableLiveData<>();
         mRestaurants = new MutableLiveData<>();
         mDetailsPOJO = new MutableLiveData<>();
+        mAutocompletePOJO = new MutableLiveData<>();
     }
 
 
@@ -65,41 +68,45 @@ public class GooglePlaceRepository {
 
 
     // methods
-    public LiveData<NearbyRestaurantsPOJO> getNearbyRestaurantsPOJO() {
-        Log.d(TAG, "getNearbyRestaurantsPOJO");
+    public LiveData<NearbySearchPOJO> getNearbySearchPOJO() {
+        Log.d(TAG, "getNearbySearchPOJO");
 
         return mNearbyRestaurantsPOJO;
     }
 
-    public void setNearbyRestaurantsPOJO(String location, int radius) {
-        Log.d(TAG, "setNearbyRestaurantsPOJO");
+    public void setNearbySearchPOJO(String keyword, String location, int radius) {
+        Log.d(TAG, "setNearbySearchPOJO");
 
-        Call<NearbyRestaurantsPOJO> nearbyRestaurants = mGoogleMapsApi.getNearbyRestaurants(location, radius);
-        nearbyRestaurants.enqueue(new Callback<NearbyRestaurantsPOJO>() {
+        Call<NearbySearchPOJO> placeNearbySearch = mGoogleMapsApi.getNearbySearch(keyword, location, radius);
+        placeNearbySearch.enqueue(new Callback<NearbySearchPOJO>() {
             @Override
-            public void onResponse(@NonNull Call<NearbyRestaurantsPOJO> call, @NonNull Response<NearbyRestaurantsPOJO> response) {
-                Log.d(TAG, "setNearbyRestaurantsPOJO: onResponse");
+            public void onResponse(@NonNull Call<NearbySearchPOJO> call, @NonNull Response<NearbySearchPOJO> response) {
+                Log.d(TAG, "setNearbySearchPOJO: onResponse");
 
                 mNearbyRestaurantsPOJO.setValue(response.body());
             }
 
             @Override
-            public void onFailure(@NonNull Call<NearbyRestaurantsPOJO> call, @NonNull Throwable t) {
-                Log.d(TAG, "setNearbyRestaurantsPOJO: onFailure");
+            public void onFailure(@NonNull Call<NearbySearchPOJO> call, @NonNull Throwable t) {
+                Log.d(TAG, "setNearbySearchPOJO: onFailure");
 
                 mNearbyRestaurantsPOJO.postValue(null);
             }
         });
     }
 
-    public LiveData<List<Restaurant>> getRestaurants() {
+    public LiveData<List<Restaurant>> getNearbyRestaurants() {
+        Log.d(TAG, "getNearbyRestaurants");
+
         return mRestaurants;
     }
 
-    public void setRestaurants(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
+    public void setNearbyRestaurants(NearbySearchPOJO nearbySearchPOJO) {
+        Log.d(TAG, "setNearbyRestaurants");
+
         List<Restaurant> restaurants = new ArrayList<>();
 
-        for (NearbyRestaurantsPOJO.Result result : nearbyRestaurantsPOJO.getResults()) {
+        for (NearbySearchPOJO.Result result : nearbySearchPOJO.getResults()) {
             Location location = new Location(LocationManager.GPS_PROVIDER);
             location.setLatitude(result.getGeometry().getLocation().getLat());
             location.setLongitude(result.getGeometry().getLocation().getLng());
@@ -121,10 +128,11 @@ public class GooglePlaceRepository {
                         "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
                         "&maxwidth=400";
 
-                Log.d(TAG, "setRestaurants: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
+                Log.d(TAG, "setNearbyRestaurants: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
 
                 glide.asBitmap()
                         .load("https://source.unsplash.com/random/400x400?sig=" + i++) // todo : REPLACE AT THE END OF PROJECT
+                        // .load(photoUrl)
                         .into(new CustomTarget<Bitmap>() {
                             @Override
                             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
@@ -163,7 +171,7 @@ public class GooglePlaceRepository {
     public void setDetailsPOJO(String placeId) {
         Log.d(TAG, "setDetailsPOJO");
 
-        Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getPlaceDetails(placeId);
+        Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
@@ -177,6 +185,33 @@ public class GooglePlaceRepository {
                 Log.d(TAG, "setDetailsPOJO: onFailure");
 
                 mDetailsPOJO.postValue(null);
+            }
+        });
+    }
+
+    public LiveData<AutocompletePOJO> getAutocompletePOJO() {
+        Log.d(TAG, "getAutocompletePOJO");
+
+        return mAutocompletePOJO;
+    }
+
+    public void setAutocompletePOJO(String input, String types, String location, int radius) {
+        Log.d(TAG, "setAutocompletePOJO: input=" + input + "&types=" + types + "&location=" + location + "&radius=" + radius);
+
+        Call<AutocompletePOJO> placeAutocomplete = mGoogleMapsApi.getAutocomplete(input, types, location, radius);
+        placeAutocomplete.enqueue(new Callback<AutocompletePOJO>() {
+            @Override
+            public void onResponse(@NonNull Call<AutocompletePOJO> call, @NonNull Response<AutocompletePOJO> response) {
+                Log.d(TAG, "setAutocompletePOJO: onResponse");
+
+                mAutocompletePOJO.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<AutocompletePOJO> call, @NonNull Throwable t) {
+                Log.d(TAG, "setAutocompletePOJO: onFailure");
+
+                mAutocompletePOJO.postValue(null);
             }
         });
     }

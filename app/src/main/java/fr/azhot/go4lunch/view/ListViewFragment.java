@@ -120,7 +120,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 mAdapter.setRestaurants(restaurants);

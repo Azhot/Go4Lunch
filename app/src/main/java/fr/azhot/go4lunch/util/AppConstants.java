@@ -13,12 +13,11 @@ public abstract class AppConstants {
     public static final LatLng CENTER_FRANCE = new LatLng(46.3432097, 2.5733245);
     public static final float INIT_ZOOM = 5f;
     public static final int NEARBY_SEARCH_RADIUS = 500;
+    public static final int AUTOCOMPLETE_SEARCH_RADIUS = 1000;
     public static final float DISTANCE_UNTIL_UPDATE = 50f;
     public static final String USER_COLLECTION_NAME = "users";
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";
-    public static final String RESTAURANT_NAME_EXTRA = "restaurantName";
-    public static final String RESTAURANT_VICINITY_EXTRA = "restaurantVicinity";
     public static final String RESTAURANT_PHOTO_EXTRA = "restaurantPhoto";
-    public static final String RESTAURANT_RATING_EXTRA = "restaurantRating";
     public static final String SELECTED_RESTAURANT_ID_FIELD = "selectedRestaurantId";
+    public static final String RESTAURANT_KEYWORD = "restaurant";
 }

@@ -46,7 +46,7 @@ import java.util.List;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
-import fr.azhot.go4lunch.model.NearbyRestaurantsPOJO;
+import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
@@ -58,6 +58,7 @@ import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_KEYWORD;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -138,6 +139,22 @@ public class MainActivity extends AppCompatActivity {
 
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.search_menu, menu);
+
+        // todo : question to Virgile: how is it supposed to work ?
+        //  1. user starts typing in text, a window comes down and shows dynamically a list of most relevant results
+        //     (not before 3 letters are typed in)
+        //     is it supposed to show all possible restaurants in the world or only within our reach (same as nearby ?)
+        //  2. user clicks an item from the list
+        //  3. app shows a specific marker for that restaurant in a different color (does it hide other markers ?)
+        //     and centers the map on this restaurant
+        //     are markers dynamically updated as user types in ?
+        //     on ListViewFragment, what does it do ? remove all data but the relevant restaurants as user types in ?
+
+        // todo : reset all users choices per day
+        // todo : notif cloud messaging
+        // todo : implement twitter login
+
+        // mViewModel.setAutocompletePOJO(newText, "establishment", location, AUTOCOMPLETE_SEARCH_RADIUS);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
@@ -348,7 +365,8 @@ public class MainActivity extends AppCompatActivity {
                         // message to user if not available.
                         // otherwise if connection was not available on first
                         // call then observer never gets nearby restaurants for current location.
-                        mViewModel.setNearbyRestaurantsPOJO(mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude(), NEARBY_SEARCH_RADIUS);
+                        String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
+                        mViewModel.setNearbySearchPOJO(RESTAURANT_KEYWORD, location, NEARBY_SEARCH_RADIUS);
                     }
                 }
 
@@ -383,20 +401,20 @@ public class MainActivity extends AppCompatActivity {
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbyRestaurantsPOJO().observe(this, new Observer<NearbyRestaurantsPOJO>() {
+        mViewModel.getNearbySearchPOJO().observe(this, new Observer<NearbySearchPOJO>() {
             @Override
-            public void onChanged(NearbyRestaurantsPOJO nearbyRestaurantsPOJO) {
-                Log.d(TAG, "getNearbyRestaurantsPOJO: onChanged");
+            public void onChanged(NearbySearchPOJO nearbySearchPOJO) {
+                Log.d(TAG, "getNearbySearchPOJO: onChanged");
 
-                if (nearbyRestaurantsPOJO != null) {
-                    mViewModel.setRestaurants(nearbyRestaurantsPOJO);
+                if (nearbySearchPOJO != null) {
+                    mViewModel.setNearbyRestaurants(nearbySearchPOJO);
                 } else {
                     Toast.makeText(MainActivity.this, R.string.no_nearby_restaurants, Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        mViewModel.getRestaurants().observe(this, new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurants().observe(this, new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 Log.d(TAG, "onChanged");
