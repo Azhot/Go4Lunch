@@ -4,15 +4,20 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,6 +27,8 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
+import androidx.cursoradapter.widget.CursorAdapter;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -33,8 +40,20 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +63,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
 import fr.azhot.go4lunch.model.NearbySearchPOJO;
@@ -53,6 +73,7 @@ import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.AUTOCOMPLETE_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
@@ -64,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // private static
-    private static final String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
 
     // variables
@@ -77,28 +98,10 @@ public class MainActivity extends AppCompatActivity {
     private User mUser;
     private List<Restaurant> mRestaurants;
 
-
-    // inherited methods
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
-
-        super.onCreate(savedInstanceState);
-        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
-        mAuth = FirebaseAuth.getInstance();
-        mRestaurants = new ArrayList<>();
-        mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        setContentView(mBinding.getRoot());
-        setSupportActionBar(mBinding.mainToolbar);
-        setUpDrawerNavigation();
-        setUpDrawerWithUserDetails();
-        setUpBottomNavigation();
-        PermissionsUtils.checkLocationPermission(this);
-        if (PermissionsUtils.isLocationPermissionGranted(this)) {
-            launchFragment();
-            initObservers();
-        }
+    public static LatLng getCoordinate(double latitude, double longitude, long distance) {
+        double lat = latitude + (180 / Math.PI) * (distance / 6378137f);
+        double lng = longitude + (180 / Math.PI) * (distance / 6378137f) / Math.cos(latitude);
+        return new LatLng(lat, lng);
     }
 
     @Override
@@ -133,6 +136,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // inherited methods
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
+
+        // todo : reset all users choices per day
+        // todo : notif cloud messaging
+        // todo : implement twitter login
+
+        super.onCreate(savedInstanceState);
+        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        mAuth = FirebaseAuth.getInstance();
+        mRestaurants = new ArrayList<>();
+        mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        setContentView(mBinding.getRoot());
+        setSupportActionBar(mBinding.mainToolbar);
+        setUpDrawerNavigation();
+        setUpDrawerWithUserDetails();
+        setUpBottomNavigation();
+        PermissionsUtils.checkLocationPermission(this);
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            launchFragment();
+            initObservers();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(TAG, "onCreateOptionsMenu");
@@ -140,75 +170,19 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.search_menu, menu);
 
-        // todo : question to Virgile: how is it supposed to work ?
-        //  1. user starts typing in text, a window comes down and shows dynamically a list of most relevant results
-        //     (not before 3 letters are typed in)
-        //     is it supposed to show all possible restaurants in the world or only within our reach (same as nearby ?)
-        //  2. user clicks an item from the list
-        //  3. app shows a specific marker for that restaurant in a different color (does it hide other markers ?)
-        //     and centers the map on this restaurant
-        //     are markers dynamically updated as user types in ?
-        //     on ListViewFragment, what does it do ? remove all data but the relevant restaurants as user types in ?
-
-        // todo : reset all users choices per day
-        // todo : notif cloud messaging
-        // todo : implement twitter login
-
-        // mViewModel.setAutocompletePOJO(newText, "establishment", location, AUTOCOMPLETE_SEARCH_RADIUS);
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
-
-        String[] test = new String[]{"abc", "def", "ghi"};
-
-        SearchView.SearchAutoComplete textArea = searchView.findViewById(R.id.search_src_text);
-        if (searchManager != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        }
-
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, test);
-        textArea.setAdapter(arrayAdapter);
-
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-        searchView.setQueryHint(getString(R.string.search_bar_hint));
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // searching here
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
+        setUpAutoCompleteSearchView(menu);
 
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume");
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        super.onResume();
-        initLocationUpdates();
+        if (item.getItemId() == R.id.action_search) {
 
-        if (mAuth.getCurrentUser() != null) {
-            mViewModel.getUser(mAuth.getCurrentUser().getUid())
-                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "getUser: onSuccess");
-                                mUser = task.getResult().toObject(User.class);
-                            } else {
-                                Log.d(TAG, "getUser: onFailure");
-                            }
-                        }
-                    });
         }
 
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -424,5 +398,164 @@ public class MainActivity extends AppCompatActivity {
                 mViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume");
+
+        super.onResume();
+        initLocationUpdates();
+
+        if (mAuth.getCurrentUser() != null) {
+            mViewModel.getUser(mAuth.getCurrentUser().getUid())
+                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "getUser: onSuccess");
+                                mUser = task.getResult().toObject(User.class);
+                            } else {
+                                Log.d(TAG, "getUser: onFailure");
+                            }
+                        }
+                    });
+        }
+
+    }
+
+    private void setUpAutoCompleteSearchView(Menu menu) {
+        if (!Places.isInitialized()) {
+            Places.initialize(MainActivity.this, BuildConfig.GOOGLE_API_KEY);
+        }
+        PlacesClient placesClient = Places.createClient(MainActivity.this);
+
+        List<AutocompletePrediction> predictions = new ArrayList<>();
+
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setQueryHint(getString(R.string.search_bar_hint));
+        AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView) searchView.findViewById(R.id.search_src_text);
+        autoCompleteTextView.setThreshold(3);
+        String[] from = new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1};
+        int[] to = new int[]{R.id.item_label};
+        CursorAdapter cursorAdapter = new SimpleCursorAdapter(this,
+                R.layout.search_item,
+                null,
+                from,
+                to,
+                CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+        searchView.setSuggestionsAdapter(cursorAdapter);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                closeKeyboard();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                cursorAdapter.changeCursor(null);
+
+                if (newText.length() >= 3 && mDeviceLocation != null) {
+
+                    RectangularBounds bounds = RectangularBounds.newInstance(
+                            getCoordinate(
+                                    mDeviceLocation.getLatitude(),
+                                    mDeviceLocation.getLongitude(),
+                                    -AUTOCOMPLETE_SEARCH_RADIUS),
+                            getCoordinate(
+                                    mDeviceLocation.getLatitude(),
+                                    mDeviceLocation.getLongitude(),
+                                    AUTOCOMPLETE_SEARCH_RADIUS));
+
+                    AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+
+                    FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                            .setLocationRestriction(bounds)
+                            .setSessionToken(token)
+                            .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                            .setQuery(newText)
+                            .build();
+
+                    placesClient.findAutocompletePredictions(request)
+                            .addOnSuccessListener(MainActivity.this, new OnSuccessListener<FindAutocompletePredictionsResponse>() {
+                                @Override
+                                public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
+                                    Log.d(TAG, "onSuccess");
+
+                                    predictions.clear();
+                                    predictions.addAll(findAutocompletePredictionsResponse.getAutocompletePredictions());
+
+                                    MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
+
+                                    for (int i = 0; i < predictions.size(); i++) {
+                                        AutocompletePrediction prediction = predictions.get(i);
+                                        Log.d(TAG, "findAutocompletePredictions : onSuccess: " + prediction.getPrimaryText(null));
+                                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
+                                            matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null)});
+                                            cursorAdapter.changeCursor(matrixCursor);
+                                        }
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(MainActivity.this, new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.e(TAG, "findAutocompletePredictions : onFailure: ", e);
+                                }
+                            });
+                } else if (newText.length() == 0) {
+                    mViewModel.setAutocompletePrediction(null);
+                }
+
+                return true;
+            }
+        });
+
+        searchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
+            @Override
+            public boolean onSuggestionSelect(int position) {
+                return false;
+            }
+
+            @Override
+            public boolean onSuggestionClick(int position) {
+                closeKeyboard();
+
+                Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
+                String selection = cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1));
+                searchView.setQuery(selection, false);
+
+                for (AutocompletePrediction prediction : predictions) {
+                    if (selection.contentEquals(prediction.getPrimaryText(null))) {
+                        mViewModel.setAutocompletePrediction(prediction);
+                        break;
+                    }
+                }
+
+                return true;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                mViewModel.setAutocompletePrediction(null);
+                return false;
+            }
+        });
+    }
+
+    private void closeKeyboard() {
+        Log.d(TAG, "closeKeyboard");
+
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null) {
+                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
     }
 }

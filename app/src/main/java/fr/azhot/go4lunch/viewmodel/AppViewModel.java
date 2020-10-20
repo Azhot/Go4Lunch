@@ -9,12 +9,12 @@ import androidx.lifecycle.ViewModel;
 
 import com.bumptech.glide.RequestManager;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
-import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -34,6 +34,7 @@ public class AppViewModel extends ViewModel {
     private final UserRepository mUserRepository;
     private MutableLiveData<Location> mDeviceLocation;
     private MutableLiveData<Boolean> mIsLocationActivated;
+    private MutableLiveData<AutocompletePrediction> mAutocompletePrediction;
 
 
     // constructors
@@ -42,6 +43,7 @@ public class AppViewModel extends ViewModel {
         mUserRepository = UserRepository.getInstance();
         mDeviceLocation = new MutableLiveData<>();
         mIsLocationActivated = new MutableLiveData<>();
+        mAutocompletePrediction = new MutableLiveData<>();
     }
 
 
@@ -88,16 +90,12 @@ public class AppViewModel extends ViewModel {
         mGooglePlaceRepository.setDetailsPOJO(placeId);
     }
 
-    public LiveData<AutocompletePOJO> getAutocompletePOJO() {
-        Log.d(TAG, "getAutocompletePOJO");
-
-        return mGooglePlaceRepository.getAutocompletePOJO();
+    public LiveData<AutocompletePrediction> getAutocompletePrediction() {
+        return mAutocompletePrediction;
     }
 
-    public void setAutocompletePOJO(String input, String types, String location, int radius) {
-        Log.d(TAG, "setAutocompletePOJO");
-
-        mGooglePlaceRepository.setAutocompletePOJO(input, types, location, radius);
+    public void setAutocompletePrediction(AutocompletePrediction autocompletePrediction) {
+        mAutocompletePrediction.setValue(autocompletePrediction);
     }
 
     public LiveData<Location> getDeviceLocation() {

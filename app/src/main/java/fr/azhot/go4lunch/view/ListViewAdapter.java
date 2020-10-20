@@ -39,6 +39,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     private final RequestManager mGlide;
     private List<Restaurant> mRestaurants;
     private List<Restaurant> mHiddenRestaurants;
+    private List<Restaurant> mSavedRestaurants;
     private Location mDeviceLocation;
     private OnRestaurantClickListener mListener;
 
@@ -50,6 +51,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         this.mGlide = glide;
         this.mRestaurants = new ArrayList<>();
         this.mHiddenRestaurants = new ArrayList<>();
+        this.mSavedRestaurants = new ArrayList<>();
         this.mDeviceLocation = new Location(LocationManager.GPS_PROVIDER);
         this.mListener = listener;
     }
@@ -73,6 +75,29 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
 
     // methods
+    public List<Restaurant> getRestaurants() {
+        Log.d(TAG, "getRestaurants");
+
+        return mRestaurants;
+    }
+
+    public List<Restaurant> getSavedRestaurants() {
+        Log.d(TAG, "getSavedRestaurants");
+
+        return mSavedRestaurants;
+    }
+
+    public void filterAutocompleteRestaurant(Restaurant restaurant) {
+        Log.d(TAG, "setRestaurants");
+
+        mSavedRestaurants.clear();
+        mSavedRestaurants.addAll(mRestaurants);
+
+        mRestaurants.clear();
+        mRestaurants.add(restaurant);
+        sortRestaurants();
+    }
+
     public void setRestaurants(List<Restaurant> restaurants) {
         Log.d(TAG, "setRestaurants");
 

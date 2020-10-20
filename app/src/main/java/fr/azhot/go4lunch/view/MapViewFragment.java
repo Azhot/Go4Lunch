@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,6 +31,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -217,7 +217,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                                     restaurant.getLocation().getLongitude()));
                     Marker marker = mGoogleMap.addMarker(markerOptions);
                     marker.setTag(restaurant.getPlaceId());
-                    marker.setVisible(false);
 
                     ListenerRegistration registration =
                             mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
@@ -231,7 +230,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                                                 } else {
                                                     marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_orange));
                                                 }
-                                                marker.setVisible(true);
                                             }
                                         }
                                     });
@@ -263,6 +261,28 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                     mGoogleMap.setMyLocationEnabled(aBoolean);
                     for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
                         entry.getValue().setVisible(aBoolean);
+                    }
+                }
+            }
+        });
+
+        mViewModel.getAutocompletePrediction().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+            @Override
+            public void onChanged(AutocompletePrediction autocompletePrediction) {
+                Log.d(TAG, "getAutocompletePrediction: onChanged");
+
+                if (mGoogleMap != null) {
+                    if (autocompletePrediction != null) {
+                        for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
+                            entry.getValue().setVisible(true);
+                            if (!autocompletePrediction.getPlaceId().equals(entry.getKey().getPlaceId())) {
+                                entry.getValue().setVisible(false);
+                            }
+                        }
+                    } else {
+                        for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
+                            entry.getValue().setVisible(true);
+                        }
                     }
                 }
             }
@@ -306,19 +326,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         } else {
             return BitmapDescriptorFactory.fromResource(id);
-        }
-    }
-
-    private void closeKeyboard() {
-        Log.d(TAG, "closeKeyboard");
-
-        View view = requireActivity().getCurrentFocus();
-        if (view != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (inputMethodManager != null) {
-                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
         }
     }
 }

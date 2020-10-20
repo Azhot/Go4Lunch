@@ -21,7 +21,6 @@ import java.util.List;
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
-import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -43,7 +42,6 @@ public class GooglePlaceRepository {
     private final MutableLiveData<NearbySearchPOJO> mNearbyRestaurantsPOJO;
     private final MutableLiveData<List<Restaurant>> mRestaurants;
     private final MutableLiveData<DetailsPOJO> mDetailsPOJO;
-    private final MutableLiveData<AutocompletePOJO> mAutocompletePOJO;
 
 
     // constructor
@@ -52,7 +50,6 @@ public class GooglePlaceRepository {
         mNearbyRestaurantsPOJO = new MutableLiveData<>();
         mRestaurants = new MutableLiveData<>();
         mDetailsPOJO = new MutableLiveData<>();
-        mAutocompletePOJO = new MutableLiveData<>();
     }
 
 
@@ -185,33 +182,6 @@ public class GooglePlaceRepository {
                 Log.d(TAG, "setDetailsPOJO: onFailure");
 
                 mDetailsPOJO.postValue(null);
-            }
-        });
-    }
-
-    public LiveData<AutocompletePOJO> getAutocompletePOJO() {
-        Log.d(TAG, "getAutocompletePOJO");
-
-        return mAutocompletePOJO;
-    }
-
-    public void setAutocompletePOJO(String input, String types, String location, int radius) {
-        Log.d(TAG, "setAutocompletePOJO: input=" + input + "&types=" + types + "&location=" + location + "&radius=" + radius);
-
-        Call<AutocompletePOJO> placeAutocomplete = mGoogleMapsApi.getAutocomplete(input, types, location, radius);
-        placeAutocomplete.enqueue(new Callback<AutocompletePOJO>() {
-            @Override
-            public void onResponse(@NonNull Call<AutocompletePOJO> call, @NonNull Response<AutocompletePOJO> response) {
-                Log.d(TAG, "setAutocompletePOJO: onResponse");
-
-                mAutocompletePOJO.setValue(response.body());
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<AutocompletePOJO> call, @NonNull Throwable t) {
-                Log.d(TAG, "setAutocompletePOJO: onFailure");
-
-                mAutocompletePOJO.postValue(null);
             }
         });
     }

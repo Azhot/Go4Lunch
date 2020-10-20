@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -165,6 +166,24 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             @Override
             public void onChanged(Location location) {
                 mAdapter.setDeviceLocation(location);
+            }
+        });
+
+
+        mViewModel.getAutocompletePrediction().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+            @Override
+            public void onChanged(AutocompletePrediction autocompletePrediction) {
+
+                if (autocompletePrediction != null) {
+                    for (Restaurant restaurant : mAdapter.getRestaurants()) {
+                        if (autocompletePrediction.getPlaceId().equals(restaurant.getPlaceId())) {
+                            mAdapter.filterAutocompleteRestaurant(restaurant);
+                            break;
+                        }
+                    }
+                } else {
+                    mAdapter.setRestaurants(mAdapter.getSavedRestaurants());
+                }
             }
         });
     }
