@@ -61,7 +61,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
     // private static
-    private static final String TAG = "MapViewFragment";
+    private static final String TAG = MapViewFragment.class.getSimpleName();
 
 
     // public static

@@ -46,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     // private static
-    private static final String TAG = "LoginActivity";
+    private static final String TAG = LoginActivity.class.getSimpleName();
 
 
     // variables

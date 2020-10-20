@@ -25,7 +25,6 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
 
 
     // private static
-    private static final String TAG = "WorkmatesAdapter";
     private OnWorkmateClickListener mListener;
 
 

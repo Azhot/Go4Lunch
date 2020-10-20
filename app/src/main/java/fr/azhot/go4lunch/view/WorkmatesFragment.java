@@ -37,7 +37,7 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
 
 
     // private static
-    private static final String TAG = "WorkmatesFragment";
+    private static final String TAG = WorkmatesFragment.class.getSimpleName();
 
 
     // variables

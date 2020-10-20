@@ -41,7 +41,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
 
     // private static
-    private static final String TAG = "RestaurantDetailsActivi";
+    private static final String TAG = RestaurantDetailsActivity.class.getSimpleName();
 
 
     // variables

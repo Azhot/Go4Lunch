@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitService {
 
-    private static final String TAG = "RetrofitService";
+    private static final String TAG = RetrofitService.class.getSimpleName();
     private static final String BASE_URL = "https://maps.googleapis.com/";
     private static final Retrofit RETROFIT = new Retrofit.Builder()
             .baseUrl(BASE_URL)

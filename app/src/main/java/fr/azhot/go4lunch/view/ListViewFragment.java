@@ -35,7 +35,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
 
     // private static
-    private static final String TAG = "ListViewFragment";
+    private static final String TAG = ListViewFragment.class.getSimpleName();
 
 
     // public static

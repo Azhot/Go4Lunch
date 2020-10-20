@@ -15,7 +15,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 
 public class LocationUtils {
 
-    private static final String TAG = "LocationUtils";
+    private static final String TAG = LocationUtils.class.getSimpleName();
 
     public static void checkLocationSettings(final AppCompatActivity appCompatActivity, int interval, int fastestInterval, final int requestCode) {
         Log.d(TAG, "checkLocationSettings");

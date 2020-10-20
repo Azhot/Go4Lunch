@@ -26,7 +26,7 @@ public class AppViewModel extends ViewModel {
 
 
     // private static
-    private static final String TAG = "AppViewModel";
+    private static final String TAG = AppViewModel.class.getSimpleName();
 
 
     // variables

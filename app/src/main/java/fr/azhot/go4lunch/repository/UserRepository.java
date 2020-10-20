@@ -17,7 +17,7 @@ public class UserRepository {
 
 
     // private static
-    private static final String TAG = "UserRepository";
+    private static final String TAG = UserRepository.class.getSimpleName();
     private static UserRepository USER_REPOSITORY;
 
 

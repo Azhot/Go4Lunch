@@ -34,7 +34,7 @@ public class GooglePlaceRepository {
 
 
     // private static
-    private static final String TAG = "GooglePlaceRepository";
+    private static final String TAG = GooglePlaceRepository.class.getSimpleName();
     private static GooglePlaceRepository GOOGLE_PLACE_REPOSITORY;
 
 

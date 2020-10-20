@@ -32,7 +32,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
 
     // private static
-    private static final String TAG = "ListViewAdapter";
+    private static final String TAG = ListViewAdapter.class.getSimpleName();
 
 
     // variables

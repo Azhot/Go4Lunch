@@ -19,7 +19,7 @@ import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 
 public class PermissionsUtils {
 
-    private static final String TAG = "PermissionsUtils";
+    private static final String TAG = PermissionsUtils.class.getSimpleName();
 
     public static void getLocationPermission(AppCompatActivity activity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
