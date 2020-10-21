@@ -91,4 +91,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_facebook_login_button" />
 
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/login_twitter_login_interface_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/very_large_margin"
+        android:layout_marginTop="@dimen/average_margin"
+        android:layout_marginEnd="@dimen/very_large_margin"
+        android:background="@drawable/bg_twitter_login_button"
+        android:drawableStart="@drawable/ic_twitter_logo"
+        android:onClick="onClick"
+        android:paddingStart="@dimen/average_padding"
+        android:paddingEnd="@dimen/average_padding"
+        android:text="Sign in with Twitter"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/large_text_size"
+        android:textStyle="normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_google_login_button" />
+
+    <com.twitter.sdk.android.core.identity.TwitterLoginButton
+        android:id="@+id/login_twitter_login_button"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/login_twitter_login_interface_button" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

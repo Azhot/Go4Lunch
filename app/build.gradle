@@ -73,6 +73,10 @@ dependencies {
     // Facebook
     implementation 'com.facebook.android:facebook-android-sdk:5.15.3'
 
+    // Twitter
+    implementation 'com.twitter.sdk.android:twitter:3.1.1'
+
+
     // Gson
     implementation 'com.google.code.gson:gson:2.8.6'
 

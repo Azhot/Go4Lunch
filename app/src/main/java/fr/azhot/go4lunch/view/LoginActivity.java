@@ -32,6 +32,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.TwitterAuthProvider;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.DefaultLogger;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterConfig;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
 
 import java.util.Arrays;
 
@@ -72,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
         mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
         configureGoogleSignIn();
         configureFacebookSignIn();
+        configureTwitterSignIn();
     }
 
     @Override
@@ -102,6 +112,8 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e(TAG, "onActivityResult: Google sign in failed.", e);
             }
         }
+
+        mBinding.loginTwitterLoginButton.onActivityResult(requestCode, resultCode, data);
     }
 
 
@@ -119,6 +131,11 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d(TAG, "onClick: google login button");
 
                 signInWithGoogle();
+                break;
+            case R.id.login_twitter_login_interface_button:
+                Log.d(TAG, "onClick: twitter login button");
+
+                signInWithTwitter();
                 break;
             default:
                 break;
@@ -184,6 +201,42 @@ public class LoginActivity extends AppCompatActivity {
                 "public_profile"));
     }
 
+    private void configureTwitterSignIn() {
+        Log.d(TAG, "configureTwitterSignIn");
+
+        TwitterAuthConfig twitterAuthConfig = new TwitterAuthConfig(
+                getString(R.string.twitter_consumer_key),
+                getString(R.string.twitter_consumer_secret));
+        TwitterConfig twitterConfig = new TwitterConfig.Builder(this)
+                .logger(new DefaultLogger(Log.DEBUG))
+                .twitterAuthConfig(twitterAuthConfig)
+                .debug(true)
+                .build();
+        Twitter.initialize(twitterConfig);
+    }
+
+    private void signInWithTwitter() {
+        Log.d(TAG, "signInWithFacebook");
+
+        mBinding.loginTwitterLoginButton.setCallback(new Callback<TwitterSession>() {
+            @Override
+            public void success(Result<TwitterSession> result) {
+                Log.d(TAG, "twitter sign in : success");
+
+                TwitterSession session = result.data;
+                AuthCredential authCredential = TwitterAuthProvider.getCredential(session.getAuthToken().token,
+                        result.data.getAuthToken().secret);
+                firebaseAuthWithCredential(authCredential);
+            }
+
+            @Override
+            public void failure(TwitterException exception) {
+                Log.e(TAG, "twitter sign in : failure", exception);
+            }
+        });
+        mBinding.loginTwitterLoginButton.performClick();
+    }
+
     private void firebaseAuthWithCredential(AuthCredential credential) {
         Log.d(TAG, "firebaseAuthWithCredential");
 
@@ -240,11 +293,22 @@ public class LoginActivity extends AppCompatActivity {
     private void makeAlertDialogExistingSignIn(String email, AuthCredential credential) {
         Log.d(TAG, "makeAlertDialogExistingSignIn");
 
+        String providerName;
+        switch (credential.getProvider()) {
+            case TwitterAuthProvider.PROVIDER_ID:
+                providerName = "Twitter";
+                break;
+            case FacebookAuthProvider.PROVIDER_ID:
+                providerName = "Facebook";
+                break;
+            default:
+                providerName = "this";
+                break;
+        }
+
         new AlertDialog.Builder(this)
-                .setTitle("Email address already linked to an existing account.")
-                .setMessage(email + " is already linked to an existing account via Google sign in.\n" +
-                        "Would you like to log in to your Google account to link both " +
-                        "Google and Facebook sign in methods to your Go4Lunch account ?")
+                .setTitle(R.string.email_already_linked_title)
+                .setMessage(email + getString(R.string.email_already_linked_message, providerName))
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
         // todo : reset all users choices per day
         // todo : notif cloud messaging
-        // todo : implement twitter login
+        // todo : implement the like button
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
