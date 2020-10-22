@@ -1,8 +1,6 @@
 package fr.azhot.go4lunch.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,20 +19,20 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
-import fr.azhot.go4lunch.model.DetailsPOJO;
+import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.RC_CALL_PHONE_PERMISSION;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_PHOTO_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
@@ -49,14 +47,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     private AppViewModel mViewModel;
     private FirebaseAuth mAuth;
     private User mUser;
-    private String mRestaurantId;
-    private String mRestaurantName;
-    private String mRestaurantVicinity;
-    private Bitmap mRestaurantPhoto;
-    private Integer mRestaurantRating;
-    private String mRestaurantWebsite;
-    private String mRestaurantPhoneNumber;
-    private DetailsPOJO.Result mResult;
+    private Restaurant mCurrentRestaurant;
 
 
     // inherited methods
@@ -79,7 +70,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         if (requestCode == RC_CALL_PHONE_PERMISSION) {
             if (PermissionsUtils.checkCallPhonePermission(this)) {
                 Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
+                intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
                 startActivity(intent);
             }
         }
@@ -99,59 +90,52 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         Log.d(TAG, "retrieveDataFromIntent");
 
         Intent intent = getIntent();
-        mRestaurantId = intent.getStringExtra(RESTAURANT_ID_EXTRA);
-        mViewModel.setDetailsPOJO(mRestaurantId);
-        byte[] byteArray = intent.getByteArrayExtra(RESTAURANT_PHOTO_EXTRA);
-        if (byteArray != null) {
-            mRestaurantPhoto = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        }
+        mViewModel.setDetailsRestaurant(getIntent().getStringExtra(RESTAURANT_ID_EXTRA));
     }
 
     private void initObservers() {
-        mViewModel.getDetailsPOJO().observe(this, new Observer<DetailsPOJO>() {
+        mViewModel.getDetailsRestaurant().observe(this, new Observer<Restaurant>() {
             @Override
-            public void onChanged(DetailsPOJO detailsPOJO) {
-                if (detailsPOJO != null) {
-                    mResult = detailsPOJO.getResult();
-
-                    mRestaurantName = mResult.getName();
-                    mRestaurantVicinity = mResult.getVicinity();
-                    if (mResult.getRating() != null) {
-                        mRestaurantRating = (int) Math.round(mResult.getRating() / 5 * 3);
-                    }
-                    mRestaurantWebsite = mResult.getWebsite();
-                    mRestaurantPhoneNumber = mResult.getInternationalPhoneNumber();
-
-                    if (mResult.getPhotos() != null && mRestaurantPhoto == null) {
-                        String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                                "key=" + BuildConfig.GOOGLE_API_KEY +
-                                "&photoreference=" + mResult.getPhotos().get(0).getPhotoReference() +
-                                "&maxwidth=400";
-                        Glide.with(RestaurantDetailsActivity.this)
-                                .load(photoUrl)
-                                .into(mBinding.restaurantDetailsPhotoImageView);
-                    } else {
-                        Glide.with(RestaurantDetailsActivity.this)
-                                .asBitmap()
-                                .load(R.drawable.ic_no_image)
-                                .into(mBinding.restaurantDetailsPhotoImageView);
-                    }
-                    updateUIWithRestaurantDetails();
-                } else {
-                    // could not find restaurant with this ID (which should not happen)
-                    // or connection is not available
-                }
+            public void onChanged(Restaurant restaurant) {
+                mCurrentRestaurant = restaurant;
+                updateUIWithRestaurantDetails();
+                mViewModel.createOrUpdateRestaurantFromDetails(restaurant, RestaurantDetailsActivity.this);
             }
         });
+    }
+
+    private void updateUIWithRestaurantDetails() {
+        Log.d(TAG, "updateUIWithRestaurantDetails");
+
+        mBinding.restaurantDetailsNameTextView.setText(mCurrentRestaurant.getName());
+        mBinding.restaurantDetailsVicinity.setText(mCurrentRestaurant.getVicinity());
+        if (mCurrentRestaurant.getPhotoReference() != null) {
+            String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                    "key=" + BuildConfig.GOOGLE_API_KEY +
+                    "&photoreference=" + mCurrentRestaurant.getPhotoReference() +
+                    "&maxwidth=400";
+
+            Glide.with(this)
+                    .load("https://source.unsplash.com/random/400x400") // todo : REPLACE WITH photoUrl AT THE END OF PROJECT
+                    .into(mBinding.restaurantDetailsPhotoImageView);
+        } else {
+            Glide.with(this)
+                    .load(R.drawable.ic_no_image)
+                    .into(mBinding.restaurantDetailsPhotoImageView);
+        }
+        if (mCurrentRestaurant.getRating() != null) {
+            mBinding.restaurantDetailsRatingBar.setRating(mCurrentRestaurant.getRating());
+        }
 
         mBinding.restaurantDetailsRecyclerView.setAdapter(new RestaurantDetailsAdapter(
                 generateOptionsForAdapter(mViewModel
                         .getUsersQuery()
-                        .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, mRestaurantId)),
+                        .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, mCurrentRestaurant.getPlaceId())),
                 Glide.with(this)));
 
-        if (mAuth.getCurrentUser() != null) {
-            mViewModel.getUser(mAuth.getCurrentUser().getUid())
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            mViewModel.getUser(currentUser.getUid())
                     .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -159,28 +143,13 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                                 Log.d(TAG, "getUser: onSuccess");
                                 mUser = task.getResult().toObject(User.class);
                                 if (mUser != null) {
-                                    setUpFab(mRestaurantId, mUser);
+                                    setUpFab(mCurrentRestaurant.getPlaceId(), mUser);
                                 }
                             } else {
-                                Log.d(TAG, "getUser: onFailure");
+                                Log.e(TAG, "getUser: onFailure", task.getException());
                             }
                         }
                     });
-        }
-    }
-
-    private void updateUIWithRestaurantDetails() {
-        Log.d(TAG, "updateUIWithRestaurantDetails");
-
-        mBinding.restaurantDetailsNameTextView.setText(mRestaurantName);
-        mBinding.restaurantDetailsVicinity.setText(mRestaurantVicinity);
-        if (mRestaurantPhoto != null) {
-            Glide.with(this)
-                    .load(mRestaurantPhoto)
-                    .into(mBinding.restaurantDetailsPhotoImageView);
-        }
-        if (mRestaurantRating != null) {
-            mBinding.restaurantDetailsRatingBar.setRating(mRestaurantRating);
         }
     }
 
@@ -207,15 +176,15 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
 
-                if ((mRestaurantId.equals(mUser.getSelectedRestaurantId()))) {
+                if ((mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId()))) {
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
                     mUser.setSelectedRestaurantId(null);
                     mUser.setSelectedRestaurantName(null);
                 } else {
                     // change button to activated
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
-                    mUser.setSelectedRestaurantId(mRestaurantId);
-                    mUser.setSelectedRestaurantName(mRestaurantName);
+                    mUser.setSelectedRestaurantId(mCurrentRestaurant.getPlaceId());
+                    mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
                 }
 
                 mViewModel.createOrUpdateUser(mUser)
@@ -225,7 +194,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     Log.d(TAG, "createOrUpdateUser: onSuccess");
                                 } else {
-                                    Log.d(TAG, "createOrUpdateUser: onFailure");
+                                    Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
                                 }
                             }
                         });
@@ -233,10 +202,10 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
             case R.id.restaurant_details_call_button:
                 Log.d(TAG, "onClick");
 
-                if (mRestaurantPhoneNumber != null) {
+                if (mCurrentRestaurant.getPhoneNumber() != null) {
                     if (PermissionsUtils.checkCallPhonePermission(this)) {
                         Intent intent = new Intent(Intent.ACTION_CALL);
-                        intent.setData(Uri.parse("tel:" + mRestaurantPhoneNumber));
+                        intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
                         startActivity(intent);
                     }
                 } else {
@@ -244,12 +213,12 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.restaurant_details_like_button:
-                // todo : question to Virgile : what is it expected for me to do here ?
+                // implement like button here
                 break;
             case R.id.restaurant_details_website_button:
-                if (mRestaurantWebsite != null) {
+                if (mCurrentRestaurant.getWebsite() != null) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(mRestaurantWebsite));
+                    intent.setData(Uri.parse(mCurrentRestaurant.getWebsite()));
                     startActivity(intent);
                 } else {
                     Toast.makeText(this, R.string.no_website, Toast.LENGTH_SHORT).show();

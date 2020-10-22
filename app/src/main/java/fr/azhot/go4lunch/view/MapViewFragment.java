@@ -165,7 +165,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             if (marker.getTag() == entry.getValue().getTag()) {
                 Restaurant restaurant = entry.getKey();
                 Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                        mContext, RestaurantDetailsActivity.class, restaurant.getPlaceId(), restaurant.getPhoto());
+                        mContext, RestaurantDetailsActivity.class, restaurant.getPlaceId());
                 startActivity(intent);
                 return true;
             }
@@ -213,8 +213,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                 mRestaurants.clear();
                 for (Restaurant restaurant : restaurants) {
                     MarkerOptions markerOptions = new MarkerOptions()
-                            .position(new LatLng(restaurant.getLocation().getLatitude(),
-                                    restaurant.getLocation().getLongitude()));
+                            .position(new LatLng(restaurant.getLatitude(),
+                                    restaurant.getLongitude()));
                     Marker marker = mGoogleMap.addMarker(markerOptions);
                     marker.setTag(restaurant.getPlaceId());
 

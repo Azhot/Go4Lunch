@@ -3,11 +3,11 @@ package fr.azhot.go4lunch.viewmodel;
 import android.location.Location;
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.bumptech.glide.RequestManager;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -15,11 +15,10 @@ import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
-import fr.azhot.go4lunch.model.DetailsPOJO;
-import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.GooglePlaceRepository;
+import fr.azhot.go4lunch.repository.RestaurantRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
 
 public class AppViewModel extends ViewModel {
@@ -31,6 +30,7 @@ public class AppViewModel extends ViewModel {
 
     // variables
     private final GooglePlaceRepository mGooglePlaceRepository;
+    private final RestaurantRepository mRestaurantRepository;
     private final UserRepository mUserRepository;
     private MutableLiveData<Location> mDeviceLocation;
     private MutableLiveData<Boolean> mIsLocationActivated;
@@ -40,6 +40,7 @@ public class AppViewModel extends ViewModel {
     // constructors
     public AppViewModel() {
         mGooglePlaceRepository = GooglePlaceRepository.getInstance();
+        mRestaurantRepository = RestaurantRepository.getInstance();
         mUserRepository = UserRepository.getInstance();
         mDeviceLocation = new MutableLiveData<>();
         mIsLocationActivated = new MutableLiveData<>();
@@ -48,46 +49,46 @@ public class AppViewModel extends ViewModel {
 
 
     // methods
-    public LiveData<NearbySearchPOJO> getNearbySearchPOJO() {
-        Log.d(TAG, "getNearbySearchPOJO");
-
-        return mGooglePlaceRepository.getNearbySearchPOJO();
-    }
-
-    public void setNearbySearchPOJO(String keyword, String location, int radius) {
-        Log.d(TAG, "setNearbySearchPOJO");
-
-        mGooglePlaceRepository.setNearbySearchPOJO(keyword, location, radius);
-    }
-
     public LiveData<List<Restaurant>> getNearbyRestaurants() {
         Log.d(TAG, "getNearbyRestaurants");
 
         return mGooglePlaceRepository.getNearbyRestaurants();
     }
 
-    public void setNearbyRestaurants(NearbySearchPOJO nearbySearchPOJO) {
+    public void setNearbyRestaurants(String keyword, String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        mGooglePlaceRepository.setNearbyRestaurants(nearbySearchPOJO);
+        mGooglePlaceRepository.setNearbyRestaurants(keyword, location, radius);
     }
 
-    public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
-        Log.d(TAG, "loadRestaurantsPhotos");
+    public LiveData<Restaurant> getDetailsRestaurant() {
+        Log.d(TAG, "getDetailsRestaurant");
 
-        mGooglePlaceRepository.loadRestaurantsPhotos(restaurants, glide);
+        return mGooglePlaceRepository.getDetailsRestaurant();
     }
 
-    public LiveData<DetailsPOJO> getDetailsPOJO() {
-        Log.d(TAG, "getDetailsPOJO");
+    public void setDetailsRestaurant(String placeId) {
+        Log.d(TAG, "setDetailsRestaurant");
 
-        return mGooglePlaceRepository.getDetailsPOJO();
+        mGooglePlaceRepository.setDetailsRestaurant(placeId);
     }
 
-    public void setDetailsPOJO(String placeId) {
-        Log.d(TAG, "setDetailsPOJO");
+    public void createOrUpdateRestaurantFromDetails(Restaurant restaurant, AppCompatActivity activity) {
+        Log.d(TAG, "createOrUpdateRestaurantFromDetails");
 
-        mGooglePlaceRepository.setDetailsPOJO(placeId);
+        mRestaurantRepository.createOrUpdateRestaurantFromDetails(restaurant, activity);
+    }
+
+    public void createOrUpdateRestaurantFromNearby(Restaurant restaurant, AppCompatActivity activity) {
+        Log.d(TAG, "createOrUpdateRestaurantFromDetails");
+
+        mRestaurantRepository.createOrUpdateRestaurantFromNearby(restaurant, activity);
+    }
+
+    public Task<DocumentSnapshot> getRestaurant(String placeId) {
+        Log.d(TAG, "getRestaurant");
+
+        return mRestaurantRepository.getRestaurant(placeId);
     }
 
     public LiveData<AutocompletePrediction> getAutocompletePrediction() {

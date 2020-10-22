@@ -338,7 +338,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "createOrUpdateUser: onSuccess");
                         } else {
-                            Log.d(TAG, "createOrUpdateUser: onFailure");
+                            Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
                         }
                     }
                 });

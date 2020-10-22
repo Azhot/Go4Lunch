@@ -2,7 +2,6 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -95,19 +94,12 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
     }
 
     @Override
-    public void OnWorkmateClick(String restaurantId, String userName) {
+    public void OnWorkmateClick(String placeId, String userName) {
         Log.d(TAG, "OnWorkmateClick");
 
-        if (restaurantId != null) {
-            Bitmap restaurantPhoto = null;
-            for (Restaurant restaurant : mRestaurants) {
-                if (restaurant.getPlaceId().equals(restaurantId)) {
-                    restaurantPhoto = restaurant.getPhoto();
-                    break;
-                }
-            }
+        if (placeId != null) {
             Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                    mContext, RestaurantDetailsActivity.class, restaurantId, restaurantPhoto);
+                    mContext, RestaurantDetailsActivity.class, placeId);
             startActivity(intent);
         } else {
             String firstName = userName.split(" ")[0];

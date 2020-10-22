@@ -16,9 +16,8 @@ public abstract class AppConstants {
     public static final int AUTOCOMPLETE_SEARCH_RADIUS = 750;
     public static final float DISTANCE_UNTIL_UPDATE = 50f;
     public static final String USER_COLLECTION_NAME = "users";
+    public static final String RESTAURANT_COLLECTION_NAME = "restaurants";
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";
-    public static final String RESTAURANT_PHOTO_EXTRA = "restaurantPhoto";
     public static final String SELECTED_RESTAURANT_ID_FIELD = "selectedRestaurantId";
     public static final String RESTAURANT_KEYWORD = "restaurant";
-    public static final String ESTABLISHMENT_TYPE = "establishment";
 }

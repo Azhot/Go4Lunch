@@ -1,6 +1,5 @@
 package fr.azhot.go4lunch.view;
 
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
@@ -18,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.CellListViewBinding;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -25,9 +25,25 @@ import fr.azhot.go4lunch.model.Restaurant;
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
 
-    // interface
-    public interface OnRestaurantClickListener {
-        void onRestaurantClick(String restaurantId, Bitmap restaurantPhoto);
+    private void sortRestaurants() {
+        Log.d(TAG, "sortRestaurants");
+
+        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
+            @Override
+            public int compare(Restaurant o1, Restaurant o2) {
+
+                Location lo1 = new Location(LocationManager.GPS_PROVIDER);
+                lo1.setLatitude(o1.getLatitude());
+                lo1.setLongitude(o1.getLongitude());
+
+                Location lo2 = new Location(LocationManager.GPS_PROVIDER);
+                lo1.setLatitude(o2.getLatitude());
+                lo1.setLongitude(o2.getLongitude());
+
+                return Float.compare(lo1.distanceTo(mDeviceLocation), lo2.distanceTo(mDeviceLocation));
+            }
+        });
+        notifyDataSetChanged();
     }
 
 
@@ -129,16 +145,9 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         sortRestaurants();
     }
 
-    private void sortRestaurants() {
-        Log.d(TAG, "sortRestaurants");
-
-        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
-            @Override
-            public int compare(Restaurant o1, Restaurant o2) {
-                return Float.compare(o1.getLocation().distanceTo(mDeviceLocation), o2.getLocation().distanceTo(mDeviceLocation));
-            }
-        });
-        notifyDataSetChanged();
+    // interface
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(String placeId);
     }
 
     // view holder
@@ -159,11 +168,15 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         public void onBindData(Restaurant restaurant, RequestManager glide, Location deviceLocation) {
             mRestaurant = restaurant;
             mBinding.cellListViewNameTextView.setText(restaurant.getName());
-            String distance = Math.round(deviceLocation.distanceTo(restaurant.getLocation())) + "m";
+            Location location = new Location(LocationManager.GPS_PROVIDER);
+            location.setLatitude(mRestaurant.getLatitude());
+            location.setLongitude(mRestaurant.getLongitude());
+            String distance = Math.round(deviceLocation.distanceTo(location)) + "m";
             mBinding.cellListViewDistanceTextView.setText(distance);
             mBinding.cellListViewVicinityTextView.setText(restaurant.getVicinity());
-            if (restaurant.getOpeningHours() != null) {
-                if (restaurant.getOpeningHours().getOpenNow()) {
+
+            if (restaurant.getOpen() != null) {
+                if (restaurant.getOpen()) {
                     mBinding.cellListViewOpeningHoursTextView.setText(R.string.open);
                 } else {
                     mBinding.cellListViewOpeningHoursTextView.setText(R.string.closed);
@@ -171,8 +184,9 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
             } else {
                 mBinding.cellListViewOpeningHoursTextView.setText(R.string.info_not_available);
             }
+
             if (restaurant.getRating() != null) {
-                mBinding.cellListViewRatingBar.setRating(Math.round(restaurant.getRating() / 5 * 3));
+                mBinding.cellListViewRatingBar.setRating(restaurant.getRating());
             }
 
             if (restaurant.getWorkmatesJoining() != 0) {
@@ -184,17 +198,24 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
                 mBinding.cellListViewWorkmatesImageView.setVisibility(View.INVISIBLE);
             }
 
-            if (restaurant.getPhoto() != null) {
-                glide.load(restaurant.getPhoto())
+            if (restaurant.getPhotoReference() != null) {
+                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
+                        "key=" + BuildConfig.GOOGLE_API_KEY +
+                        "&photoreference=" + restaurant.getPhotoReference() +
+                        "&maxwidth=400";
+
+                Log.d(TAG, "loadPhoto: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
+                glide.load("https://source.unsplash.com/random/400x400") // todo : REPLACE WITH photoUrl AT THE END OF PROJECT
                         .into(mBinding.cellListViewPhotoImageView);
             } else {
-                mBinding.cellListViewPhotoImageView.setImageResource(R.drawable.ic_no_image);
+                glide.load(R.drawable.ic_no_image)
+                        .into(mBinding.cellListViewPhotoImageView);
             }
         }
 
         @Override
         public void onClick(View v) {
-            mListener.onRestaurantClick(mRestaurant.getPlaceId(), mRestaurant.getPhoto());
+            mListener.onRestaurantClick(mRestaurant.getPlaceId());
         }
     }
 }

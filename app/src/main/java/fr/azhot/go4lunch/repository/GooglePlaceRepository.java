@@ -1,25 +1,14 @@
 package fr.azhot.go4lunch.repository;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.azhot.go4lunch.BuildConfig;
-import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.api.GoogleMapsApi;
 import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbySearchPOJO;
@@ -39,17 +28,15 @@ public class GooglePlaceRepository {
 
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
-    private final MutableLiveData<NearbySearchPOJO> mNearbyRestaurantsPOJO;
-    private final MutableLiveData<List<Restaurant>> mRestaurants;
-    private final MutableLiveData<DetailsPOJO> mDetailsPOJO;
+    private final MutableLiveData<List<Restaurant>> mNearbyRestaurants;
+    private final MutableLiveData<Restaurant> mDetailsRestaurant;
 
 
     // constructor
     private GooglePlaceRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
-        mNearbyRestaurantsPOJO = new MutableLiveData<>();
-        mRestaurants = new MutableLiveData<>();
-        mDetailsPOJO = new MutableLiveData<>();
+        mNearbyRestaurants = new MutableLiveData<>();
+        mDetailsRestaurant = new MutableLiveData<>();
     }
 
 
@@ -65,123 +52,67 @@ public class GooglePlaceRepository {
 
 
     // methods
-    public LiveData<NearbySearchPOJO> getNearbySearchPOJO() {
-        Log.d(TAG, "getNearbySearchPOJO");
+    public LiveData<List<Restaurant>> getNearbyRestaurants() {
+        Log.d(TAG, "getNearbyRestaurants");
 
-        return mNearbyRestaurantsPOJO;
+        return mNearbyRestaurants;
     }
 
-    public void setNearbySearchPOJO(String keyword, String location, int radius) {
-        Log.d(TAG, "setNearbySearchPOJO");
+    public void setNearbyRestaurants(String keyword, String location, int radius) {
+        Log.d(TAG, "setNearbyRestaurants");
 
         Call<NearbySearchPOJO> placeNearbySearch = mGoogleMapsApi.getNearbySearch(keyword, location, radius);
         placeNearbySearch.enqueue(new Callback<NearbySearchPOJO>() {
             @Override
             public void onResponse(@NonNull Call<NearbySearchPOJO> call, @NonNull Response<NearbySearchPOJO> response) {
-                Log.d(TAG, "setNearbySearchPOJO: onResponse");
+                Log.d(TAG, "setNearbyRestaurants: onResponse");
 
-                mNearbyRestaurantsPOJO.setValue(response.body());
+                List<Restaurant> restaurants = new ArrayList<>();
+
+                if (response.body() != null) {
+                    for (NearbySearchPOJO.Result result : response.body().getResults()) {
+                        Restaurant restaurant = new Restaurant(result);
+                        restaurants.add(restaurant);
+                    }
+                }
+
+                mNearbyRestaurants.setValue(restaurants);
             }
 
             @Override
             public void onFailure(@NonNull Call<NearbySearchPOJO> call, @NonNull Throwable t) {
-                Log.d(TAG, "setNearbySearchPOJO: onFailure");
+                Log.e(TAG, "setNearbyRestaurants: onFailure", t);
 
-                mNearbyRestaurantsPOJO.postValue(null);
+                mNearbyRestaurants.postValue(null);
             }
         });
     }
 
-    public LiveData<List<Restaurant>> getNearbyRestaurants() {
-        Log.d(TAG, "getNearbyRestaurants");
+    public LiveData<Restaurant> getDetailsRestaurant() {
+        Log.d(TAG, "getDetailsRestaurant");
 
-        return mRestaurants;
+        return mDetailsRestaurant;
     }
 
-    public void setNearbyRestaurants(NearbySearchPOJO nearbySearchPOJO) {
-        Log.d(TAG, "setNearbyRestaurants");
-
-        List<Restaurant> restaurants = new ArrayList<>();
-
-        for (NearbySearchPOJO.Result result : nearbySearchPOJO.getResults()) {
-            Location location = new Location(LocationManager.GPS_PROVIDER);
-            location.setLatitude(result.getGeometry().getLocation().getLat());
-            location.setLongitude(result.getGeometry().getLocation().getLng());
-
-            Restaurant restaurant = new Restaurant(result, location);
-
-            restaurants.add(restaurant);
-        }
-
-        mRestaurants.setValue(restaurants);
-    }
-
-    public void loadRestaurantsPhotos(List<Restaurant> restaurants, RequestManager glide) {
-        int i = 1; // todo : DELETE AT THE END OF PROJECT
-        for (Restaurant restaurant : restaurants) {
-            if (restaurant.getPhotos() != null) {
-                String photoUrl = "https://maps.googleapis.com/maps/api/place/photo?" +
-                        "key=" + BuildConfig.GOOGLE_API_KEY +
-                        "&photoreference=" + restaurant.getPhotos().get(0).getPhotoReference() +
-                        "&maxwidth=400";
-
-                Log.d(TAG, "setNearbyRestaurants: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
-
-                glide.asBitmap()
-                        .load("https://source.unsplash.com/random/400x400?sig=" + i++) // todo : REPLACE AT THE END OF PROJECT
-                        // .load(photoUrl)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                restaurant.setPhoto(resource);
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                            }
-                        });
-            } else {
-                glide.asBitmap()
-                        .load(R.drawable.ic_no_image)
-                        .into(new CustomTarget<Bitmap>() {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                restaurant.setPhoto(resource);
-                            }
-
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                            }
-                        });
-            }
-        }
-    }
-
-    public LiveData<DetailsPOJO> getDetailsPOJO() {
-        Log.d(TAG, "getDetailsPOJO");
-
-        return mDetailsPOJO;
-    }
-
-    public void setDetailsPOJO(String placeId) {
-        Log.d(TAG, "setDetailsPOJO");
+    public void setDetailsRestaurant(String placeId) {
+        Log.d(TAG, "setDetailsRestaurant");
 
         Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
-                Log.d(TAG, "setDetailsPOJO: onResponse");
+                Log.d(TAG, "setDetailsRestaurant: onResponse");
 
-                mDetailsPOJO.setValue(response.body());
+                if (response.body() != null) {
+                    mDetailsRestaurant.setValue(new Restaurant(response.body().getResult()));
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
-                Log.d(TAG, "setDetailsPOJO: onFailure");
+                Log.e(TAG, "setDetailsPOJO: onFailure", t);
 
-                mDetailsPOJO.postValue(null);
+                mDetailsRestaurant.postValue(null);
             }
         });
     }

@@ -44,12 +44,152 @@ public class DetailsPOJO {
         this.status = status;
     }
 
+    /**
+     * Southwest POJO class
+     */
+    public static class Geometry {
+
+        @SerializedName("location")
+        @Expose
+        private Location location;
+        @SerializedName("viewport")
+        @Expose
+        private Viewport viewport;
+
+        public Location getLocation() {
+            return location;
+        }
+
+        public void setLocation(Location location) {
+            this.location = location;
+        }
+
+        public Viewport getViewport() {
+            return viewport;
+        }
+
+        public void setViewport(Viewport viewport) {
+            this.viewport = viewport;
+        }
+    }
 
     /**
-     * Result POJO class
+     * Southwest POJO class
+     */
+    public static class Location {
+
+        @SerializedName("lat")
+        @Expose
+        private Double lat;
+        @SerializedName("lng")
+        @Expose
+        private Double lng;
+
+        public Double getLat() {
+            return lat;
+        }
+
+        public void setLat(Double lat) {
+            this.lat = lat;
+        }
+
+        public Double getLng() {
+            return lng;
+        }
+
+        public void setLng(Double lng) {
+            this.lng = lng;
+        }
+    }
+
+    /**
+     * Southwest POJO class
+     */
+    public static class Northeast {
+
+        @SerializedName("lat")
+        @Expose
+        private Double lat;
+        @SerializedName("lng")
+        @Expose
+        private Double lng;
+
+        public Double getLat() {
+            return lat;
+        }
+
+        public void setLat(Double lat) {
+            this.lat = lat;
+        }
+
+        public Double getLng() {
+            return lng;
+        }
+
+        public void setLng(Double lng) {
+            this.lng = lng;
+        }
+    }
+
+    /**
+     * Southwest POJO class
+     */
+    public static class Photo {
+
+        @SerializedName("height")
+        @Expose
+        private Integer height;
+        @SerializedName("html_attributions")
+        @Expose
+        private List<String> htmlAttributions = null;
+        @SerializedName("photo_reference")
+        @Expose
+        private String photoReference;
+        @SerializedName("width")
+        @Expose
+        private Integer width;
+
+        public Integer getHeight() {
+            return height;
+        }
+
+        public void setHeight(Integer height) {
+            this.height = height;
+        }
+
+        public List<String> getHtmlAttributions() {
+            return htmlAttributions;
+        }
+
+        public void setHtmlAttributions(List<String> htmlAttributions) {
+            this.htmlAttributions = htmlAttributions;
+        }
+
+        public String getPhotoReference() {
+            return photoReference;
+        }
+
+        public void setPhotoReference(String photoReference) {
+            this.photoReference = photoReference;
+        }
+
+        public Integer getWidth() {
+            return width;
+        }
+
+        public void setWidth(Integer width) {
+            this.width = width;
+        }
+    }
+
+    /**
+     * Southwest POJO class
      */
     public static class Result {
 
+        @SerializedName("geometry")
+        @Expose
+        private Geometry geometry;
         @SerializedName("international_phone_number")
         @Expose
         private String internationalPhoneNumber;
@@ -71,6 +211,14 @@ public class DetailsPOJO {
         @SerializedName("website")
         @Expose
         private String website;
+
+        public Geometry getGeometry() {
+            return geometry;
+        }
+
+        public void setGeometry(Geometry geometry) {
+            this.geometry = geometry;
+        }
 
         public String getInternationalPhoneNumber() {
             return internationalPhoneNumber;
@@ -129,55 +277,61 @@ public class DetailsPOJO {
         }
     }
 
+    /**
+     * Southwest POJO class
+     */
+    public static class Southwest {
+
+        @SerializedName("lat")
+        @Expose
+        private Double lat;
+        @SerializedName("lng")
+        @Expose
+        private Double lng;
+
+        public Double getLat() {
+            return lat;
+        }
+
+        public void setLat(Double lat) {
+            this.lat = lat;
+        }
+
+        public Double getLng() {
+            return lng;
+        }
+
+        public void setLng(Double lng) {
+            this.lng = lng;
+        }
+    }
 
     /**
-     * Photo POJO class
+     * Viewport POJO class
      */
-    public static class Photo {
+    public static class Viewport {
 
-        @SerializedName("height")
+        @SerializedName("northeast")
         @Expose
-        private Integer height;
-        @SerializedName("html_attributions")
+        private Northeast northeast;
+        @SerializedName("southwest")
         @Expose
-        private List<String> htmlAttributions = null;
-        @SerializedName("photo_reference")
-        @Expose
-        private String photoReference;
-        @SerializedName("width")
-        @Expose
-        private Integer width;
+        private Southwest southwest;
 
-        public Integer getHeight() {
-            return height;
+        public Northeast getNortheast() {
+            return northeast;
         }
 
-        public void setHeight(Integer height) {
-            this.height = height;
+        public void setNortheast(Northeast northeast) {
+            this.northeast = northeast;
         }
 
-        public List<String> getHtmlAttributions() {
-            return htmlAttributions;
+        public Southwest getSouthwest() {
+            return southwest;
         }
 
-        public void setHtmlAttributions(List<String> htmlAttributions) {
-            this.htmlAttributions = htmlAttributions;
-        }
-
-        public String getPhotoReference() {
-            return photoReference;
-        }
-
-        public void setPhotoReference(String photoReference) {
-            this.photoReference = photoReference;
-        }
-
-        public Integer getWidth() {
-            return width;
-        }
-
-        public void setWidth(Integer width) {
-            this.width = width;
+        public void setSouthwest(Southwest southwest) {
+            this.southwest = southwest;
         }
     }
 }

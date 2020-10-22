@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -66,7 +65,6 @@ import java.util.List;
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
-import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
@@ -96,14 +94,9 @@ public class MainActivity extends AppCompatActivity {
     private LocationCallback mLocationCallback;
     private Location mDeviceLocation;
     private User mUser;
-    private List<Restaurant> mRestaurants;
 
-    public static LatLng getCoordinate(double latitude, double longitude, long distance) {
-        double lat = latitude + (180 / Math.PI) * (distance / 6378137f);
-        double lng = longitude + (180 / Math.PI) * (distance / 6378137f) / Math.cos(latitude);
-        return new LatLng(lat, lng);
-    }
 
+    // inherited methods
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult");
@@ -136,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // inherited methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -144,11 +136,12 @@ public class MainActivity extends AppCompatActivity {
         // todo : reset all users choices per day
         // todo : notif cloud messaging
         // todo : implement the like button
+        // todo : implement email/password login
+        // todo : implement settings
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
-        mRestaurants = new ArrayList<>();
         mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(mBinding.getRoot());
@@ -186,6 +179,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume");
+
+        super.onResume();
+        initLocationUpdates();
+
+        if (mAuth.getCurrentUser() != null) {
+            mViewModel.getUser(mAuth.getCurrentUser().getUid())
+                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "getUser: onSuccess");
+                                mUser = task.getResult().toObject(User.class);
+                            } else {
+                                Log.e(TAG, "getUser: onFailure", task.getException());
+                            }
+                        }
+                    });
+        }
+    }
+
+    @Override
     public void onPause() {
         Log.d(TAG, "onPause");
 
@@ -215,15 +231,8 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.nav_your_lunch:
                         if (mUser.getSelectedRestaurantId() != null) {
-                            Bitmap restaurantPhoto = null;
-                            for (Restaurant restaurant : mRestaurants) {
-                                if (restaurant.getPlaceId().equals(mUser.getSelectedRestaurantId())) {
-                                    restaurantPhoto = restaurant.getPhoto();
-                                    break;
-                                }
-                            }
                             Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                                    MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId(), restaurantPhoto);
+                                    MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId());
                             startActivity(intent);
                         } else {
                             Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
@@ -340,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
                         // otherwise if connection was not available on first
                         // call then observer never gets nearby restaurants for current location.
                         String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
-                        mViewModel.setNearbySearchPOJO(RESTAURANT_KEYWORD, location, NEARBY_SEARCH_RADIUS);
+                        mViewModel.setNearbyRestaurants(RESTAURANT_KEYWORD, location, NEARBY_SEARCH_RADIUS);
                     }
                 }
 
@@ -375,53 +384,16 @@ public class MainActivity extends AppCompatActivity {
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbySearchPOJO().observe(this, new Observer<NearbySearchPOJO>() {
-            @Override
-            public void onChanged(NearbySearchPOJO nearbySearchPOJO) {
-                Log.d(TAG, "getNearbySearchPOJO: onChanged");
-
-                if (nearbySearchPOJO != null) {
-                    mViewModel.setNearbyRestaurants(nearbySearchPOJO);
-                } else {
-                    Toast.makeText(MainActivity.this, R.string.no_nearby_restaurants, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
         mViewModel.getNearbyRestaurants().observe(this, new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
                 Log.d(TAG, "onChanged");
 
-                mRestaurants.clear();
-                mRestaurants.addAll(restaurants);
-                mViewModel.loadRestaurantsPhotos(restaurants, Glide.with(MainActivity.this));
+                for (Restaurant restaurant : restaurants) {
+                    mViewModel.createOrUpdateRestaurantFromNearby(restaurant, MainActivity.this);
+                }
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume");
-
-        super.onResume();
-        initLocationUpdates();
-
-        if (mAuth.getCurrentUser() != null) {
-            mViewModel.getUser(mAuth.getCurrentUser().getUid())
-                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "getUser: onSuccess");
-                                mUser = task.getResult().toObject(User.class);
-                            } else {
-                                Log.d(TAG, "getUser: onFailure");
-                            }
-                        }
-                    });
-        }
-
     }
 
     private void setUpAutoCompleteSearchView(Menu menu) {
@@ -545,6 +517,12 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private LatLng getCoordinate(double latitude, double longitude, long distance) {
+        double lat = latitude + (180 / Math.PI) * (distance / 6378137f);
+        double lng = longitude + (180 / Math.PI) * (distance / 6378137f) / Math.cos(latitude);
+        return new LatLng(lat, lng);
     }
 
     private void closeKeyboard() {

@@ -20,7 +20,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
 
     // interface
     public interface OnWorkmateClickListener {
-        void OnWorkmateClick(String restaurantId, String userName);
+        void OnWorkmateClick(String placeId, String userName);
     }
 
 
@@ -73,12 +73,11 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
                     .into(mBinding.cellWorkmatesProfilePicture);
 
             String firstName = user.getName().split(" ")[0];
-            String restaurantName = user.getSelectedRestaurantName();
             String stringHasDecided = mBinding
                     .getRoot()
                     .getContext()
                     .getResources()
-                    .getString(R.string.has_decided, firstName, restaurantName);
+                    .getString(R.string.has_decided, firstName, user.getSelectedRestaurantName());
             String stringHasNotDecided = mBinding
                     .getRoot()
                     .getContext()
