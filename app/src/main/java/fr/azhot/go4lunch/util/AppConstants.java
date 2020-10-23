@@ -19,5 +19,6 @@ public abstract class AppConstants {
     public static final String RESTAURANT_COLLECTION_NAME = "restaurants";
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";
     public static final String SELECTED_RESTAURANT_ID_FIELD = "selectedRestaurantId";
+    public static final String SELECTED_RESTAURANT_NAME_FIELD = "selectedRestaurantName";
     public static final String RESTAURANT_KEYWORD = "restaurant";
 }

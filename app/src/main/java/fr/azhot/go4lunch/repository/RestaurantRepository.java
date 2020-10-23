@@ -1,10 +1,8 @@
 package fr.azhot.go4lunch.repository;
 
-import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,30 +21,19 @@ public class RestaurantRepository {
     // private static
     private static final String TAG = RestaurantRepository.class.getSimpleName();
     private static RestaurantRepository RESTAURANT_REPOSITORY;
+
+
     // variables
     private FirebaseFirestore mFirebaseFirestore;
     private CollectionReference mCollectionReference;
-    private String mPlaceId;
-    private String mVicinity;
-    private Location mLocation;
-    @Nullable
-    private Boolean mIsOpen;
-    @Nullable
-    private Long mRating;
-    @Nullable
-    private String mPhotoReference;
-    @Nullable
-    private String mPhoneNumber;
-    @Nullable
-    private String mWebsite;
-    @Nullable
-    private Integer mWorkmatesJoining;
+
 
     // constructor
     private RestaurantRepository() {
         this.mFirebaseFirestore = FirebaseFirestore.getInstance();
         this.mCollectionReference = mFirebaseFirestore.collection(RESTAURANT_COLLECTION_NAME);
     }
+
 
     // public static
     public static RestaurantRepository getInstance() {
@@ -57,6 +44,7 @@ public class RestaurantRepository {
         }
         return RESTAURANT_REPOSITORY;
     }
+
 
     // methods
     public void createOrUpdateRestaurantFromNearby(Restaurant restaurant, AppCompatActivity activity) {

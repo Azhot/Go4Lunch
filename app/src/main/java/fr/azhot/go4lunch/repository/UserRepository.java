@@ -11,6 +11,7 @@ import com.google.firebase.firestore.Query;
 import fr.azhot.go4lunch.model.User;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_NAME_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.USER_COLLECTION_NAME;
 
 public class UserRepository {
@@ -51,6 +52,15 @@ public class UserRepository {
         return mCollectionReference
                 .document(user.getUid())
                 .set(user);
+    }
+
+    public Task<Void> updateUserRestaurantChoice(User user) {
+        Log.d(TAG, "updateUserRestaurantChoice");
+
+        return mCollectionReference
+                .document(user.getUid())
+                .update(SELECTED_RESTAURANT_ID_FIELD, user.getSelectedRestaurantId(),
+                        SELECTED_RESTAURANT_NAME_FIELD, user.getSelectedRestaurantName());
     }
 
     public Task<DocumentSnapshot> getUser(String uid) {

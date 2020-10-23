@@ -3,6 +3,8 @@ package fr.azhot.go4lunch.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.firestore.Exclude;
+
 public class Restaurant {
 
     private String mName;
@@ -20,6 +22,7 @@ public class Restaurant {
     private String mPhoneNumber;
     @Nullable
     private String mWebsite;
+    @Exclude
     private int mWorkmatesJoining;
 
 
@@ -139,10 +142,12 @@ public class Restaurant {
         mWebsite = website;
     }
 
+    @Exclude
     public int getWorkmatesJoining() {
         return mWorkmatesJoining;
     }
 
+    @Exclude
     public void setWorkmatesJoining(int workmatesJoining) {
         mWorkmatesJoining = workmatesJoining;
     }

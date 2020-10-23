@@ -123,6 +123,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
+                Log.d(TAG, "getNearbyRestaurants: onChanged");
+
                 mAdapter.setRestaurants(restaurants);
 
                 for (ListenerRegistration registration : mListenerRegistrations) {
@@ -164,6 +166,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         mViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
+                Log.d(TAG, "getDeviceLocation: onChanged");
+
                 mAdapter.setDeviceLocation(location);
             }
         });
@@ -172,6 +176,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         mViewModel.getAutocompletePrediction().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
             @Override
             public void onChanged(AutocompletePrediction autocompletePrediction) {
+                Log.d(TAG, "getAutocompletePrediction: onChanged");
 
                 if (autocompletePrediction != null) {
                     for (Restaurant restaurant : mAdapter.getRestaurants()) {

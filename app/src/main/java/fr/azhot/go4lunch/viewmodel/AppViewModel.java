@@ -129,6 +129,12 @@ public class AppViewModel extends ViewModel {
         return mUserRepository.createOrUpdateUser(user);
     }
 
+    public Task<Void> updateUserRestaurantChoice(User user) {
+        Log.d(TAG, "updateUserRestaurantChoice");
+
+        return mUserRepository.updateUserRestaurantChoice(user);
+    }
+
     public Task<DocumentSnapshot> getUser(String uid) {
         Log.d(TAG, "getUser");
 

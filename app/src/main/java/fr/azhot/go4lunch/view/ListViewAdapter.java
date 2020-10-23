@@ -142,7 +142,6 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         Log.d(TAG, "setDeviceLocation");
 
         mDeviceLocation = location;
-        sortRestaurants();
     }
 
     // interface
