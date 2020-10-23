@@ -38,10 +38,15 @@ import fr.azhot.go4lunch.view.RestaurantDetailsActivity;
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
 public class NotificationsService extends FirebaseMessagingService {
+
+
+    // private static
     private static final String NOTIFICATION_TAG = "Go4Lunch";
     private static final int NOTIFICATION_ID = 123456789;
     private static final String DEFAULT_NOTIFICATION_CHANNEL_ID = "default_fcm_channel";
 
+
+    // variables
     private User mUser;
     private Restaurant mRestaurant;
     private List<User> mJoiningWorkmates;
@@ -49,6 +54,7 @@ public class NotificationsService extends FirebaseMessagingService {
     private ListenerRegistration mListenerRegistration;
 
 
+    // inherited methods
     @Override
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
@@ -64,6 +70,8 @@ public class NotificationsService extends FirebaseMessagingService {
         }
     }
 
+
+    // methods
     private void getUserFromFirestore() {
         mUserRepository = UserRepository.getInstance();
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();

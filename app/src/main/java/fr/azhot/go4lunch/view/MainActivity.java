@@ -134,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
 
         // todo : reset all users choices per day
-        // todo : notif cloud messaging
         // todo : implement the like button
         // todo : implement email/password login
         // todo : implement settings

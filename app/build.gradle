@@ -28,6 +28,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "String", "GOOGLE_API_KEY", GOOGLE_API_KEY
+            resValue "string", "facebook_app_id", FACEBOOK_APP_ID
+            resValue "string", "fb_login_protocol_scheme", FB_LOGIN_PROTOCOL_SCHEME
+            resValue "string", "twitter_consumer_key", TWITTER_CONSUMER_KEY
+            resValue "string", "twitter_consumer_secret", TWITTER_CONSUMER_SECRET
         }
         debug {
             minifyEnabled false
@@ -35,6 +39,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "String", "GOOGLE_API_KEY", GOOGLE_API_KEY
+            resValue "string", "facebook_app_id", FACEBOOK_APP_ID
+            resValue "string", "fb_login_protocol_scheme", FB_LOGIN_PROTOCOL_SCHEME
+            resValue "string", "twitter_consumer_key", TWITTER_CONSUMER_KEY
+            resValue "string", "twitter_consumer_secret", TWITTER_CONSUMER_SECRET
         }
     }
 
