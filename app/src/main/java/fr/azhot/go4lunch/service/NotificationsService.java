@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -45,6 +46,7 @@ public class NotificationsService extends FirebaseMessagingService {
     private Restaurant mRestaurant;
     private List<User> mJoiningWorkmates;
     private UserRepository mUserRepository;
+    private ListenerRegistration mListenerRegistration;
 
 
     @Override
@@ -92,23 +94,20 @@ public class NotificationsService extends FirebaseMessagingService {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             mRestaurant = task.getResult().toObject(Restaurant.class);
-                            getJoiningWorkmatesFromFirestore();
+                            mListenerRegistration = getJoiningWorkmatesFromFirestore();
                         }
                     }
                 });
     }
 
-    private void getJoiningWorkmatesFromFirestore() {
-
-        mUserRepository.getUsersQuery()
+    private ListenerRegistration getJoiningWorkmatesFromFirestore() {
+        return mUserRepository.getUsersQuery()
                 .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, mRestaurant.getPlaceId())
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
                         if (snapshot != null) {
-                            mJoiningWorkmates = new ArrayList<>();
-                            mJoiningWorkmates.addAll(snapshot.toObjects(User.class));
-                            mJoiningWorkmates.remove(mUser);
+                            mJoiningWorkmates = new ArrayList<>(snapshot.toObjects(User.class));
                             displayNotificationOnDevice();
                         }
                     }
@@ -116,6 +115,8 @@ public class NotificationsService extends FirebaseMessagingService {
     }
 
     private void displayNotificationOnDevice() {
+        mListenerRegistration.remove();
+
         Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
                 this,
                 RestaurantDetailsActivity.class,
@@ -130,8 +131,10 @@ public class NotificationsService extends FirebaseMessagingService {
         inboxStyle.setBigContentTitle(getString(R.string.lunch_time_notification_title));
         inboxStyle
                 .addLine("You're having lunch at: " + mRestaurant.getName())
-                .addLine("Address: " + mRestaurant.getVicinity())
-                .addLine("With: ");
+                .addLine("Address: " + mRestaurant.getVicinity());
+        if (mJoiningWorkmates.size() > 1) {
+            inboxStyle.addLine("With: ");
+        }
         for (User user : mJoiningWorkmates) {
             if (!user.getUid().equals(mUser.getUid())) {
                 inboxStyle.addLine(user.getName());
