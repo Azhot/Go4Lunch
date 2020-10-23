@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4Lunch</string>
+    <string name="get_location_error">Error: unable to get current location.</string>
+    <string name="search">Search</string>
+
+    <!-- PermissionsUtils -->
+    <string name="permissions_dialog_title">Missing permissions</string>
+    <string name="permissions_dialog_message">Location permissions are required for this app components to work.</string>
+    <string name="ok">OK</string>
+    <string name="exit">Exit</string>
+
+    <!-- Login Activity -->
+    <string name="main_activity_sub_title">Find a nice restaurant and invite your co-workers for lunch!</string>
+    <string name="facebook_login_button">Sign in with Facebook</string>
+    <string name="google_login_button">Sign in with Google</string>
+    <string name="sign_in_canceled">Sign in canceled.</string>
+    <string name="unknown_sign_in_error">Unknown error: could not sign in.</string>
+    <string name="email_already_linked_title">Email address already linked to an existing account.</string>
+    <string name="email_already_linked_message"> is already linked to an existing account via Google sign in.
+        \nWould you like to log in to your Google account to link %1$s sign in method to your Go4Lunch account ?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Main Activity -->
+    <string name="no_nearby_restaurants">There are no nearby restaurants.</string>
+    <string name="search_bar_hint">Search restaurant</string>
+
+    <!-- Navigation drawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="your_lunch">Your lunch</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+
+    <!-- Bottom navigation -->
+    <string name="map_view_name">Map View</string>
+    <string name="list_view_name">List View</string>
+    <string name="workmates_name">Workmates</string>
+    <string name="map_view_title">I\'m Hungry!</string>
+    <string name="list_view_title">I\'m Hungry!</string>
+    <string name="workmates_title">Available workmates</string>
+
+    <!-- Workmates Fragment -->
+    <string name="has_decided">%1$s is eating at %2$s.</string>
+    <string name="has_not_decided">%1$s hasn\'t decided yet.</string>
+    <string name="open">Open</string>
+    <string name="closed">Closed</string>
+    <string name="info_not_available">Information not available.</string>
+
+    <!-- RestaurantDetails Activity -->
+    <string name="distance">%1$fm</string>
+    <string name="is_joining">%1$s is joining!</string>
+    <string name="no_restaurant_selected">You have not selected a restaurant yet.</string>
+    <string name="no_website">No website available.</string>
+    <string name="no_phone_number">No phone number available.</string>
+    <string name="call">Call</string>
+    <string name="like">Like</string>
+    <string name="website">Website</string>
+
+    <!-- Notifications Service -->
+    <string name="lunch_time_notification_title">Lunch time!</string>
+    <string name="lunch_at">You\'re having lunch at:</string>
+    <string name="address">Address:</string>
+    <string name="with">With:</string>
+
+</resources>

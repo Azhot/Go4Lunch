@@ -43,7 +43,8 @@ public class NotificationsService extends FirebaseMessagingService {
     // private static
     private static final String NOTIFICATION_TAG = "Go4Lunch";
     private static final int NOTIFICATION_ID = 123456789;
-    private static final String DEFAULT_NOTIFICATION_CHANNEL_ID = "default_fcm_channel";
+    private static final String DEFAULT_NOTIFICATION_CHANNEL_ID = "default_fcm_channel_id";
+    private static final String DEFAULT_NOTIFICATION_CHANNEL_NAME = "default_fcm_channel_name";
 
 
     // variables
@@ -64,7 +65,7 @@ public class NotificationsService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         if (remoteMessage.getNotification() != null) {
             if (remoteMessage.getNotification().getTitle() != null &&
-                    remoteMessage.getNotification().getTitle().equals("Lunch time !")) {
+                    remoteMessage.getNotification().getTitle().equals(getString(R.string.lunch_time_notification_title))) {
                 getUserFromFirestore();
             }
         }
@@ -128,7 +129,7 @@ public class NotificationsService extends FirebaseMessagingService {
         Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
                 this,
                 RestaurantDetailsActivity.class,
-                mRestaurant.getPlaceId());
+                mUser.getSelectedRestaurantId());
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this,
                 0,
@@ -138,14 +139,14 @@ public class NotificationsService extends FirebaseMessagingService {
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle(getString(R.string.lunch_time_notification_title));
         inboxStyle
-                .addLine("You're having lunch at: " + mRestaurant.getName())
-                .addLine("Address: " + mRestaurant.getVicinity());
+                .addLine(getString(R.string.lunch_at) + " " + mRestaurant.getName())
+                .addLine(getString(R.string.address) + " " + mRestaurant.getVicinity());
         if (mJoiningWorkmates.size() > 1) {
-            inboxStyle.addLine("With: ");
-        }
-        for (User user : mJoiningWorkmates) {
-            if (!user.getUid().equals(mUser.getUid())) {
-                inboxStyle.addLine(user.getName());
+            inboxStyle.addLine(getString(R.string.with));
+            for (User user : mJoiningWorkmates) {
+                if (!user.getUid().equals(mUser.getUid())) {
+                    inboxStyle.addLine(user.getName());
+                }
             }
         }
 
@@ -153,7 +154,7 @@ public class NotificationsService extends FirebaseMessagingService {
                 new NotificationCompat.Builder(this, DEFAULT_NOTIFICATION_CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_soupe_bowl)
                         .setContentTitle(getString(R.string.lunch_time_notification_title))
-                        .setContentText("You're having lunch at: " + mRestaurant.getName())
+                        .setContentText(getString(R.string.lunch_at) + mRestaurant.getName())
                         .setAutoCancel(true)
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                         .setContentIntent(pendingIntent)
@@ -162,12 +163,10 @@ public class NotificationsService extends FirebaseMessagingService {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager != null) {
-            CharSequence channelName = "Message coming from Firebase";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(
                     DEFAULT_NOTIFICATION_CHANNEL_ID,
-                    channelName,
-                    importance);
+                    DEFAULT_NOTIFICATION_CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(channel);
         }
 
