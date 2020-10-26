@@ -58,6 +58,7 @@
     <string name="no_phone_number">No phone number available.</string>
     <string name="call">Call</string>
     <string name="like">Like</string>
+    <string name="liked">Liked</string>
     <string name="website">Website</string>
 
     <!-- Notifications Service -->

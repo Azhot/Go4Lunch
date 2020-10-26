@@ -41,8 +41,8 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
     private static final String NOTIFICATION_CHANNEL = "notification-channel";
     private static final String NOTIFICATION_ID = "notification-id";
     private static final String NOTIFICATION = "notification";
-    private static final int RC_NOTIFICATION_PENDING_INTENT = 132435;
-    private static final int RC_BROADCAST_PENDING_INTENT = 243546;
+    private static final int RC_NOTIFICATION_PENDING_INTENT = 1324;
+    private static final int RC_BROADCAST_PENDING_INTENT = 2435;
     private static final int HOUR_OF_DAY_TO_NOTIFY = 12;
 
 
@@ -155,7 +155,7 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
 
         Calendar calendar = Calendar.getInstance();
         if (calendar.get(Calendar.HOUR_OF_DAY) >= HOUR_OF_DAY_TO_NOTIFY) {
-            //calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) + 1);
+            calendar.set(Calendar.DAY_OF_YEAR, calendar.get(Calendar.DAY_OF_YEAR) + 1);
         }
         calendar.set(Calendar.HOUR_OF_DAY, HOUR_OF_DAY_TO_NOTIFY);
         calendar.set(Calendar.MINUTE, 0);

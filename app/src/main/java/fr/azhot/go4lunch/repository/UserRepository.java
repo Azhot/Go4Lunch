@@ -63,6 +63,14 @@ public class UserRepository {
                         SELECTED_RESTAURANT_NAME_FIELD, user.getSelectedRestaurantName());
     }
 
+    public Task<Void> updateUserLikedRestaurant(User user) {
+        Log.d(TAG, "updateUserLikedRestaurants");
+
+        return mCollectionReference
+                .document(user.getUid())
+                .update("likedRestaurants", user.getLikedRestaurants());
+    }
+
     public Task<DocumentSnapshot> getUser(String uid) {
         Log.d(TAG, "getUser");
 

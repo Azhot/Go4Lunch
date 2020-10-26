@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -137,7 +138,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                                 Log.d(TAG, "getUser: onSuccess");
                                 mUser = task.getResult().toObject(User.class);
                                 if (mUser != null) {
-                                    setUpFab(mCurrentRestaurant.getPlaceId(), mUser);
+                                    setUpFab();
+                                    setUplikeButton();
                                 }
                             } else {
                                 Log.e(TAG, "getUser: onFailure", task.getException());
@@ -154,13 +156,27 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void setUpFab(String restaurantId, User user) {
+    private void setUpFab() {
         Log.d(TAG, "setUpFab");
 
-        if (restaurantId.equals(user.getSelectedRestaurantId())) {
+        if (mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId())) {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
         } else {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
+        }
+    }
+
+    private void setUplikeButton() {
+        Log.d(TAG, "setUpFab");
+
+        if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
+            mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_cyan), null, null);
+            mBinding.restaurantDetailsLikeButton.setText(R.string.liked);
+            mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorCyan));
+        } else {
+            mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_orange), null, null);
+            mBinding.restaurantDetailsLikeButton.setText(R.string.like);
+            mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
         }
     }
 
@@ -210,7 +226,28 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.restaurant_details_like_button:
-                // implement like button here
+                if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
+                    mUser.getLikedRestaurants().remove(mCurrentRestaurant.getPlaceId());
+                    mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_orange), null, null);
+                    mBinding.restaurantDetailsLikeButton.setText(R.string.like);
+                    mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+                } else {
+                    mUser.getLikedRestaurants().add(mCurrentRestaurant.getPlaceId());
+                    mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_cyan), null, null);
+                    mBinding.restaurantDetailsLikeButton.setText(R.string.liked);
+                    mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorCyan));
+                }
+                mViewModel.updateUserLikedRestaurant(mUser)
+                        .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "updateUserLikedRestaurant: onSuccess");
+                                } else {
+                                    Log.e(TAG, "updateUserLikedRestaurant: onFailure", task.getException());
+                                }
+                            }
+                        });
                 break;
             case R.id.restaurant_details_website_button:
                 if (mCurrentRestaurant.getWebsite() != null) {
@@ -225,5 +262,4 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 break;
         }
     }
-
 }

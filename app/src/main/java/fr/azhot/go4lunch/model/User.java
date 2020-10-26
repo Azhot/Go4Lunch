@@ -2,6 +2,9 @@ package fr.azhot.go4lunch.model;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
     private String uid;
@@ -12,6 +15,7 @@ public class User {
     private String selectedRestaurantId;
     @Nullable
     private String selectedRestaurantName;
+    private List<String> likedRestaurants;
 
 
     public User() {
@@ -25,6 +29,7 @@ public class User {
         this.urlPicture = urlPicture;
         this.selectedRestaurantId = null;
         this.selectedRestaurantName = null;
+        this.likedRestaurants = new ArrayList<>();
     }
 
     public String getUid() {
@@ -75,5 +80,13 @@ public class User {
 
     public void setSelectedRestaurantName(@Nullable String selectedRestaurantName) {
         this.selectedRestaurantName = selectedRestaurantName;
+    }
+
+    public List<String> getLikedRestaurants() {
+        return likedRestaurants;
+    }
+
+    public void setLikedRestaurants(List<String> likedRestaurants) {
+        this.likedRestaurants = likedRestaurants;
     }
 }
