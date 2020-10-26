@@ -50,18 +50,18 @@ import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
-import static fr.azhot.go4lunch.util.AppConstants.CENTER_FRANCE;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
-import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_ZOOM;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
-import static fr.azhot.go4lunch.util.AppConstants.INIT_ZOOM;
-import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_SETTINGS;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
     // private static
     private static final String TAG = MapViewFragment.class.getSimpleName();
+    public static final int RC_CHECK_SETTINGS = 3456;
+    public static final float DEFAULT_ZOOM = 14.5f;
+    public static final LatLng CENTER_FRANCE = new LatLng(46.3432097, 2.5733245);
+    public static final float INIT_ZOOM = 5f;
 
 
     // public static

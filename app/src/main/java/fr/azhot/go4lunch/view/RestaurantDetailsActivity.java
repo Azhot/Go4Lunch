@@ -27,6 +27,7 @@ import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
+import fr.azhot.go4lunch.notification.LunchTimeNotificationPublisher;
 import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
@@ -168,16 +169,19 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
+                LunchTimeNotificationPublisher lunchTimeNotificationPublisher = new LunchTimeNotificationPublisher();
 
                 if ((mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId()))) {
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
                     mUser.setSelectedRestaurantId(null);
                     mUser.setSelectedRestaurantName(null);
+                    lunchTimeNotificationPublisher.cancelLunchTimeNotification(this);
                 } else {
                     // change button to activated
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
                     mUser.setSelectedRestaurantId(mCurrentRestaurant.getPlaceId());
                     mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
+                    lunchTimeNotificationPublisher.scheduleLunchTimeNotification(this, mUser.getUid(), mCurrentRestaurant);
                 }
 
                 mViewModel.updateUserRestaurantChoice(mUser)

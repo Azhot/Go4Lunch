@@ -69,19 +69,19 @@ import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
-import static fr.azhot.go4lunch.util.AppConstants.AUTOCOMPLETE_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
-import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
-import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_TYPE;
 
 public class MainActivity extends AppCompatActivity {
 
 
     // private static
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final int NEARBY_SEARCH_RADIUS = 500;
+    public static final int AUTOCOMPLETE_SEARCH_RADIUS = 750;
+    public static final float DISTANCE_UNTIL_UPDATE = 50f;
+    public static final String RESTAURANT_TYPE = "restaurant";
 
 
     // variables

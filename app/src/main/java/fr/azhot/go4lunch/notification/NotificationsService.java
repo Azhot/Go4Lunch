@@ -1,3 +1,6 @@
+// kept for the purpose of future possible interest
+
+/*
 package fr.azhot.go4lunch.service;
 
 import android.app.NotificationChannel;
@@ -176,3 +179,4 @@ public class NotificationsService extends FirebaseMessagingService {
         }
     }
 }
+ */

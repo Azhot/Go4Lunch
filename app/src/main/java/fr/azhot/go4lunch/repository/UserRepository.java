@@ -11,14 +11,14 @@ import com.google.firebase.firestore.Query;
 import fr.azhot.go4lunch.model.User;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
-import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_NAME_FIELD;
-import static fr.azhot.go4lunch.util.AppConstants.USER_COLLECTION_NAME;
 
 public class UserRepository {
 
 
     // private static
     private static final String TAG = UserRepository.class.getSimpleName();
+    public static final String USER_COLLECTION_NAME = "users";
+    public static final String SELECTED_RESTAURANT_NAME_FIELD = "selectedRestaurantName";
     private static UserRepository USER_REPOSITORY;
 
 
