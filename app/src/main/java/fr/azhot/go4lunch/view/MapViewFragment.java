@@ -208,10 +208,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getNearbyRestaurants: onChanged");
+                Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
                 for (ListenerRegistration registration : mListenerRegistrations) {
                     registration.remove();
@@ -247,10 +247,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
-        mViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                Log.d(TAG, "getDeviceLocation: onChanged");
+                Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
                 if (mDeviceLocation == null) {
                     animateCamera(location, DEFAULT_ZOOM, mGoogleMap);
@@ -259,10 +259,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
-        mViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                Log.d(TAG, "getLocationActivated: onChanged");
+                Log.d(TAG, "getLocationActivatedLiveData: onChanged");
 
                 if (mGoogleMap != null) {
                     checkLocationPermission(mContext);
@@ -274,10 +274,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
-        mViewModel.getAutocompletePrediction().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+        mViewModel.getAutocompletePredictionLiveData().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
             @Override
             public void onChanged(AutocompletePrediction autocompletePrediction) {
-                Log.d(TAG, "getAutocompletePrediction: onChanged");
+                Log.d(TAG, "getAutocompletePredictionLiveData: onChanged");
 
                 if (mGoogleMap != null) {
                     if (autocompletePrediction != null) {

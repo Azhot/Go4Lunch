@@ -120,10 +120,10 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbyRestaurants().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
+        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
             @Override
             public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getNearbyRestaurants: onChanged");
+                Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
                 mAdapter.setRestaurants(restaurants);
 
@@ -150,10 +150,10 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
-        mViewModel.getLocationActivated().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                Log.d(TAG, "getLocationActivated: onChanged");
+                Log.d(TAG, "getLocationActivatedLiveData: onChanged");
 
                 if (aBoolean) {
                     mAdapter.showRestaurants();
@@ -163,20 +163,20 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
-        mViewModel.getDeviceLocation().observe(getViewLifecycleOwner(), new Observer<Location>() {
+        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), new Observer<Location>() {
             @Override
             public void onChanged(Location location) {
-                Log.d(TAG, "getDeviceLocation: onChanged");
+                Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
                 mAdapter.setDeviceLocation(location);
             }
         });
 
 
-        mViewModel.getAutocompletePrediction().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+        mViewModel.getAutocompletePredictionLiveData().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
             @Override
             public void onChanged(AutocompletePrediction autocompletePrediction) {
-                Log.d(TAG, "getAutocompletePrediction: onChanged");
+                Log.d(TAG, "getAutocompletePredictionLiveData: onChanged");
 
                 if (autocompletePrediction != null) {
                     for (Restaurant restaurant : mAdapter.getRestaurants()) {

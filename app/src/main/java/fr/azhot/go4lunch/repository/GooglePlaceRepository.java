@@ -52,20 +52,20 @@ public class GooglePlaceRepository {
 
 
     // methods
-    public LiveData<List<Restaurant>> getNearbyRestaurants() {
-        Log.d(TAG, "getNearbyRestaurants");
+    public LiveData<List<Restaurant>> getNearbyRestaurantsLiveData() {
+        Log.d(TAG, "getNearbyRestaurantsLiveData");
 
         return mNearbyRestaurants;
     }
 
-    public void setNearbyRestaurants(String keyword, String type, String location, int radius) {
-        Log.d(TAG, "setNearbyRestaurants");
+    public void setNearbyRestaurantsLiveData(String keyword, String type, String location, int radius) {
+        Log.d(TAG, "setNearbyRestaurantsLiveData");
 
         Call<NearbySearchPOJO> placeNearbySearch = mGoogleMapsApi.getNearbySearch(keyword, type, location, radius);
         placeNearbySearch.enqueue(new Callback<NearbySearchPOJO>() {
             @Override
             public void onResponse(@NonNull Call<NearbySearchPOJO> call, @NonNull Response<NearbySearchPOJO> response) {
-                Log.d(TAG, "setNearbyRestaurants: onResponse");
+                Log.d(TAG, "setNearbyRestaurantsLiveData: onResponse");
 
                 List<Restaurant> restaurants = new ArrayList<>();
 
@@ -81,27 +81,27 @@ public class GooglePlaceRepository {
 
             @Override
             public void onFailure(@NonNull Call<NearbySearchPOJO> call, @NonNull Throwable t) {
-                Log.e(TAG, "setNearbyRestaurants: onFailure", t);
+                Log.e(TAG, "setNearbyRestaurantsLiveData: onFailure", t);
 
                 mNearbyRestaurants.postValue(null);
             }
         });
     }
 
-    public LiveData<Restaurant> getDetailsRestaurant() {
-        Log.d(TAG, "getDetailsRestaurant");
+    public LiveData<Restaurant> getDetailsRestaurantLiveData() {
+        Log.d(TAG, "getDetailsRestaurantLiveData");
 
         return mDetailsRestaurant;
     }
 
-    public void setDetailsRestaurant(String placeId) {
-        Log.d(TAG, "setDetailsRestaurant");
+    public void setDetailsRestaurantLiveData(String placeId) {
+        Log.d(TAG, "setDetailsRestaurantLiveData");
 
         Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
-                Log.d(TAG, "setDetailsRestaurant: onResponse");
+                Log.d(TAG, "setDetailsRestaurantLiveData: onResponse");
 
                 if (response.body() != null) {
                     mDetailsRestaurant.setValue(new Restaurant(response.body().getResult()));
@@ -110,10 +110,37 @@ public class GooglePlaceRepository {
 
             @Override
             public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
-                Log.e(TAG, "setDetailsPOJO: onFailure", t);
+                Log.e(TAG, "setDetailsRestaurantLiveData: onFailure", t);
 
                 mDetailsRestaurant.postValue(null);
             }
         });
+    }
+
+    public void getDetailsRestaurant(String placeId, OnCompleteListener onCompleteListener) {
+        Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
+        placeDetails.enqueue(new Callback<DetailsPOJO>() {
+            @Override
+            public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
+                Log.d(TAG, "setDetailsRestaurantLiveData: onResponse");
+
+                if (response.body() != null) {
+                    onCompleteListener.onSuccess(new Restaurant(response.body().getResult()));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
+                Log.e(TAG, "setDetailsPOJO: onFailure", t);
+
+                onCompleteListener.onFailure();
+            }
+        });
+    }
+
+    public interface OnCompleteListener {
+        void onSuccess(Restaurant restaurant);
+
+        void onFailure();
     }
 }

@@ -30,7 +30,7 @@ import java.util.List;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
-import fr.azhot.go4lunch.repository.RestaurantRepository;
+import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.repository.UserRepository;
 import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.view.RestaurantDetailsActivity;
@@ -86,7 +86,7 @@ public class NotificationsService extends FirebaseMessagingService {
                             if (task.isSuccessful()) {
                                 mUser = task.getResult().toObject(User.class);
                                 if (mUser != null && mUser.getSelectedRestaurantId() != null) {
-                                    getRestaurantFromFirestore();
+                                    getRestaurantFromPlaceDetails();
                                 }
                             }
                         }
@@ -94,19 +94,20 @@ public class NotificationsService extends FirebaseMessagingService {
         }
     }
 
-    private void getRestaurantFromFirestore() {
-        RestaurantRepository restaurantRepository = RestaurantRepository.getInstance();
+    private void getRestaurantFromPlaceDetails() {
+        GooglePlaceRepository googlePlaceRepository = GooglePlaceRepository.getInstance();
+        googlePlaceRepository.getDetailsRestaurant(mUser.getSelectedRestaurantId(), new GooglePlaceRepository.OnCompleteListener() {
+            @Override
+            public void onSuccess(Restaurant restaurant) {
+                mRestaurant = restaurant;
+                mListenerRegistration = getJoiningWorkmatesFromFirestore();
+            }
 
-        restaurantRepository.getRestaurant(mUser.getSelectedRestaurantId())
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            mRestaurant = task.getResult().toObject(Restaurant.class);
-                            mListenerRegistration = getJoiningWorkmatesFromFirestore();
-                        }
-                    }
-                });
+            @Override
+            public void onFailure() {
+                mRestaurant = null;
+            }
+        });
     }
 
     private ListenerRegistration getJoiningWorkmatesFromFirestore() {

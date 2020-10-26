@@ -29,7 +29,6 @@ import androidx.core.view.GravityCompat;
 import androidx.cursoradapter.widget.CursorAdapter;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
@@ -65,7 +64,6 @@ import java.util.List;
 import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
-import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
@@ -111,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     } else {
                         launchFragment();
-                        initObservers();
                     }
                 }
             }
@@ -151,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         PermissionsUtils.checkLocationPermission(this);
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
             launchFragment();
-            initObservers();
         }
     }
 
@@ -340,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
 
                     super.onLocationResult(locationResult);
                     Location currentLocation = locationResult.getLastLocation();
-                    mViewModel.setDeviceLocation(currentLocation);
+                    mViewModel.setDeviceLocationLiveData(currentLocation);
                     if (mDeviceLocation == null || mDeviceLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
                         mDeviceLocation = currentLocation;
                         // should check connection status to send a "no connection"
@@ -348,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
                         // otherwise if connection was not available on first
                         // call then observer never gets nearby restaurants for current location.
                         String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
-                        mViewModel.setNearbyRestaurants(RESTAURANT_TYPE, RESTAURANT_TYPE, location, NEARBY_SEARCH_RADIUS);
+                        mViewModel.setNearbyRestaurantsLiveData(RESTAURANT_TYPE, RESTAURANT_TYPE, location, NEARBY_SEARCH_RADIUS);
                     }
                 }
 
@@ -360,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!locationAvailability.isLocationAvailable()) {
                         Toast.makeText(MainActivity.this, R.string.get_location_error, Toast.LENGTH_SHORT).show();
                     }
-                    mViewModel.setLocationActivated(locationAvailability.isLocationAvailable());
+                    mViewModel.setLocationActivatedLiveData(locationAvailability.isLocationAvailable());
                 }
             };
         }
@@ -378,21 +374,6 @@ public class MainActivity extends AppCompatActivity {
                 .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
                 .commit();
         setTitle(R.string.list_view_title);
-    }
-
-    private void initObservers() {
-        Log.d(TAG, "initObservers");
-
-        mViewModel.getNearbyRestaurants().observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "onChanged");
-
-                for (Restaurant restaurant : restaurants) {
-                    mViewModel.createOrUpdateRestaurantFromNearby(restaurant, MainActivity.this);
-                }
-            }
-        });
     }
 
     private void setUpAutoCompleteSearchView(Menu menu) {
@@ -477,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                 } else if (newText.length() == 0) {
-                    mViewModel.setAutocompletePrediction(null);
+                    mViewModel.setAutocompletePredictionLiveData(null);
                 }
 
                 return true;
@@ -500,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
 
                 for (AutocompletePrediction prediction : predictions) {
                     if (selection.contentEquals(prediction.getPrimaryText(null))) {
-                        mViewModel.setAutocompletePrediction(prediction);
+                        mViewModel.setAutocompletePredictionLiveData(prediction);
                         break;
                     }
                 }
@@ -512,7 +493,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                mViewModel.setAutocompletePrediction(null);
+                mViewModel.setAutocompletePredictionLiveData(null);
                 return false;
             }
         });

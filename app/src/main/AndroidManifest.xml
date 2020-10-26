@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="fr.azhot.go4lunch">
     <!-- PERMS -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -49,6 +50,7 @@
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
+            tools:replace="android:value"
             android:value="@string/facebook_app_id" />
 
         <!-- Notification service -->

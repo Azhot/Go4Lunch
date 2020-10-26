@@ -10,7 +10,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -28,6 +27,7 @@ import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityRestaurantDetailsBinding;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
+import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
@@ -58,8 +58,6 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         init();
         setContentView(mBinding.getRoot());
-        retrieveDataFromIntent();
-        initObservers();
     }
 
     @Override
@@ -84,22 +82,17 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         mBinding.restaurantDetailsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
         mAuth = FirebaseAuth.getInstance();
-    }
-
-    private void retrieveDataFromIntent() {
-        Log.d(TAG, "retrieveDataFromIntent");
-
-        Intent intent = getIntent();
-        mViewModel.setDetailsRestaurant(getIntent().getStringExtra(RESTAURANT_ID_EXTRA));
-    }
-
-    private void initObservers() {
-        mViewModel.getDetailsRestaurant().observe(this, new Observer<Restaurant>() {
+        String placeId = getIntent().getStringExtra(RESTAURANT_ID_EXTRA);
+        mViewModel.getRestaurantDetails(placeId, new GooglePlaceRepository.OnCompleteListener() {
             @Override
-            public void onChanged(Restaurant restaurant) {
+            public void onSuccess(Restaurant restaurant) {
                 mCurrentRestaurant = restaurant;
                 updateUIWithRestaurantDetails();
-                mViewModel.createOrUpdateRestaurantFromDetails(restaurant, RestaurantDetailsActivity.this);
+            }
+
+            @Override
+            public void onFailure() {
+                Log.d(TAG, "getRestaurantDetails: onFailure");
             }
         });
     }
@@ -187,14 +180,14 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                     mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
                 }
 
-                mViewModel.createOrUpdateUser(mUser)
+                mViewModel.updateUserRestaurantChoice(mUser)
                         .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d(TAG, "createOrUpdateUser: onSuccess");
+                                    Log.d(TAG, "updateUserRestaurantChoice: onSuccess");
                                 } else {
-                                    Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
+                                    Log.e(TAG, "updateUserRestaurantChoice: onFailure", task.getException());
                                 }
                             }
                         });
