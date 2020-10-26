@@ -186,7 +186,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                         }
                     }
                 } else {
-                    mAdapter.setRestaurants(mAdapter.getSavedRestaurants());
+                    mAdapter.loadSavedRestaurants();
                 }
             }
         });

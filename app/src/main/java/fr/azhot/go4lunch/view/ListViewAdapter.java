@@ -114,6 +114,14 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         sortRestaurants();
     }
 
+    public void loadSavedRestaurants() {
+        if (!mSavedRestaurants.isEmpty()) {
+            mRestaurants.clear();
+            mRestaurants.addAll(mSavedRestaurants);
+            sortRestaurants();
+        }
+    }
+
     public void setRestaurants(List<Restaurant> restaurants) {
         Log.d(TAG, "setRestaurants");
 
