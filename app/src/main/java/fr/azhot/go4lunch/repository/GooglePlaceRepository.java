@@ -58,10 +58,10 @@ public class GooglePlaceRepository {
         return mNearbyRestaurants;
     }
 
-    public void setNearbyRestaurants(String keyword, String location, int radius) {
+    public void setNearbyRestaurants(String keyword, String type, String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        Call<NearbySearchPOJO> placeNearbySearch = mGoogleMapsApi.getNearbySearch(keyword, location, radius);
+        Call<NearbySearchPOJO> placeNearbySearch = mGoogleMapsApi.getNearbySearch(keyword, type, location, radius);
         placeNearbySearch.enqueue(new Callback<NearbySearchPOJO>() {
             @Override
             public void onResponse(@NonNull Call<NearbySearchPOJO> call, @NonNull Response<NearbySearchPOJO> response) {

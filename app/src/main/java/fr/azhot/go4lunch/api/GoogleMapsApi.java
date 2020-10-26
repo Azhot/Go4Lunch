@@ -15,7 +15,7 @@ public interface GoogleMapsApi {
             "&key=" + BuildConfig.GOOGLE_API_KEY;
 
     @GET(queryPlaceNearbySearch)
-    Call<NearbySearchPOJO> getNearbySearch(@Query("keyword") String keyword, @Query("location") String location, @Query("radius") int radius);
+    Call<NearbySearchPOJO> getNearbySearch(@Query("keyword") String keyword, @Query("type") String type, @Query("location") String location, @Query("radius") int radius);
 
     @GET(queryPlaceDetails)
     Call<DetailsPOJO> getDetails(@Query("place_id") String placeId);

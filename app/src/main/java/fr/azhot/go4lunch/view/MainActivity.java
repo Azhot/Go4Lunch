@@ -77,7 +77,7 @@ import static fr.azhot.go4lunch.util.AppConstants.DISTANCE_UNTIL_UPDATE;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.NEARBY_SEARCH_RADIUS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
-import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_KEYWORD;
+import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_TYPE;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
                         // otherwise if connection was not available on first
                         // call then observer never gets nearby restaurants for current location.
                         String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
-                        mViewModel.setNearbyRestaurants(RESTAURANT_KEYWORD, location, NEARBY_SEARCH_RADIUS);
+                        mViewModel.setNearbyRestaurants(RESTAURANT_TYPE, RESTAURANT_TYPE, location, NEARBY_SEARCH_RADIUS);
                     }
                 }
 

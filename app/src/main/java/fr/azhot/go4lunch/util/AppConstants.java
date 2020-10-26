@@ -7,6 +7,7 @@ public abstract class AppConstants {
     public static final int RC_CALL_PHONE_PERMISSION = 2345;
     public static final int RC_CHECK_SETTINGS = 3456;
     public static final int RC_GOOGLE_SIGN_IN = 4567;
+    public static final int RC_EMAIL_SIGN_IN = 5678;
     public static final int DEFAULT_INTERVAL = 10000;
     public static final int FASTEST_INTERVAL = 5000;
     public static final float DEFAULT_ZOOM = 14.5f;
@@ -20,5 +21,5 @@ public abstract class AppConstants {
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";
     public static final String SELECTED_RESTAURANT_ID_FIELD = "selectedRestaurantId";
     public static final String SELECTED_RESTAURANT_NAME_FIELD = "selectedRestaurantName";
-    public static final String RESTAURANT_KEYWORD = "restaurant";
+    public static final String RESTAURANT_TYPE = "restaurant";
 }

@@ -55,10 +55,10 @@ public class AppViewModel extends ViewModel {
         return mGooglePlaceRepository.getNearbyRestaurants();
     }
 
-    public void setNearbyRestaurants(String keyword, String location, int radius) {
+    public void setNearbyRestaurants(String keyword, String type, String location, int radius) {
         Log.d(TAG, "setNearbyRestaurants");
 
-        mGooglePlaceRepository.setNearbyRestaurants(keyword, location, radius);
+        mGooglePlaceRepository.setNearbyRestaurants(keyword, type, location, radius);
     }
 
     public LiveData<Restaurant> getDetailsRestaurant() {
