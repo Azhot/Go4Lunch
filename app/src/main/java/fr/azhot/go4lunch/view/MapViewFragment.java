@@ -6,13 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,6 +84,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private AppViewModel mViewModel;
     private Map<Restaurant, Marker> mRestaurants;
     private List<ListenerRegistration> mListenerRegistrations;
+    private LocationManager mLocationManager;
 
 
     // inherited methods
@@ -101,8 +102,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onCreateView");
 
         init(inflater);
-        LocationUtils.checkLocationSettings(
-                (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            LocationUtils.checkLocationSettings(
+                    (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+        }
         return mBinding.getRoot();
     }
 
@@ -183,15 +186,20 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                 .findFragmentById(R.id.cell_workmates_fragment_container);
         mRestaurants = new HashMap<>();
         mListenerRegistrations = new ArrayList<>();
+        mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LocationUtils.checkLocationSettings(
-                        (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
+
+                if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    LocationUtils.checkLocationSettings(
+                            (AppCompatActivity) mContext,
+                            DEFAULT_INTERVAL,
+                            FASTEST_INTERVAL,
+                            RC_CHECK_SETTINGS);
+                }
                 if (mDeviceLocation != null) {
                     animateCamera(mDeviceLocation, DEFAULT_ZOOM, mGoogleMap);
-                } else {
-                    Toast.makeText(mContext, R.string.get_location_error, Toast.LENGTH_SHORT).show();
                 }
             }
         });
