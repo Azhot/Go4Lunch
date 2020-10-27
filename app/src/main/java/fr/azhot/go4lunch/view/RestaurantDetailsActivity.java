@@ -1,6 +1,8 @@
 package fr.azhot.go4lunch.view;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,9 +35,11 @@ import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
+import static fr.azhot.go4lunch.util.AppConstants.NOTIFICATIONS_PREFERENCES_NAME;
 import static fr.azhot.go4lunch.util.AppConstants.RC_CALL_PHONE_PERMISSION;
 import static fr.azhot.go4lunch.util.AppConstants.RESTAURANT_ID_EXTRA;
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.SHARED_PREFERENCES_NAME;
 
 public class RestaurantDetailsActivity extends AppCompatActivity {
 
@@ -185,19 +189,25 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         switch (view.getId()) {
             case R.id.restaurant_details_fab:
+                SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+                boolean isNotificationsActivated = sharedPreferences.getBoolean(NOTIFICATIONS_PREFERENCES_NAME, true);
                 LunchTimeNotificationPublisher lunchTimeNotificationPublisher = new LunchTimeNotificationPublisher();
 
                 if ((mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId()))) {
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
                     mUser.setSelectedRestaurantId(null);
                     mUser.setSelectedRestaurantName(null);
-                    lunchTimeNotificationPublisher.cancelLunchTimeNotification(this);
+                    if (isNotificationsActivated) {
+                        lunchTimeNotificationPublisher.cancelLunchTimeNotification(this);
+                    }
                 } else {
                     // change button to activated
                     mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
                     mUser.setSelectedRestaurantId(mCurrentRestaurant.getPlaceId());
                     mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
-                    lunchTimeNotificationPublisher.scheduleLunchTimeNotification(this, mUser.getUid(), mCurrentRestaurant);
+                    if (isNotificationsActivated) {
+                        lunchTimeNotificationPublisher.scheduleLunchTimeNotification(this, mUser.getUid(), mCurrentRestaurant);
+                    }
                 }
 
                 mViewModel.updateUserRestaurantChoice(mUser)

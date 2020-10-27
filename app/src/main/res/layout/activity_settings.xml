@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="@dimen/average_padding"
+    android:paddingTop="@dimen/average_padding"
+    android:paddingEnd="@dimen/average_padding"
+    tools:context=".view.SettingsActivity">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/notification_settings_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/large_margin"
+        android:text="Notification settings"
+        android:textColor="@color/colorDrawer"
+        android:textSize="@dimen/extra_large_text_size"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/notification_check_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:text="Activate lunch time notifications"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/large_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/notification_settings_text_view" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/user_settings_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/extra_large_margin"
+        android:text="User information"
+        android:textColor="@color/colorDrawer"
+        android:textSize="@dimen/extra_large_text_size"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/notification_check_box" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/user_settings_name_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:hint="Change name"
+        android:inputType="textPersonName"
+        android:lines="1"
+        android:paddingStart="@dimen/small_padding"
+        android:paddingEnd="@dimen/small_padding"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/large_text_size"
+        app:backgroundTint="@color/colorDrawer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user_settings_text_view" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/user_settings_picture_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:hint="Change picture url"
+        android:inputType="textUri"
+        android:lines="1"
+        android:paddingStart="@dimen/small_padding"
+        android:paddingEnd="@dimen/small_padding"
+        android:textColor="@color/colorGrey"
+        android:textSize="@dimen/large_text_size"
+        app:backgroundTint="@color/colorDrawer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user_settings_name_edit_text" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/confirm_button"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/average_margin"
+        android:layout_marginEnd="@dimen/average_margin"
+        android:enabled="false"
+        android:text="Confirm"
+        android:textAllCaps="false"
+        android:textColor="@color/colorLightGrey"
+        android:textSize="@dimen/large_text_size"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user_settings_picture_edit_text" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:src="@drawable/ic_soupe_bowl_orange"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

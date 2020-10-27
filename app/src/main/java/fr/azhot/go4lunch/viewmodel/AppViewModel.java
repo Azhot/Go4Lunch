@@ -96,6 +96,10 @@ public class AppViewModel extends ViewModel {
         return mUserRepository.updateUserRestaurantChoice(user);
     }
 
+    public Task<Void> updateUserInformation(String uid, String name, String urlPicture) {
+        return mUserRepository.updateUserInformation(uid, name, urlPicture);
+    }
+
     public Task<Void> updateUserLikedRestaurant(User user) {
         return mUserRepository.updateUserLikedRestaurant(user);
     }

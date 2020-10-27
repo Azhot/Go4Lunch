@@ -7,4 +7,6 @@ public abstract class AppConstants {
     public static final int FASTEST_INTERVAL = 5000;
     public static final String RESTAURANT_ID_EXTRA = "restaurantId";
     public static final String SELECTED_RESTAURANT_ID_FIELD = "selectedRestaurantId";
+    public static final String SHARED_PREFERENCES_NAME = "fr.azhot.go4lunch";
+    public static final String NOTIFICATIONS_PREFERENCES_NAME = "fr.azhot.go4lunch.notifications";
 }

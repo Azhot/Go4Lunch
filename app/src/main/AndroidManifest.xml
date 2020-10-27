@@ -37,6 +37,11 @@
             android:name=".view.RestaurantDetailsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
+        <!-- Settings Activity -->
+        <activity
+            android:name=".view.SettingsActivity"
+            android:theme="@style/AppTheme" />
+
         <!-- Places meta-data -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"

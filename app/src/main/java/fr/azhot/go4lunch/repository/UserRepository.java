@@ -71,6 +71,27 @@ public class UserRepository {
                 .update("likedRestaurants", user.getLikedRestaurants());
     }
 
+    public Task<Void> updateUserInformation(String uid, String name, String urlPicture) {
+        Log.d(TAG, "updateUserLikedRestaurants");
+
+        if (!name.isEmpty() && !urlPicture.isEmpty()) {
+            return mCollectionReference
+                    .document(uid)
+                    .update("name", name,
+                            "urlPicture", urlPicture);
+        } else if (!name.isEmpty()) {
+            return mCollectionReference
+                    .document(uid)
+                    .update("name", name);
+        } else if (!urlPicture.isEmpty()) {
+            return mCollectionReference
+                    .document(uid)
+                    .update("urlPicture", urlPicture);
+        } else {
+            return null;
+        }
+    }
+
     public Task<DocumentSnapshot> getUser(String uid) {
         Log.d(TAG, "getUser");
 
