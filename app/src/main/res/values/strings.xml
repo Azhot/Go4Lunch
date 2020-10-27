@@ -24,6 +24,14 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
+    <!-- Login alert dialog -->
+    <string name="provide_email_password">Provide a valid e-mail and password</string>
+    <string name="first_and_last_name">First and last name</string>
+    <string name="email_address">E-mail address *</string>
+    <string name="password">Password *</string>
+    <string name="cancel">Cancel</string>
+    <string name="login">Login</string>
+
     <!-- Main Activity -->
     <string name="no_nearby_restaurants">There are no nearby restaurants.</string>
     <string name="search_bar_hint">Search restaurant</string>
@@ -66,5 +74,7 @@
     <string name="lunch_at">You\'re having lunch at:</string>
     <string name="address">Address:</string>
     <string name="with">With:</string>
+    <string name="information_updated">User information updated.</string>
+    <string name="error_information_not_updated">Error: could not update user information.</string>
 
 </resources>
