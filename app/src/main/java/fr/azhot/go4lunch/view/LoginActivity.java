@@ -356,7 +356,7 @@ public class LoginActivity extends AppCompatActivity {
                 password[0] = altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText().toString();
 
                 if (email[0].isEmpty() || password[0].isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Please provide valid e-mail and password.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, getString(R.string.provide_email_password), Toast.LENGTH_SHORT).show();
                 } else {
                     dialog.dismiss();
                 }
