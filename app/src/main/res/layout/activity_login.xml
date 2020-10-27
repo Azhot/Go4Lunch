@@ -103,7 +103,7 @@
         android:onClick="onClick"
         android:paddingStart="@dimen/average_padding"
         android:paddingEnd="@dimen/average_padding"
-        android:text="Sign in with Twitter"
+        android:text="@string/twitter_login_button"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
         android:textSize="@dimen/large_text_size"
@@ -120,5 +120,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/login_twitter_login_interface_button" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/login_email_login_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:onClick="onClick"
+        android:padding="@dimen/small_padding"
+        android:text="@string/create_account"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/average_text_size"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_twitter_login_interface_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

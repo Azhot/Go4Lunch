@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.DefaultLogger;
 import com.twitter.sdk.android.core.Result;
@@ -46,16 +48,17 @@ import java.util.Arrays;
 
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityLoginBinding;
+import fr.azhot.go4lunch.databinding.AltertDialogLoginBinding;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
-
-import static fr.azhot.go4lunch.util.AppConstants.RC_GOOGLE_SIGN_IN;
 
 public class LoginActivity extends AppCompatActivity {
 
 
     // private static
     private static final String TAG = LoginActivity.class.getSimpleName();
+    public static final int RC_GOOGLE_SIGN_IN = 4567;
+    public static final int RC_EMAIL_SIGN_IN = 5678;
 
 
     // variables
@@ -121,24 +124,22 @@ public class LoginActivity extends AppCompatActivity {
     public void onClick(View view) {
         Log.d(TAG, "onClick");
 
-        switch (view.getId()) {
-            case R.id.login_facebook_login_button:
-                Log.d(TAG, "onClick: facebook login button");
+        if (view.getId() == R.id.login_facebook_login_button) {
+            Log.d(TAG, "onClick: facebook login button");
 
-                signInWithFacebook();
-                break;
-            case R.id.login_google_login_button:
-                Log.d(TAG, "onClick: google login button");
+            signInWithFacebook();
+        } else if (view.getId() == R.id.login_google_login_button) {
+            Log.d(TAG, "onClick: google login button");
 
-                signInWithGoogle();
-                break;
-            case R.id.login_twitter_login_interface_button:
-                Log.d(TAG, "onClick: twitter login button");
+            signInWithGoogle();
+        } else if (view.getId() == R.id.login_twitter_login_interface_button) {
+            Log.d(TAG, "onClick: twitter login button");
 
-                signInWithTwitter();
-                break;
-            default:
-                break;
+            signInWithTwitter();
+        } else if (view.getId() == R.id.login_email_login_text_view) {
+            Log.d(TAG, "onClick: email login text view");
+
+            signInWithEmailAndPassword();
         }
     }
 
@@ -247,24 +248,17 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "firebaseAuthWithCredential: success.");
 
-                            // since task is successful, we can assert mCurrentUser is not null
                             mCurrentUser = task.getResult().getUser();
-                            assert mCurrentUser != null;
-
-                            // this is called only when user tries to sign in to Facebook
-                            // with an account already existing with the email address with
-                            // Google sign in (see below)
-                            if (mUpdatedAuthCredential != null) {
-                                mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
+                            if (mCurrentUser != null) {
+                                if (mUpdatedAuthCredential != null) {
+                                    mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
+                                }
+                                createUserInFirestore(mCurrentUser);
+                                navigateToMainActivity();
                             }
-                            createUserInFirestore(mCurrentUser);
-                            navigateToMainActivity();
                         } else {
                             Log.e(TAG, "firebaseAuthWithCredential: failure.", task.getException());
 
-                            // check whether the account already exists with Google sign in
-                            // (FirebaseAuthUserCollisionException), and if it does, call Google
-                            // sign in to trigger linkWithCredential (see above)
                             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                                 FirebaseAuthUserCollisionException e = (FirebaseAuthUserCollisionException) task.getException();
                                 if (e.getErrorCode().equals("ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL")) {
@@ -273,8 +267,6 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.makeText(LoginActivity.this, R.string.unknown_sign_in_error, Toast.LENGTH_SHORT).show();
                                 }
                             } else {
-                                // should check connection status to send a "no connection"
-                                // message to user if not available
                                 Toast.makeText(LoginActivity.this, R.string.unknown_sign_in_error, Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -327,9 +319,9 @@ public class LoginActivity extends AppCompatActivity {
         String uid = user.getUid();
         String name = user.getDisplayName();
         String email = user.getEmail();
-        String urlPicture = (user.getPhotoUrl() != null)
+        String urlPicture = user.getPhotoUrl() != null
                 ? user.getPhotoUrl().toString()
-                : null;
+                : "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png";
 
         mAppViewModel.createOrUpdateUser(new User(uid, name, email, urlPicture))
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -342,5 +334,101 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void signInWithEmailAndPassword() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        AltertDialogLoginBinding altertDialogLoginBinding = AltertDialogLoginBinding.inflate(getLayoutInflater());
+        alert.setView(altertDialogLoginBinding.getRoot());
+        alert.setCancelable(false);
+        AlertDialog dialog = alert.create();
+
+        final String[] name = new String[1];
+        final String[] email = new String[1];
+        final String[] password = new String[1];
+
+        altertDialogLoginBinding.loginAlertDialogLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                name[0] = altertDialogLoginBinding.loginAlertDialogNameEditText.getText().toString();
+                email[0] = altertDialogLoginBinding.loginAlertDialogEmailEditText.getText().toString();
+                password[0] = altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText().toString();
+
+                if (email[0].isEmpty() || password[0].isEmpty()) {
+                    Toast.makeText(LoginActivity.this, "Please provide valid e-mail and password.", Toast.LENGTH_SHORT).show();
+                } else {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        altertDialogLoginBinding.loginAlertDialogCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (email[0] != null) {
+                    mAuth.createUserWithEmailAndPassword(email[0], password[0])
+                            .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        Log.d(TAG, "createUserWithEmail: success");
+
+                                        mCurrentUser = mAuth.getCurrentUser();
+
+                                        UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(name[0].isEmpty()
+                                                        ? email[0].split("@")[0]
+                                                        : name[0])
+                                                .build();
+
+                                        mCurrentUser.updateProfile(userProfileChangeRequest)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            createUserInFirestore(mCurrentUser);
+                                                            navigateToMainActivity();
+                                                        }
+                                                    }
+                                                });
+                                    } else {
+                                        Log.w(TAG, "createUserWithEmail: failure", task.getException());
+
+                                        Exception exception = task.getException();
+                                        mAuth.signInWithEmailAndPassword(email[0], password[0])
+                                                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Log.d(TAG, "signInWithEmail: success");
+                                                            Intent intent = new Intent(LoginActivity.this, LoginActivity.class);
+                                                            intent.putExtra("email", email[0]);
+                                                            startActivityForResult(intent, RC_EMAIL_SIGN_IN);
+                                                        } else {
+                                                            Log.w(TAG, "signInWithEmail: failure", task.getException());
+                                                            if (task.getException().getMessage().equals("The password is invalid or the user does not have a password.")) {
+                                                                Toast.makeText(LoginActivity.this, task.getException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                                            } else {
+                                                                Toast.makeText(LoginActivity.this, exception.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+                                                    }
+                                                });
+                                    }
+                                }
+                            });
+                }
+            }
+        });
     }
 }
