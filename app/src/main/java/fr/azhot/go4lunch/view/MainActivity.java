@@ -131,8 +131,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
 
         // todo : reset all users choices per day
-        // todo : implement email/password login
-        // todo : implement settings
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -142,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mainToolbar);
         setUpDrawerNavigation();
-        setUpDrawerWithUserDetails();
         setUpBottomNavigation();
         PermissionsUtils.checkLocationPermission(this);
         if (PermissionsUtils.isLocationPermissionGranted(this)) {
@@ -179,14 +176,18 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         initLocationUpdates();
 
-        if (mAuth.getCurrentUser() != null) {
-            mViewModel.getUser(mAuth.getCurrentUser().getUid())
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            mViewModel.getUser(currentUser.getUid())
                     .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "getUser: onSuccess");
                                 mUser = task.getResult().toObject(User.class);
+                                if (mUser != null) {
+                                    setUpDrawerWithUserDetails(mUser);
+                                }
                             } else {
                                 Log.e(TAG, "getUser: onFailure", task.getException());
                             }
@@ -222,27 +223,21 @@ public class MainActivity extends AppCompatActivity {
         mBinding.mainNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.nav_your_lunch:
-                        if (mUser.getSelectedRestaurantId() != null) {
-                            Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                                    MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId());
-                            startActivity(intent);
-                        } else {
-                            Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
-                        }
-                        break;
-                    case R.id.nav_settings:
-                        // launch settings, e.g. to set up notifications
-                        break;
-                    case R.id.nav_logout:
-                        mAuth.signOut();
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        finish();
-                        break;
-                    default:
-                        Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");
-                        break;
+
+                if (item.getItemId() == R.id.nav_your_lunch) {
+                    if (mUser.getSelectedRestaurantId() != null) {
+                        Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                                MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId());
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
+                    }
+                } else if (item.getItemId() == R.id.nav_settings) {
+                    startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                } else if (item.getItemId() == R.id.nav_logout) {
+                    mAuth.signOut();
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
                 }
 
                 mBinding.mainDrawerLayout.closeDrawer(GravityCompat.START);
@@ -253,27 +248,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // configuring nav drawer header
-    private void setUpDrawerWithUserDetails() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            AppCompatImageView userPicture = mBinding.mainNavView
-                    .getHeaderView(0)
-                    .findViewById(R.id.drawer_header_user_picture);
-            Glide.with(this)
-                    .load((currentUser.getPhotoUrl()))
-                    .circleCrop()
-                    .into(userPicture);
+    private void setUpDrawerWithUserDetails(User user) {
+        Log.d(TAG, "setUpDrawerWithUserDetails");
 
-            AppCompatTextView userName = mBinding.mainNavView
-                    .getHeaderView(0)
-                    .findViewById(R.id.drawer_header_user_name);
-            userName.setText(currentUser.getDisplayName());
+        Glide.with(MainActivity.this)
+                .load((user.getUrlPicture()))
+                .circleCrop()
+                .into((AppCompatImageView) mBinding.mainNavView.getHeaderView(0).findViewById(R.id.drawer_header_user_picture));
 
-            AppCompatTextView userEmail = mBinding.mainNavView
-                    .getHeaderView(0)
-                    .findViewById(R.id.drawer_header_user_email);
-            userEmail.setText(currentUser.getEmail());
-        }
+        AppCompatTextView nameTextView = mBinding.mainNavView.getHeaderView(0).findViewById(R.id.drawer_header_user_name);
+        nameTextView.setText(user.getName());
+
+        AppCompatTextView emailTextView = mBinding.mainNavView.getHeaderView(0).findViewById(R.id.drawer_header_user_email);
+        emailTextView.setText(user.getEmail());
     }
 
     private void setUpBottomNavigation() {
@@ -283,27 +270,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Fragment selectedFragment;
-                switch (item.getItemId()) {
-                    case R.id.list_view:
-                        Log.d(TAG, "onNavigationItemSelected: list view fragment");
-                        selectedFragment = ListViewFragment.newInstance();
-                        setTitle(R.string.list_view_title);
-                        break;
-                    case R.id.workmates:
-                        Log.d(TAG, "onNavigationItemSelected: workmates fragment");
-                        selectedFragment = WorkmatesFragment.newInstance();
-                        setTitle(R.string.workmates_title);
-                        break;
-                    case R.id.map_view:
-                        Log.d(TAG, "onNavigationItemSelected: map view fragment");
-                        selectedFragment = MapViewFragment.newInstance();
-                        setTitle(R.string.map_view_title);
-                        break;
-                    default:
-                        Log.d(TAG, "onNavigationItemSelected: could not match user click with id.");
-                        selectedFragment = MapViewFragment.newInstance();
-                        setTitle(R.string.map_view_title);
-                        break;
+
+                if (item.getItemId() == R.id.list_view) {
+                    selectedFragment = ListViewFragment.newInstance();
+                    setTitle(R.string.list_view_title);
+                } else if (item.getItemId() == R.id.workmates) {
+                    selectedFragment = WorkmatesFragment.newInstance();
+                    setTitle(R.string.workmates_title);
+                } else if (item.getItemId() == R.id.map_view) {
+                    selectedFragment = MapViewFragment.newInstance();
+                    setTitle(R.string.map_view_title);
+                } else {
+                    selectedFragment = MapViewFragment.newInstance();
+                    setTitle(R.string.map_view_title);
                 }
 
                 getSupportFragmentManager()
