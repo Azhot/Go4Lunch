@@ -10,7 +10,10 @@ import com.google.firebase.firestore.Query;
 
 import fr.azhot.go4lunch.model.User;
 
+import static fr.azhot.go4lunch.util.AppConstants.LIKED_RESTAURANTS_ID_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.NAME_ID_FIELD;
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
+import static fr.azhot.go4lunch.util.AppConstants.URL_PICTURE_ID_FIELD;
 
 public class UserRepository {
 
@@ -68,28 +71,23 @@ public class UserRepository {
 
         return mCollectionReference
                 .document(user.getUid())
-                .update("likedRestaurants", user.getLikedRestaurants());
+                .update(LIKED_RESTAURANTS_ID_FIELD, user.getLikedRestaurants());
     }
 
-    public Task<Void> updateUserInformation(String uid, String name, String urlPicture) {
-        Log.d(TAG, "updateUserLikedRestaurants");
+    public Task<Void> updateUserName(String uid, String name) {
+        Log.d(TAG, "updateUserName");
 
-        if (!name.isEmpty() && !urlPicture.isEmpty()) {
-            return mCollectionReference
-                    .document(uid)
-                    .update("name", name,
-                            "urlPicture", urlPicture);
-        } else if (!name.isEmpty()) {
-            return mCollectionReference
-                    .document(uid)
-                    .update("name", name);
-        } else if (!urlPicture.isEmpty()) {
-            return mCollectionReference
-                    .document(uid)
-                    .update("urlPicture", urlPicture);
-        } else {
-            return null;
-        }
+        return mCollectionReference
+                .document(uid)
+                .update(NAME_ID_FIELD, name);
+    }
+
+    public Task<Void> updateUserPicture(String uid, String urlPicture) {
+        Log.d(TAG, "updateUserPicture");
+
+        return mCollectionReference
+                .document(uid)
+                .update(URL_PICTURE_ID_FIELD, urlPicture);
     }
 
     public Task<DocumentSnapshot> getUser(String uid) {

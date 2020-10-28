@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/large_margin"
-        android:text="Notification settings"
+        android:text="@string/notification_settings"
         android:textColor="@color/colorDrawer"
         android:textSize="@dimen/extra_large_text_size"
         android:textStyle="bold"
@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/small_margin"
-        android:text="Activate lunch time notifications"
+        android:text="@string/activate_lunch_time_notifications"
         android:textColor="@color/colorGrey"
         android:textSize="@dimen/large_text_size"
         app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/extra_large_margin"
-        android:text="User information"
+        android:text="@string/user_information"
         android:textColor="@color/colorDrawer"
         android:textSize="@dimen/extra_large_text_size"
         android:textStyle="bold"
@@ -49,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/small_margin"
-        android:hint="Change name"
+        android:hint="@string/change_name"
         android:inputType="textPersonName"
         android:lines="1"
         android:paddingStart="@dimen/small_padding"
@@ -60,20 +60,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/user_settings_text_view" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/user_settings_picture_edit_text"
-        android:layout_width="match_parent"
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/user_settings_picture_text_view"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/small_margin"
-        android:hint="Change picture url"
-        android:inputType="textUri"
-        android:lines="1"
         android:paddingStart="@dimen/small_padding"
         android:paddingEnd="@dimen/small_padding"
-        android:textColor="@color/colorGrey"
+        android:text="@string/change_profile_picture"
+        android:textColor="@color/colorLightGrey"
         android:textSize="@dimen/large_text_size"
-        app:backgroundTint="@color/colorDrawer"
+        app:layout_constraintBottom_toBottomOf="@id/user_settings_picture_image_button"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/user_settings_picture_image_button" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/user_settings_picture_image_button"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_margin="@dimen/average_margin"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_image_search"
+        app:layout_constraintStart_toEndOf="@id/user_settings_picture_text_view"
         app:layout_constraintTop_toBottomOf="@id/user_settings_name_edit_text" />
 
     <androidx.appcompat.widget.AppCompatButton
@@ -81,20 +88,18 @@
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/average_margin"
-        android:layout_marginEnd="@dimen/average_margin"
         android:enabled="false"
-        android:text="Confirm"
-        android:textAllCaps="false"
+        android:layout_margin="@dimen/average_margin"
+        android:text="@string/confirm_changes"
         android:textColor="@color/colorLightGrey"
-        android:textSize="@dimen/large_text_size"
-        android:textStyle="bold"
+        android:textSize="@dimen/average_text_size"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/user_settings_picture_edit_text" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/user_settings_picture_image_button" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="wrap_content"
         android:src="@drawable/ic_soupe_bowl_orange"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

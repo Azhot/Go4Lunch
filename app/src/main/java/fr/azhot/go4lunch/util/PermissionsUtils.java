@@ -16,6 +16,7 @@ import fr.azhot.go4lunch.R;
 
 import static fr.azhot.go4lunch.util.AppConstants.RC_CALL_PHONE_PERMISSION;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
+import static fr.azhot.go4lunch.util.AppConstants.RC_READ_EXTERNAL_STORAGE_PERMISSION;
 
 public class PermissionsUtils {
 
@@ -99,5 +100,24 @@ public class PermissionsUtils {
         }
 
         return ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void getExternalStoragePermission(AppCompatActivity activity, int requestCode) {
+        Log.d(TAG, "getLocationPermission");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,};
+            activity.requestPermissions(permissions, requestCode);
+        }
+    }
+
+    public static boolean checkExternalStoragePermission(AppCompatActivity appCompatActivity) {
+        Log.d(TAG, "checkLocationPermission");
+
+        if (!(ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+            PermissionsUtils.getExternalStoragePermission(appCompatActivity, RC_READ_EXTERNAL_STORAGE_PERMISSION);
+        }
+
+        return ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 }
