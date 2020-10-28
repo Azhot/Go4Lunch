@@ -74,7 +74,15 @@
     <string name="lunch_at">You\'re having lunch at:</string>
     <string name="address">Address:</string>
     <string name="with">With:</string>
+
+    <!-- Settings Activity -->
+    <string name="notification_settings">Notification settings</string>
+    <string name="activate_lunch_time_notifications">Activate lunch time notifications</string>
+    <string name="user_information">User information</string>
     <string name="information_updated">User information updated.</string>
     <string name="error_information_not_updated">Error: could not update user information.</string>
+    <string name="change_name">Change name</string>
+    <string name="change_profile_picture">Change profile picture</string>
+    <string name="confirm_changes">Confirm changes</string>
 
 </resources>
