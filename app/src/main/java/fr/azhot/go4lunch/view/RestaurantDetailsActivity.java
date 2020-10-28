@@ -1,8 +1,10 @@
 package fr.azhot.go4lunch.view;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -72,7 +74,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_CALL_PHONE_PERMISSION) {
-            if (PermissionsUtils.checkCallPhonePermission(this)) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
                 Intent intent = new Intent(Intent.ACTION_CALL);
                 intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
                 startActivity(intent);
@@ -187,89 +189,83 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     public void onClick(View view) {
         Log.d(TAG, "onClick");
 
-        switch (view.getId()) {
-            case R.id.restaurant_details_fab:
-                SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
-                boolean isNotificationsActivated = sharedPreferences.getBoolean(NOTIFICATIONS_PREFERENCES_NAME, true);
-                LunchTimeNotificationPublisher lunchTimeNotificationPublisher = new LunchTimeNotificationPublisher();
 
-                if ((mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId()))) {
-                    mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
-                    mUser.setSelectedRestaurantId(null);
-                    mUser.setSelectedRestaurantName(null);
-                    if (isNotificationsActivated) {
-                        lunchTimeNotificationPublisher.cancelLunchTimeNotification(this);
-                    }
-                } else {
-                    // change button to activated
-                    mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
-                    mUser.setSelectedRestaurantId(mCurrentRestaurant.getPlaceId());
-                    mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
-                    if (isNotificationsActivated) {
-                        lunchTimeNotificationPublisher.scheduleLunchTimeNotification(this, mUser.getUid(), mCurrentRestaurant);
-                    }
+        if (view.getId() == R.id.restaurant_details_fab) {
+            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+            boolean isNotificationsActivated = sharedPreferences.getBoolean(NOTIFICATIONS_PREFERENCES_NAME, true);
+            LunchTimeNotificationPublisher lunchTimeNotificationPublisher = new LunchTimeNotificationPublisher();
+
+            if ((mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId()))) {
+                mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_grey);
+                mUser.setSelectedRestaurantId(null);
+                mUser.setSelectedRestaurantName(null);
+                if (isNotificationsActivated) {
+                    lunchTimeNotificationPublisher.cancelLunchTimeNotification(this);
                 }
+            } else {
+                // change button to activated
+                mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
+                mUser.setSelectedRestaurantId(mCurrentRestaurant.getPlaceId());
+                mUser.setSelectedRestaurantName(mCurrentRestaurant.getName());
+                if (isNotificationsActivated) {
+                    lunchTimeNotificationPublisher.scheduleLunchTimeNotification(this, mUser.getUid(), mCurrentRestaurant);
+                }
+            }
 
-                mViewModel.updateUserRestaurantChoice(mUser)
-                        .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "updateUserRestaurantChoice: onSuccess");
-                                } else {
-                                    Log.e(TAG, "updateUserRestaurantChoice: onFailure", task.getException());
-                                }
+            mViewModel.updateUserRestaurantChoice(mUser)
+                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "updateUserRestaurantChoice: onSuccess");
+                            } else {
+                                Log.e(TAG, "updateUserRestaurantChoice: onFailure", task.getException());
                             }
-                        });
-                break;
-            case R.id.restaurant_details_call_button:
-                Log.d(TAG, "onClick");
+                        }
+                    });
+        } else if (view.getId() == R.id.restaurant_details_call_button) {
+            Log.d(TAG, "onClick");
 
-                if (mCurrentRestaurant.getPhoneNumber() != null) {
-                    if (PermissionsUtils.checkCallPhonePermission(this)) {
-                        Intent intent = new Intent(Intent.ACTION_CALL);
-                        intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
-                        startActivity(intent);
-                    }
-                } else {
-                    Toast.makeText(this, R.string.no_phone_number, Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case R.id.restaurant_details_like_button:
-                if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
-                    mUser.getLikedRestaurants().remove(mCurrentRestaurant.getPlaceId());
-                    mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_orange), null, null);
-                    mBinding.restaurantDetailsLikeButton.setText(R.string.like);
-                    mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                } else {
-                    mUser.getLikedRestaurants().add(mCurrentRestaurant.getPlaceId());
-                    mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_cyan), null, null);
-                    mBinding.restaurantDetailsLikeButton.setText(R.string.liked);
-                    mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorCyan));
-                }
-                mViewModel.updateUserLikedRestaurant(mUser)
-                        .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "updateUserLikedRestaurant: onSuccess");
-                                } else {
-                                    Log.e(TAG, "updateUserLikedRestaurant: onFailure", task.getException());
-                                }
-                            }
-                        });
-                break;
-            case R.id.restaurant_details_website_button:
-                if (mCurrentRestaurant.getWebsite() != null) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(mCurrentRestaurant.getWebsite()));
+            if (mCurrentRestaurant.getPhoneNumber() != null) {
+                if (PermissionsUtils.checkCallPhonePermission(this)) {
+                    Intent intent = new Intent(Intent.ACTION_CALL);
+                    intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
                     startActivity(intent);
-                } else {
-                    Toast.makeText(this, R.string.no_website, Toast.LENGTH_SHORT).show();
                 }
-                break;
-            default:
-                break;
+            } else {
+                Toast.makeText(this, R.string.no_phone_number, Toast.LENGTH_SHORT).show();
+            }
+        } else if (view.getId() == R.id.restaurant_details_like_button) {
+            if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
+                mUser.getLikedRestaurants().remove(mCurrentRestaurant.getPlaceId());
+                mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_orange), null, null);
+                mBinding.restaurantDetailsLikeButton.setText(R.string.like);
+                mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            } else {
+                mUser.getLikedRestaurants().add(mCurrentRestaurant.getPlaceId());
+                mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_cyan), null, null);
+                mBinding.restaurantDetailsLikeButton.setText(R.string.liked);
+                mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorCyan));
+            }
+            mViewModel.updateUserLikedRestaurant(mUser)
+                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "updateUserLikedRestaurant: onSuccess");
+                            } else {
+                                Log.e(TAG, "updateUserLikedRestaurant: onFailure", task.getException());
+                            }
+                        }
+                    });
+        } else if (view.getId() == R.id.restaurant_details_website_button) {
+            if (mCurrentRestaurant.getWebsite() != null) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(mCurrentRestaurant.getWebsite()));
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, R.string.no_website, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
