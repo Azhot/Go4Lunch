@@ -134,8 +134,8 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, DEFAULT_NOTIFICATION_CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_soupe_bowl)
-                        .setContentTitle(context.getString(R.string.app_name))
-                        .setContentText(context.getString(R.string.lunch_time_notification_title))
+                        .setContentTitle(context.getString(R.string.lunch_time_notification_title))
+                        .setContentText(context.getString(R.string.lunch_at) + " " + restaurant.getName())
                         .setAutoCancel(true)
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                         .setContentIntent(notificationPendingIntent)
