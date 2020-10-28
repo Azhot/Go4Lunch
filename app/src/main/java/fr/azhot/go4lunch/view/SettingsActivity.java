@@ -207,7 +207,6 @@ public class SettingsActivity extends AppCompatActivity {
                         uploadImageInFirebaseAndUpdateUserProfile(currentUser, mUriImageSelected);
                     }
                 }
-                finish();
             }
         });
     }
@@ -231,6 +230,7 @@ public class SettingsActivity extends AppCompatActivity {
                                                             public void onComplete(@NonNull Task<Void> task) {
                                                                 if (task.isSuccessful()) {
                                                                     Toast.makeText(SettingsActivity.this, R.string.information_updated, Toast.LENGTH_SHORT).show();
+                                                                    finish();
                                                                 } else {
                                                                     Toast.makeText(SettingsActivity.this, R.string.error_information_not_updated, Toast.LENGTH_SHORT).show();
                                                                 }
@@ -241,6 +241,8 @@ public class SettingsActivity extends AppCompatActivity {
                             }
                         }
                     });
+        } else {
+            finish();
         }
     }
 }
