@@ -351,8 +351,8 @@ public class LoginActivity extends AppCompatActivity {
         altertDialogLoginBinding.loginAlertDialogLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                name[0] = altertDialogLoginBinding.loginAlertDialogNameEditText.getText().toString();
-                email[0] = altertDialogLoginBinding.loginAlertDialogEmailEditText.getText().toString();
+                name[0] = altertDialogLoginBinding.loginAlertDialogNameEditText.getText().toString().trim();
+                email[0] = altertDialogLoginBinding.loginAlertDialogEmailEditText.getText().toString().trim();
                 password[0] = altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText().toString();
 
                 if (email[0].isEmpty() || password[0].isEmpty()) {
