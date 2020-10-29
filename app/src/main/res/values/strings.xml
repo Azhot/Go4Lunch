@@ -51,6 +51,9 @@
     <string name="list_view_title">I\'m Hungry!</string>
     <string name="workmates_title">Available workmates</string>
 
+    <!-- ListView Fragment -->
+    <string name="no_restaurants_found">No restaurants found</string>
+
     <!-- Workmates Fragment -->
     <string name="has_decided">%1$s is eating at %2$s.</string>
     <string name="has_not_decided">%1$s hasn\'t decided yet.</string>
