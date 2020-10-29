@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.BaseColumns;
@@ -133,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
         // todo : L'application doit s'afficher correctement sur toutes les tailles de téléphone Android en mode portrait
         // todo : Votre application contient des tests unitaires qui couvrent la majorité de la logique de votre code ;
         // todo : Le projet compile correctement et ne contient aucun message d’avertissement ou d’erreur ;
-        // todo : show "no nearby restaurants" in listview when no restaurants
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -367,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
 
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setQueryHint(getString(R.string.search_bar_hint));
-        AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView) searchView.findViewById(R.id.search_src_text);
+        AutoCompleteTextView autoCompleteTextView = searchView.findViewById(R.id.search_src_text);
         autoCompleteTextView.setThreshold(3);
         String[] from = new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1};
         int[] to = new int[]{R.id.item_label};
@@ -379,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
                 CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         searchView.setSuggestionsAdapter(cursorAdapter);
 
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -390,7 +391,9 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 cursorAdapter.changeCursor(null);
 
-                if (newText.length() >= 3 && mDeviceLocation != null) {
+                if (newText.length() >= 3
+                        && locationManager != null
+                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
                     RectangularBounds bounds = RectangularBounds.newInstance(
                             getCoordinate(
