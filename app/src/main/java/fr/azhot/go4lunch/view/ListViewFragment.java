@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentListViewBinding;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.util.IntentUtils;
@@ -155,12 +157,17 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                 mAdapter.showRestaurants();
                 if (mAdapter.getRestaurants().isEmpty()) {
                     mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+
                 } else {
                     mBinding.noRestaurantLayout.setVisibility(View.GONE);
                 }
+                mBinding.noRestaurantImageView.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_no_restaurants));
+                mBinding.noRestaurantTextView.setText(R.string.no_restaurants_found);
             } else {
                 mAdapter.hideRestaurants();
                 mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+                mBinding.noRestaurantImageView.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_location_off));
+                mBinding.noRestaurantTextView.setText(R.string.location_is_disabled);
             }
         });
 

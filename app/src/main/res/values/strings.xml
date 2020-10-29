@@ -55,6 +55,7 @@
 
     <!-- ListView Fragment -->
     <string name="no_restaurants_found">No restaurants found</string>
+    <string name="location_is_disabled">Location is disabled</string>
 
     <!-- Workmates Fragment -->
     <string name="has_decided">%1$s is eating at %2$s.</string>
