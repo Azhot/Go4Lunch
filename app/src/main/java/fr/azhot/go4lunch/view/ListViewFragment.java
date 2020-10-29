@@ -2,7 +2,6 @@ package fr.azhot.go4lunch.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,15 +11,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,99 +118,81 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
+        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), restaurants -> {
+            Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
-                if (restaurants.isEmpty()) {
+            if (restaurants.isEmpty()) {
+                mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+            } else {
+                mBinding.noRestaurantLayout.setVisibility(View.GONE);
+
+                mAdapter.setRestaurants(restaurants);
+
+                for (ListenerRegistration registration : mListenerRegistrations) {
+                    registration.remove();
+                }
+                mListenerRegistrations.clear();
+
+                for (Restaurant restaurant : restaurants) {
+                    ListenerRegistration registration =
+                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
+                                    .addSnapshotListener((snapshot, e) -> {
+                                        if (snapshot != null && e == null) {
+                                            Log.d(TAG, "added EventListener to : " + restaurant.getName());
+                                            restaurant.setWorkmatesJoining(snapshot.size());
+                                            mAdapter.notifyDataSetChanged();
+                                        }
+                                    });
+                    mListenerRegistrations.add(registration);
+                }
+            }
+        });
+
+        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), aBoolean -> {
+            Log.d(TAG, "getLocationActivatedLiveData: onChanged");
+
+            if (aBoolean) {
+                mAdapter.showRestaurants();
+                if (mAdapter.getRestaurants().isEmpty()) {
                     mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
                 } else {
                     mBinding.noRestaurantLayout.setVisibility(View.GONE);
-
-                    mAdapter.setRestaurants(restaurants);
-
-                    for (ListenerRegistration registration : mListenerRegistrations) {
-                        registration.remove();
-                    }
-                    mListenerRegistrations.clear();
-
-                    for (Restaurant restaurant : restaurants) {
-                        ListenerRegistration registration =
-                                mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
-                                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                                                if (snapshot != null && e == null) {
-                                                    Log.d(TAG, "added EventListener to : " + restaurant.getName());
-                                                    restaurant.setWorkmatesJoining(snapshot.size());
-                                                    mAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        });
-                        mListenerRegistrations.add(registration);
-                    }
                 }
+            } else {
+                mAdapter.hideRestaurants();
+                mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
             }
         });
 
-        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                Log.d(TAG, "getLocationActivatedLiveData: onChanged");
+        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), location -> {
+            Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
-                if (aBoolean) {
-                    mAdapter.showRestaurants();
-                    if (mAdapter.getRestaurants().isEmpty()) {
-                        mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
-                    } else {
-                        mBinding.noRestaurantLayout.setVisibility(View.GONE);
-                    }
-                } else {
-                    mAdapter.hideRestaurants();
+            mAdapter.setDeviceLocation(location);
+        });
+
+        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), restaurant -> {
+            Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData: onChanged");
+
+            if (restaurant != null) {
+                mAutocompleteListenerRegistration =
+                        mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
+                                .addSnapshotListener((snapshot, e) -> {
+                                    if (snapshot != null && e == null) {
+                                        Log.d(TAG, "added EventListener to : " + restaurant.getName());
+                                        restaurant.setWorkmatesJoining(snapshot.size());
+                                        mAdapter.filterAutocompleteRestaurant(restaurant);
+                                        mBinding.noRestaurantLayout.setVisibility(View.GONE);
+                                    }
+                                });
+            } else {
+                if (mAutocompleteListenerRegistration != null) {
+                    mAutocompleteListenerRegistration.remove();
+                }
+                mAdapter.loadSavedRestaurants();
+                if (mAdapter.getRestaurants().isEmpty()) {
                     mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), new Observer<Location>() {
-            @Override
-            public void onChanged(Location location) {
-                Log.d(TAG, "getDeviceLocationLiveData: onChanged");
-
-                mAdapter.setDeviceLocation(location);
-            }
-        });
-
-        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
-            @Override
-            public void onChanged(Restaurant restaurant) {
-                Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData: onChanged");
-
-                if (restaurant != null) {
-                    mAutocompleteListenerRegistration =
-                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
-                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                                            if (snapshot != null && e == null) {
-                                                Log.d(TAG, "added EventListener to : " + restaurant.getName());
-                                                restaurant.setWorkmatesJoining(snapshot.size());
-                                                mAdapter.filterAutocompleteRestaurant(restaurant);
-                                                mBinding.noRestaurantLayout.setVisibility(View.GONE);
-                                            }
-                                        }
-                                    });
                 } else {
-                    if (mAutocompleteListenerRegistration != null) {
-                        mAutocompleteListenerRegistration.remove();
-                    }
-                    mAdapter.loadSavedRestaurants();
-                    if (!mAdapter.getSavedRestaurants().isEmpty()) {
-                        mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
-                    } else {
-                        mBinding.noRestaurantLayout.setVisibility(View.GONE);
-                    }
+                    mBinding.noRestaurantLayout.setVisibility(View.GONE);
                 }
             }
         });

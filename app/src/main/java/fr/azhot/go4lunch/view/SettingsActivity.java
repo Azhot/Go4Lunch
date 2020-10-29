@@ -11,8 +11,6 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,13 +19,10 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import javax.annotation.Nullable;
 
@@ -98,7 +93,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void init() {
         mBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
-        getSupportActionBar().setTitle("Settings");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Settings");
+        }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
     }
@@ -110,15 +107,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setUpNotificationCheckBox() {
         mBinding.notificationCheckBox.setChecked(mIsNotificationsActivated);
-        mBinding.notificationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mIsNotificationsActivated = isChecked;
-                mSharedPreferences
-                        .edit()
-                        .putBoolean(NOTIFICATIONS_PREFERENCES_NAME, mIsNotificationsActivated)
-                        .apply();
-            }
+        mBinding.notificationCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mIsNotificationsActivated = isChecked;
+            mSharedPreferences
+                    .edit()
+                    .putBoolean(NOTIFICATIONS_PREFERENCES_NAME, mIsNotificationsActivated)
+                    .apply();
         });
     }
 
@@ -150,13 +144,10 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setUpUserSettingsPictureButton() {
-        mBinding.userSettingsPictureImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (PermissionsUtils.checkExternalStoragePermission(SettingsActivity.this)) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, RC_CHOOSE_IMAGE);
-                }
+        mBinding.userSettingsPictureImageButton.setOnClickListener(v -> {
+            if (PermissionsUtils.checkExternalStoragePermission(SettingsActivity.this)) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, RC_CHOOSE_IMAGE);
             }
         });
     }
@@ -177,35 +168,29 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setUpConfirmButton() {
 
-        mBinding.confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = "";
-                if (mBinding.userSettingsNameEditText.getText() != null
-                        && mBinding.userSettingsNameEditText.getText().length() > 3) {
-                    name = mBinding.userSettingsNameEditText.getText().toString().trim();
-                }
+        mBinding.confirmButton.setOnClickListener(v -> {
+            String name = "";
+            if (mBinding.userSettingsNameEditText.getText() != null
+                    && mBinding.userSettingsNameEditText.getText().length() > 3) {
+                name = mBinding.userSettingsNameEditText.getText().toString().trim();
+            }
 
-                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-                if (currentUser != null) {
-                    if (!name.isEmpty()) {
-                        mViewModel.updateUserName(currentUser.getUid(), name)
-                                .addOnCompleteListener(SettingsActivity.this, new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            Toast.makeText(SettingsActivity.this, R.string.information_updated, Toast.LENGTH_SHORT).show();
-                                        } else {
-                                            Toast.makeText(SettingsActivity.this, R.string.error_information_not_updated, Toast.LENGTH_SHORT).show();
-                                        }
+            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+            if (currentUser != null) {
+                if (!name.isEmpty()) {
+                    mViewModel.updateUserName(currentUser.getUid(), name)
+                            .addOnCompleteListener(SettingsActivity.this, task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(SettingsActivity.this, R.string.information_updated, Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(SettingsActivity.this, R.string.error_information_not_updated, Toast.LENGTH_SHORT).show();
+                                }
 
-                                        uploadImageInFirebaseAndUpdateUserProfile(currentUser, mUriImageSelected);
-                                    }
-                                });
-                    } else {
-                        uploadImageInFirebaseAndUpdateUserProfile(currentUser, mUriImageSelected);
-                    }
+                                uploadImageInFirebaseAndUpdateUserProfile(currentUser, mUriImageSelected);
+                            });
+                } else {
+                    uploadImageInFirebaseAndUpdateUserProfile(currentUser, mUriImageSelected);
                 }
             }
         });
@@ -215,30 +200,21 @@ public class SettingsActivity extends AppCompatActivity {
         if (uriImageSelected != null) {
             StorageReference imageRef = FirebaseStorage.getInstance().getReference(user.getUid());
             imageRef.putFile(uriImageSelected)
-                    .addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            if (task.getResult().getMetadata() != null && task.getResult().getMetadata().getReference() != null) {
-                                task.getResult().getMetadata().getReference().getDownloadUrl()
-                                        .addOnCompleteListener(SettingsActivity.this, new OnCompleteListener<Uri>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Uri> task) {
-                                                String photoUrl = task.getResult().toString();
-                                                mViewModel.updateUserPicture(user.getUid(), photoUrl)
-                                                        .addOnCompleteListener(SettingsActivity.this, new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-                                                                if (task.isSuccessful()) {
-                                                                    Toast.makeText(SettingsActivity.this, R.string.information_updated, Toast.LENGTH_SHORT).show();
-                                                                    finish();
-                                                                } else {
-                                                                    Toast.makeText(SettingsActivity.this, R.string.error_information_not_updated, Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            }
-                                                        });
-                                            }
-                                        });
-                            }
+                    .addOnCompleteListener(this, task -> {
+                        if (task.getResult().getMetadata() != null && task.getResult().getMetadata().getReference() != null) {
+                            task.getResult().getMetadata().getReference().getDownloadUrl()
+                                    .addOnCompleteListener(SettingsActivity.this, task12 -> {
+                                        String photoUrl = task12.getResult().toString();
+                                        mViewModel.updateUserPicture(user.getUid(), photoUrl)
+                                                .addOnCompleteListener(SettingsActivity.this, task1 -> {
+                                                    if (task1.isSuccessful()) {
+                                                        Toast.makeText(SettingsActivity.this, R.string.information_updated, Toast.LENGTH_SHORT).show();
+                                                        finish();
+                                                    } else {
+                                                        Toast.makeText(SettingsActivity.this, R.string.error_information_not_updated, Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    });
                         }
                     });
         } else {

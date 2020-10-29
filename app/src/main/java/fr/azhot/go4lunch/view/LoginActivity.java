@@ -1,6 +1,5 @@
 package fr.azhot.go4lunch.view;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,7 +7,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,10 +22,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
@@ -242,33 +238,30 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "firebaseAuthWithCredential");
 
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "firebaseAuthWithCredential: success.");
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "firebaseAuthWithCredential: success.");
 
-                            mCurrentUser = task.getResult().getUser();
-                            if (mCurrentUser != null) {
-                                if (mUpdatedAuthCredential != null) {
-                                    mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
-                                }
-                                createUserInFirestore(mCurrentUser);
-                                navigateToMainActivity();
+                        mCurrentUser = task.getResult().getUser();
+                        if (mCurrentUser != null) {
+                            if (mUpdatedAuthCredential != null) {
+                                mCurrentUser.linkWithCredential(mUpdatedAuthCredential);
                             }
-                        } else {
-                            Log.e(TAG, "firebaseAuthWithCredential: failure.", task.getException());
+                            createUserInFirestore(mCurrentUser);
+                            navigateToMainActivity();
+                        }
+                    } else {
+                        Log.e(TAG, "firebaseAuthWithCredential: failure.", task.getException());
 
-                            if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                                FirebaseAuthUserCollisionException e = (FirebaseAuthUserCollisionException) task.getException();
-                                if (e.getErrorCode().equals("ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL")) {
-                                    makeAlertDialogExistingSignIn(e.getEmail(), e.getUpdatedCredential());
-                                } else {
-                                    Toast.makeText(LoginActivity.this, R.string.unknown_sign_in_error, Toast.LENGTH_SHORT).show();
-                                }
+                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                            FirebaseAuthUserCollisionException e = (FirebaseAuthUserCollisionException) task.getException();
+                            if (e.getErrorCode().equals("ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL") && e.getUpdatedCredential() != null) {
+                                makeAlertDialogExistingSignIn(e.getEmail(), e.getUpdatedCredential());
                             } else {
                                 Toast.makeText(LoginActivity.this, R.string.unknown_sign_in_error, Toast.LENGTH_SHORT).show();
                             }
+                        } else {
+                            Toast.makeText(LoginActivity.this, R.string.unknown_sign_in_error, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -301,12 +294,9 @@ public class LoginActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.email_already_linked_title)
                 .setMessage(email + getString(R.string.email_already_linked_message, providerName))
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mUpdatedAuthCredential = credential;
-                        signInWithGoogle();
-                    }
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    mUpdatedAuthCredential = credential;
+                    signInWithGoogle();
                 })
                 .setNegativeButton(R.string.no, null)
                 .create()
@@ -324,14 +314,11 @@ public class LoginActivity extends AppCompatActivity {
                 : "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png";
 
         mAppViewModel.createOrUpdateUser(new User(uid, name, email, urlPicture))
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "createOrUpdateUser: onSuccess");
-                        } else {
-                            Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "createOrUpdateUser: onSuccess");
+                    } else {
+                        Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
                     }
                 });
     }
@@ -348,86 +335,78 @@ public class LoginActivity extends AppCompatActivity {
         final String[] email = new String[1];
         final String[] password = new String[1];
 
-        altertDialogLoginBinding.loginAlertDialogLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                name[0] = altertDialogLoginBinding.loginAlertDialogNameEditText.getText().toString().trim();
-                email[0] = altertDialogLoginBinding.loginAlertDialogEmailEditText.getText().toString().trim();
-                password[0] = altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText().toString();
+        altertDialogLoginBinding.loginAlertDialogLoginButton.setOnClickListener(v -> {
+            name[0] = altertDialogLoginBinding.loginAlertDialogNameEditText.getText() != null
+                    ? altertDialogLoginBinding.loginAlertDialogNameEditText.getText().toString().trim()
+                    : "";
+            email[0] = altertDialogLoginBinding.loginAlertDialogEmailEditText.getText() != null
+                    ? altertDialogLoginBinding.loginAlertDialogEmailEditText.getText().toString().trim()
+                    : "";
+            password[0] = altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText() != null
+                    ? altertDialogLoginBinding.loginAlertDialogPasswordEditText.getText().toString()
+                    : "";
 
-                if (email[0].isEmpty() || password[0].isEmpty()) {
-                    Toast.makeText(LoginActivity.this, getString(R.string.provide_email_password), Toast.LENGTH_SHORT).show();
-                } else {
-                    dialog.dismiss();
-                }
-            }
-        });
-
-        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        altertDialogLoginBinding.loginAlertDialogCloseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            if (email[0].isEmpty() || password[0].isEmpty()) {
+                Toast.makeText(LoginActivity.this, getString(R.string.provide_email_password), Toast.LENGTH_SHORT).show();
+            } else {
                 dialog.dismiss();
             }
         });
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        }
+        altertDialogLoginBinding.loginAlertDialogCloseButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
 
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (email[0] != null) {
-                    mAuth.createUserWithEmailAndPassword(email[0], password[0])
-                            .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        Log.d(TAG, "createUserWithEmail: success");
+        dialog.setOnDismissListener(dialog1 -> {
+            if (email[0] != null) {
+                mAuth.createUserWithEmailAndPassword(email[0], password[0])
+                        .addOnCompleteListener(LoginActivity.this, createUserWithEmailTask -> {
+                            if (createUserWithEmailTask.isSuccessful()) {
+                                Log.d(TAG, "createUserWithEmail: success");
 
-                                        mCurrentUser = mAuth.getCurrentUser();
+                                mCurrentUser = mAuth.getCurrentUser();
 
-                                        UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder()
-                                                .setDisplayName(name[0].isEmpty()
-                                                        ? email[0].split("@")[0]
-                                                        : name[0])
-                                                .build();
+                                UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(name[0].isEmpty()
+                                                ? email[0].split("@")[0]
+                                                : name[0])
+                                        .build();
 
-                                        mCurrentUser.updateProfile(userProfileChangeRequest)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if (task.isSuccessful()) {
-                                                            createUserInFirestore(mCurrentUser);
-                                                            navigateToMainActivity();
-                                                        }
+                                mCurrentUser.updateProfile(userProfileChangeRequest)
+                                        .addOnCompleteListener(task12 -> {
+                                            if (task12.isSuccessful()) {
+                                                createUserInFirestore(mCurrentUser);
+                                                navigateToMainActivity();
+                                            }
+                                        });
+                            } else {
+                                Log.w(TAG, "createUserWithEmail: failure", createUserWithEmailTask.getException());
+
+                                Exception exception = createUserWithEmailTask.getException();
+                                mAuth.signInWithEmailAndPassword(email[0], password[0])
+                                        .addOnCompleteListener(LoginActivity.this, signInWithEmailAndPasswordTask -> {
+                                            if (signInWithEmailAndPasswordTask.isSuccessful()) {
+                                                Log.d(TAG, "signInWithEmail: success");
+                                                Intent intent = new Intent(LoginActivity.this, LoginActivity.class);
+                                                intent.putExtra("email", email[0]);
+                                                startActivityForResult(intent, RC_EMAIL_SIGN_IN);
+                                            } else {
+                                                Log.w(TAG, "signInWithEmail: failure", signInWithEmailAndPasswordTask.getException());
+                                                if (signInWithEmailAndPasswordTask.getException() != null
+                                                        && signInWithEmailAndPasswordTask.getException().getMessage() != null
+                                                        && signInWithEmailAndPasswordTask.getException().getMessage().equals("The password is invalid or the user does not have a password.")) {
+                                                    Toast.makeText(LoginActivity.this, signInWithEmailAndPasswordTask.getException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                                } else {
+                                                    if (exception != null) {
+                                                        Toast.makeText(LoginActivity.this, exception.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                                                     }
-                                                });
-                                    } else {
-                                        Log.w(TAG, "createUserWithEmail: failure", task.getException());
-
-                                        Exception exception = task.getException();
-                                        mAuth.signInWithEmailAndPassword(email[0], password[0])
-                                                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                                        if (task.isSuccessful()) {
-                                                            Log.d(TAG, "signInWithEmail: success");
-                                                            Intent intent = new Intent(LoginActivity.this, LoginActivity.class);
-                                                            intent.putExtra("email", email[0]);
-                                                            startActivityForResult(intent, RC_EMAIL_SIGN_IN);
-                                                        } else {
-                                                            Log.w(TAG, "signInWithEmail: failure", task.getException());
-                                                            if (task.getException().getMessage().equals("The password is invalid or the user does not have a password.")) {
-                                                                Toast.makeText(LoginActivity.this, task.getException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                                                            } else {
-                                                                Toast.makeText(LoginActivity.this, exception.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        }
-                                                    }
-                                                });
-                                    }
-                                }
-                            });
-                }
+                                                }
+                                            }
+                                        });
+                            }
+                        });
             }
         });
     }

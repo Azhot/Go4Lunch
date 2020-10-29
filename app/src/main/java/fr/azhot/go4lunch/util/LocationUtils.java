@@ -3,7 +3,6 @@ package fr.azhot.go4lunch.util;
 import android.content.IntentSender;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -11,7 +10,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
 
 public class LocationUtils {
 
@@ -31,18 +29,15 @@ public class LocationUtils {
 
         SettingsClient client = LocationServices.getSettingsClient(appCompatActivity);
         client.checkLocationSettings(builder.build())
-                .addOnFailureListener(appCompatActivity, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        try {
-                            // Location settings are not satisfied, but it can be fixed
-                            if (e instanceof ResolvableApiException) {
-                                ResolvableApiException resolvable = (ResolvableApiException) e;
-                                resolvable.startResolutionForResult(appCompatActivity, requestCode);
-                            }
-                        } catch (IntentSender.SendIntentException sendEx) {
-                            Log.e(TAG, "onFailure", sendEx);
+                .addOnFailureListener(appCompatActivity, e -> {
+                    try {
+                        // Location settings are not satisfied, but it can be fixed
+                        if (e instanceof ResolvableApiException) {
+                            ResolvableApiException resolvable = (ResolvableApiException) e;
+                            resolvable.startResolutionForResult(appCompatActivity, requestCode);
                         }
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        Log.e(TAG, "onFailure", sendEx);
                     }
                 });
     }

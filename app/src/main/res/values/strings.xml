@@ -33,7 +33,6 @@
     <string name="login">Login</string>
 
     <!-- Main Activity -->
-    <string name="no_nearby_restaurants">There are no nearby restaurants.</string>
     <string name="search_bar_hint">Search restaurant</string>
 
     <!-- Navigation drawer -->
@@ -51,6 +50,9 @@
     <string name="list_view_title">I\'m Hungry!</string>
     <string name="workmates_title">Available workmates</string>
 
+    <!-- MapView Fragment -->
+    <string name="localize_device_button">Localize device button</string>
+
     <!-- ListView Fragment -->
     <string name="no_restaurants_found">No restaurants found</string>
 
@@ -62,7 +64,6 @@
     <string name="info_not_available">Information not available.</string>
 
     <!-- RestaurantDetails Activity -->
-    <string name="distance">%1$fm</string>
     <string name="is_joining">%1$s is joining!</string>
     <string name="no_restaurant_selected">You have not selected a restaurant yet.</string>
     <string name="no_website">No website available.</string>
@@ -71,6 +72,7 @@
     <string name="like">Like</string>
     <string name="liked">Liked</string>
     <string name="website">Website</string>
+    <string name="select_restaurant_button">Select restaurant button</string>
 
     <!-- Notifications Service -->
     <string name="lunch_time_notification_title">Lunch time!</string>

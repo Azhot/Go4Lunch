@@ -11,13 +11,9 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Build;
 
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,7 +57,7 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (!intent.getExtras().getBoolean("alarmCanceled")) {
+        if (intent.getExtras() != null && !intent.getExtras().getBoolean("alarmCanceled")) {
 
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -91,13 +87,10 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
         UserRepository userRepository = UserRepository.getInstance();
         return userRepository.getUsersQuery()
                 .whereEqualTo(SELECTED_RESTAURANT_ID_FIELD, restaurant.getPlaceId())
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                        if (snapshot != null) {
-                            mJoiningWorkmates = new ArrayList<>(snapshot.toObjects(User.class));
-                            setUpAndScheduleLunchTimeNotification(context, uid, restaurant);
-                        }
+                .addSnapshotListener((snapshot, e) -> {
+                    if (snapshot != null) {
+                        mJoiningWorkmates = new ArrayList<>(snapshot.toObjects(User.class));
+                        setUpAndScheduleLunchTimeNotification(context, uid, restaurant);
                     }
                 });
     }
@@ -133,7 +126,7 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, DEFAULT_NOTIFICATION_CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_soupe_bowl)
+                        .setSmallIcon(R.drawable.ic_soup_bowl)
                         .setContentTitle(context.getString(R.string.lunch_time_notification_title))
                         .setContentText(context.getString(R.string.lunch_at) + " " + restaurant.getName())
                         .setAutoCancel(true)
@@ -162,10 +155,11 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
         calendar.set(Calendar.SECOND, 0);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                broadcastPendingIntent);
-
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP,
+                    calendar.getTimeInMillis(),
+                    broadcastPendingIntent);
+        }
     }
 
     public void cancelLunchTimeNotification(Context context) {
@@ -179,7 +173,9 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
                 broadcastIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        alarmManager.cancel(broadcastPendingIntent);
+        if (alarmManager != null) {
+            alarmManager.cancel(broadcastPendingIntent);
+        }
         broadcastPendingIntent.cancel();
     }
 }

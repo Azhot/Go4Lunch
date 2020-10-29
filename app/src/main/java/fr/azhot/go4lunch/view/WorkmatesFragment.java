@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -20,12 +19,8 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
-import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
@@ -43,7 +38,6 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
     private FragmentWorkmatesBinding mBinding;
     private Context mContext;
     private AppViewModel mViewModel;
-    private List<Restaurant> mRestaurants;
 
 
     // public static
@@ -117,20 +111,6 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
                         .orderBy(SELECTED_RESTAURANT_ID_FIELD, Query.Direction.DESCENDING)),
                 Glide.with(this),
                 this));
-
-        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getNearbyRestaurantsLiveData");
-
-                if (mRestaurants == null) {
-                    mRestaurants = new ArrayList<>();
-                }
-
-                mRestaurants.clear();
-                mRestaurants.addAll(restaurants);
-            }
-        });
     }
 
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query) {

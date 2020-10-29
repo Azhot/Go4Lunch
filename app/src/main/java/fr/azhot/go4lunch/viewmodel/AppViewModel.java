@@ -27,8 +27,8 @@ public class AppViewModel extends ViewModel {
     // variables
     private final GooglePlaceRepository mGooglePlaceRepository;
     private final UserRepository mUserRepository;
-    private MutableLiveData<Location> mDeviceLocation;
-    private MutableLiveData<Boolean> mIsLocationActivated;
+    private final MutableLiveData<Location> mDeviceLocation;
+    private final MutableLiveData<Boolean> mIsLocationActivated;
 
 
     // constructors

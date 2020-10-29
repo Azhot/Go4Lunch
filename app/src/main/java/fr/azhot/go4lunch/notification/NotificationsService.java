@@ -156,7 +156,7 @@ public class NotificationsService extends FirebaseMessagingService {
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, DEFAULT_NOTIFICATION_CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_soupe_bowl)
+                        .setSmallIcon(R.drawable.ic_soup_bowl)
                         .setContentTitle(getString(R.string.lunch_time_notification_title))
                         .setContentText(getString(R.string.lunch_at) + mRestaurant.getName())
                         .setAutoCancel(true)

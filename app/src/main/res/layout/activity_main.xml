@@ -58,7 +58,7 @@
             android:layout_width="176dp"
             android:layout_height="152dp"
             android:layout_gravity="bottom|center"
-            android:src="@drawable/ic_soupe_bowl" />
+            android:src="@drawable/ic_soup_bowl" />
 
     </com.google.android.material.navigation.NavigationView>
 

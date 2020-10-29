@@ -20,11 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -137,19 +134,16 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             mViewModel.getUser(currentUser.getUid())
-                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "getUser: onSuccess");
-                                mUser = task.getResult().toObject(User.class);
-                                if (mUser != null) {
-                                    setUpFab();
-                                    setUplikeButton();
-                                }
-                            } else {
-                                Log.e(TAG, "getUser: onFailure", task.getException());
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "getUser: onSuccess");
+                            mUser = task.getResult().toObject(User.class);
+                            if (mUser != null) {
+                                setUpFab();
+                                setUpLikeButton();
                             }
+                        } else {
+                            Log.e(TAG, "getUser: onFailure", task.getException());
                         }
                     });
         }
@@ -172,7 +166,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void setUplikeButton() {
+    private void setUpLikeButton() {
         Log.d(TAG, "setUpFab");
 
         if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
@@ -213,14 +207,11 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
             }
 
             mViewModel.updateUserRestaurantChoice(mUser)
-                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "updateUserRestaurantChoice: onSuccess");
-                            } else {
-                                Log.e(TAG, "updateUserRestaurantChoice: onFailure", task.getException());
-                            }
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "updateUserRestaurantChoice: onSuccess");
+                        } else {
+                            Log.e(TAG, "updateUserRestaurantChoice: onFailure", task.getException());
                         }
                     });
         } else if (view.getId() == R.id.restaurant_details_call_button) {
@@ -248,14 +239,11 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 mBinding.restaurantDetailsLikeButton.setTextColor(ContextCompat.getColor(this, R.color.colorCyan));
             }
             mViewModel.updateUserLikedRestaurant(mUser)
-                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "updateUserLikedRestaurant: onSuccess");
-                            } else {
-                                Log.e(TAG, "updateUserLikedRestaurant: onFailure", task.getException());
-                            }
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "updateUserLikedRestaurant: onSuccess");
+                        } else {
+                            Log.e(TAG, "updateUserLikedRestaurant: onFailure", task.getException());
                         }
                     });
         } else if (view.getId() == R.id.restaurant_details_website_button) {

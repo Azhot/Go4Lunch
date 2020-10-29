@@ -26,6 +26,7 @@
         app:backgroundTint="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/texts_constraint_layout"
         app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/select_restaurant_button"
         app:layout_constraintTop_toBottomOf="@id/restaurant_details_photo_image_view" />
 
     <androidx.constraintlayout.widget.ConstraintLayout

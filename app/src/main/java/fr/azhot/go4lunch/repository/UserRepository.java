@@ -35,16 +35,14 @@ public class UserRepository {
         return USER_REPOSITORY;
     }
 
-
     // variables
-    private FirebaseFirestore mFirebaseFirestore;
-    private CollectionReference mCollectionReference;
+    private final CollectionReference mCollectionReference;
 
 
     // constructor
     private UserRepository() {
-        this.mFirebaseFirestore = FirebaseFirestore.getInstance();
-        this.mCollectionReference = mFirebaseFirestore.collection(USER_COLLECTION_NAME);
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        this.mCollectionReference = firebaseFirestore.collection(USER_COLLECTION_NAME);
     }
 
 

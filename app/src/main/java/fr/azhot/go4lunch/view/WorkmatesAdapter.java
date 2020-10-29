@@ -25,7 +25,7 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
 
 
     // private static
-    private OnWorkmateClickListener mListener;
+    private final OnWorkmateClickListener mListener;
 
 
     // variables
@@ -54,8 +54,8 @@ public class WorkmatesAdapter extends FirestoreRecyclerAdapter<User, WorkmatesAd
     // view holder
     public static class WorkmateViewHolder extends RecyclerView.ViewHolder implements ViewGroup.OnClickListener {
 
-        private CellWorkmatesBinding mBinding;
-        private OnWorkmateClickListener mListener;
+        private final CellWorkmatesBinding mBinding;
+        private final OnWorkmateClickListener mListener;
         private User mUser;
 
         public WorkmateViewHolder(CellWorkmatesBinding binding, OnWorkmateClickListener listener) {

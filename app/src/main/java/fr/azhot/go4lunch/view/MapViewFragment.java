@@ -20,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,10 +31,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -205,22 +201,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         mRestaurants = new HashMap<>();
         mListenerRegistrations = new ArrayList<>();
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        mBinding.mapViewFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mBinding.mapViewFab.setOnClickListener(v -> {
 
-                if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    LocationUtils.checkLocationSettings(
-                            (AppCompatActivity) mContext,
-                            DEFAULT_INTERVAL,
-                            FASTEST_INTERVAL,
-                            RC_CHECK_SETTINGS);
-                }
-                if (mDeviceLocation != null) {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
-                            DEFAULT_ZOOM));
-                }
+            if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                LocationUtils.checkLocationSettings(
+                        (AppCompatActivity) mContext,
+                        DEFAULT_INTERVAL,
+                        FASTEST_INTERVAL,
+                        RC_CHECK_SETTINGS);
+            }
+            if (mDeviceLocation != null) {
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
+                        DEFAULT_ZOOM));
             }
         });
     }
@@ -228,107 +221,92 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
-        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurants) {
-                Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
+        mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), restaurants -> {
+            Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
-                for (ListenerRegistration registration : mListenerRegistrations) {
-                    registration.remove();
-                }
-                mListenerRegistrations.clear();
-                mGoogleMap.clear();
-                mRestaurants.clear();
-                for (Restaurant restaurant : restaurants) {
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(new LatLng(restaurant.getLatitude(),
-                                    restaurant.getLongitude()));
-                    Marker marker = mGoogleMap.addMarker(markerOptions);
-                    marker.setTag(restaurant.getPlaceId());
+            for (ListenerRegistration registration : mListenerRegistrations) {
+                registration.remove();
+            }
+            mListenerRegistrations.clear();
+            mGoogleMap.clear();
+            mRestaurants.clear();
+            for (Restaurant restaurant : restaurants) {
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(new LatLng(restaurant.getLatitude(),
+                                restaurant.getLongitude()));
+                Marker marker = mGoogleMap.addMarker(markerOptions);
+                marker.setTag(restaurant.getPlaceId());
 
-                    ListenerRegistration registration =
-                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
-                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                                            if (snapshot != null && e == null) {
-                                                Log.d(TAG, "loadWorkmatesInRestaurants: added EventListener to : " + restaurant.getName());
-                                                if (snapshot.size() != 0) {
-                                                    marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_cyan));
-                                                } else {
-                                                    marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_orange));
-                                                }
-                                            }
+                ListenerRegistration registration =
+                        mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
+                                .addSnapshotListener((snapshot, e) -> {
+                                    if (snapshot != null && e == null) {
+                                        Log.d(TAG, "loadWorkmatesInRestaurants: added EventListener to : " + restaurant.getName());
+                                        if (snapshot.size() != 0) {
+                                            marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_cyan));
+                                        } else {
+                                            marker.setIcon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_orange));
                                         }
-                                    });
-                    mListenerRegistrations.add(registration);
-                    mRestaurants.put(marker, restaurant);
-                }
+                                    }
+                                });
+                mListenerRegistrations.add(registration);
+                mRestaurants.put(marker, restaurant);
             }
         });
 
-        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), new Observer<Location>() {
-            @Override
-            public void onChanged(Location location) {
-                Log.d(TAG, "getDeviceLocationLiveData: onChanged");
+        mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), location -> {
+            Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
-                if (mDeviceLocation == null) {
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(location.getLatitude(), location.getLongitude()),
-                            DEFAULT_ZOOM));
+            if (mDeviceLocation == null) {
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(location.getLatitude(), location.getLongitude()),
+                        DEFAULT_ZOOM));
+            }
+            mDeviceLocation = location;
+        });
+
+        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), aBoolean -> {
+            Log.d(TAG, "getLocationActivatedLiveData: onChanged");
+
+            if (mGoogleMap != null && mAutocompleteSelection == null) {
+                checkLocationPermission(mContext);
+                mGoogleMap.setMyLocationEnabled(aBoolean);
+                for (Marker marker : mRestaurants.keySet()) {
+                    marker.setVisible(aBoolean);
                 }
-                mDeviceLocation = location;
+            } else if (mGoogleMap != null) {
+                closeKeyboard();
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(mAutocompleteSelection.getValue().getLatitude(), mAutocompleteSelection.getValue().getLongitude()),
+                        DEFAULT_ZOOM));
             }
         });
 
-        mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                Log.d(TAG, "getLocationActivatedLiveData: onChanged");
-
-                if (mGoogleMap != null && mAutocompleteSelection == null) {
-                    checkLocationPermission(mContext);
-                    mGoogleMap.setMyLocationEnabled(aBoolean);
-                    for (Marker marker : mRestaurants.keySet()) {
-                        marker.setVisible(aBoolean);
-                    }
-                } else if (mGoogleMap != null) {
-                    closeKeyboard();
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mAutocompleteSelection.getValue().getLatitude(), mAutocompleteSelection.getValue().getLongitude()),
-                            DEFAULT_ZOOM));
+        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), restaurant -> {
+            if (restaurant != null) {
+                for (Marker marker : mRestaurants.keySet()) {
+                    marker.setVisible(false);
                 }
-            }
-        });
 
-        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
-            @Override
-            public void onChanged(Restaurant restaurant) {
-                if (restaurant != null) {
-                    for (Marker marker : mRestaurants.keySet()) {
-                        marker.setVisible(false);
-                    }
-
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .icon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_yellow))
-                            .position(new LatLng(restaurant.getLatitude(),
-                                    restaurant.getLongitude()));
-                    Marker marker = mGoogleMap.addMarker(markerOptions);
-                    marker.setTag(restaurant.getPlaceId());
-                    mAutocompleteSelection = new AbstractMap.SimpleEntry<>(marker, restaurant);
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(restaurant.getLatitude(), restaurant.getLongitude()),
-                            DEFAULT_ZOOM));
-                } else {
-                    for (Marker marker : mRestaurants.keySet()) {
-                        marker.setVisible(true);
-                    }
-                    if (mAutocompleteSelection != null) {
-                        mAutocompleteSelection.getKey().setVisible(false);
-                        mAutocompleteSelection.getKey().remove();
-                    }
-                    mAutocompleteSelection = null;
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .icon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_yellow))
+                        .position(new LatLng(restaurant.getLatitude(),
+                                restaurant.getLongitude()));
+                Marker marker = mGoogleMap.addMarker(markerOptions);
+                marker.setTag(restaurant.getPlaceId());
+                mAutocompleteSelection = new AbstractMap.SimpleEntry<>(marker, restaurant);
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(restaurant.getLatitude(), restaurant.getLongitude()),
+                        DEFAULT_ZOOM));
+            } else {
+                for (Marker marker : mRestaurants.keySet()) {
+                    marker.setVisible(true);
                 }
+                if (mAutocompleteSelection != null) {
+                    mAutocompleteSelection.getKey().setVisible(false);
+                    mAutocompleteSelection.getKey().remove();
+                }
+                mAutocompleteSelection = null;
             }
         });
     }

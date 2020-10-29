@@ -14,7 +14,6 @@ import com.bumptech.glide.RequestManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -25,26 +24,7 @@ import fr.azhot.go4lunch.model.Restaurant;
 public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.RestaurantViewHolder> {
 
 
-    private void sortRestaurants() {
-        Log.d(TAG, "sortRestaurants");
-
-        Collections.sort(mRestaurants, new Comparator<Restaurant>() {
-            @Override
-            public int compare(Restaurant o1, Restaurant o2) {
-
-                Location lo1 = new Location(LocationManager.GPS_PROVIDER);
-                lo1.setLatitude(o1.getLatitude());
-                lo1.setLongitude(o1.getLongitude());
-
-                Location lo2 = new Location(LocationManager.GPS_PROVIDER);
-                lo1.setLatitude(o2.getLatitude());
-                lo1.setLongitude(o2.getLongitude());
-
-                return Float.compare(lo1.distanceTo(mDeviceLocation), lo2.distanceTo(mDeviceLocation));
-            }
-        });
-        notifyDataSetChanged();
-    }
+    private final List<Restaurant> mRestaurants;
 
 
     // private static
@@ -53,11 +33,28 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
 
     // variables
     private final RequestManager mGlide;
-    private List<Restaurant> mRestaurants;
-    private List<Restaurant> mHiddenRestaurants;
-    private List<Restaurant> mSavedRestaurants;
+    private final List<Restaurant> mHiddenRestaurants;
+    private final List<Restaurant> mSavedRestaurants;
+    private final OnRestaurantClickListener mListener;
     private Location mDeviceLocation;
-    private OnRestaurantClickListener mListener;
+
+    private void sortRestaurants() {
+        Log.d(TAG, "sortRestaurants");
+
+        Collections.sort(mRestaurants, (o1, o2) -> {
+
+            Location lo1 = new Location(LocationManager.GPS_PROVIDER);
+            lo1.setLatitude(o1.getLatitude());
+            lo1.setLongitude(o1.getLongitude());
+
+            Location lo2 = new Location(LocationManager.GPS_PROVIDER);
+            lo1.setLatitude(o2.getLatitude());
+            lo1.setLongitude(o2.getLongitude());
+
+            return Float.compare(lo1.distanceTo(mDeviceLocation), lo2.distanceTo(mDeviceLocation));
+        });
+        notifyDataSetChanged();
+    }
 
 
     // constructor
@@ -71,6 +68,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         this.mDeviceLocation = new Location(LocationManager.GPS_PROVIDER);
         this.mListener = listener;
     }
+
 
     // inherited methods
     @NonNull
@@ -160,8 +158,8 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
     // view holder
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private CellListViewBinding mBinding;
-        private OnRestaurantClickListener mListener;
+        private final CellListViewBinding mBinding;
+        private final OnRestaurantClickListener mListener;
         private Restaurant mRestaurant;
 
         public RestaurantViewHolder(CellListViewBinding binding, ListViewAdapter.OnRestaurantClickListener listener) {

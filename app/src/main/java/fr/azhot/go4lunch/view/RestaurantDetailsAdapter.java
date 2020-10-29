@@ -44,7 +44,7 @@ public class RestaurantDetailsAdapter extends FirestoreRecyclerAdapter<User, Res
     // view holder
     public static class RestaurantDetailsViewHolder extends RecyclerView.ViewHolder {
 
-        private CellRestaurantDetailsBinding mBinding;
+        private final CellRestaurantDetailsBinding mBinding;
 
         public RestaurantDetailsViewHolder(CellRestaurantDetailsBinding binding) {
             super(binding.getRoot());
