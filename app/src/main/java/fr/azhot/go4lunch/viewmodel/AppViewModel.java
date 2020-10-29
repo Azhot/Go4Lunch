@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
@@ -30,7 +29,6 @@ public class AppViewModel extends ViewModel {
     private final UserRepository mUserRepository;
     private MutableLiveData<Location> mDeviceLocation;
     private MutableLiveData<Boolean> mIsLocationActivated;
-    private MutableLiveData<AutocompletePrediction> mAutocompletePrediction;
 
 
     // constructors
@@ -39,7 +37,6 @@ public class AppViewModel extends ViewModel {
         mUserRepository = UserRepository.getInstance();
         mDeviceLocation = new MutableLiveData<>();
         mIsLocationActivated = new MutableLiveData<>();
-        mAutocompletePrediction = new MutableLiveData<>();
     }
 
 
@@ -52,24 +49,16 @@ public class AppViewModel extends ViewModel {
         mGooglePlaceRepository.setNearbyRestaurantsLiveData(keyword, type, location, radius);
     }
 
-    public LiveData<Restaurant> getDetailsRestaurantLiveData() {
-        return mGooglePlaceRepository.getDetailsRestaurantLiveData();
+    public LiveData<Restaurant> getDetailsRestaurantFromAutocompleteLiveData() {
+        return mGooglePlaceRepository.getDetailsRestaurantFromAutocompleteLiveData();
     }
 
-    public void setDetailsRestaurantLiveData(String placeId) {
-        mGooglePlaceRepository.setDetailsRestaurantLiveData(placeId);
+    public void setDetailsRestaurantFromAutocompleteLiveData(String placeId) {
+        mGooglePlaceRepository.setDetailsRestaurantFromAutocompleteLiveData(placeId);
     }
 
     public void getRestaurantDetails(String placeId, GooglePlaceRepository.OnCompleteListener onCompleteListener) {
         mGooglePlaceRepository.getDetailsRestaurant(placeId, onCompleteListener);
-    }
-
-    public LiveData<AutocompletePrediction> getAutocompletePredictionLiveData() {
-        return mAutocompletePrediction;
-    }
-
-    public void setAutocompletePredictionLiveData(AutocompletePrediction autocompletePrediction) {
-        mAutocompletePrediction.setValue(autocompletePrediction);
     }
 
     public LiveData<Location> getDeviceLocationLiveData() {

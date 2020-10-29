@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,12 +32,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,9 +83,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private GoogleMap mGoogleMap;
     private Location mDeviceLocation;
     private AppViewModel mViewModel;
-    private Map<Restaurant, Marker> mRestaurants;
+    private Map<Marker, Restaurant> mRestaurants;
     private List<ListenerRegistration> mListenerRegistrations;
     private LocationManager mLocationManager;
+    private AbstractMap.SimpleEntry<Marker, Restaurant> mAutocompleteSelection;
 
 
     // inherited methods
@@ -153,9 +155,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (mDeviceLocation != null) {
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
-                    DEFAULT_ZOOM));
+            if (mAutocompleteSelection != null) {
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(mAutocompleteSelection.getValue().getLatitude(), mAutocompleteSelection.getValue().getLongitude()),
+                        DEFAULT_ZOOM));
+            } else {
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
+                        DEFAULT_ZOOM));
+            }
             checkLocationPermission(mContext);
             mGoogleMap.setMyLocationEnabled(true);
         }
@@ -164,15 +172,25 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public boolean onMarkerClick(Marker marker) {
         Log.d(TAG, "onMarkerClick");
-        for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
-            if (marker.getTag() == entry.getValue().getTag()) {
-                Restaurant restaurant = entry.getKey();
+
+        if (mAutocompleteSelection != null && mAutocompleteSelection.getKey().getTag() == marker.getTag()) {
+            Log.d(TAG, "onMarkerClick: Autocomplete");
+            Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                    mContext, RestaurantDetailsActivity.class, mAutocompleteSelection.getValue().getPlaceId());
+            startActivity(intent);
+            return true;
+        }
+
+        for (Marker key : mRestaurants.keySet()) {
+            if (key.getTag() == marker.getTag()) {
+                Restaurant restaurant = mRestaurants.get(key);
                 Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
                         mContext, RestaurantDetailsActivity.class, restaurant.getPlaceId());
                 startActivity(intent);
                 return true;
             }
         }
+
         return true;
     }
 
@@ -199,7 +217,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                             RC_CHECK_SETTINGS);
                 }
                 if (mDeviceLocation != null) {
-                    animateCamera(mDeviceLocation, DEFAULT_ZOOM, mGoogleMap);
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()),
+                            DEFAULT_ZOOM));
                 }
             }
         });
@@ -242,7 +262,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                                         }
                                     });
                     mListenerRegistrations.add(registration);
-                    mRestaurants.put(restaurant, marker);
+                    mRestaurants.put(marker, restaurant);
                 }
             }
         });
@@ -253,7 +273,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                 Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
                 if (mDeviceLocation == null) {
-                    animateCamera(location, DEFAULT_ZOOM, mGoogleMap);
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(location.getLatitude(), location.getLongitude()),
+                            DEFAULT_ZOOM));
                 }
                 mDeviceLocation = location;
             }
@@ -264,34 +286,48 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             public void onChanged(Boolean aBoolean) {
                 Log.d(TAG, "getLocationActivatedLiveData: onChanged");
 
-                if (mGoogleMap != null) {
+                if (mGoogleMap != null && mAutocompleteSelection == null) {
                     checkLocationPermission(mContext);
                     mGoogleMap.setMyLocationEnabled(aBoolean);
-                    for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
-                        entry.getValue().setVisible(aBoolean);
+                    for (Marker marker : mRestaurants.keySet()) {
+                        marker.setVisible(aBoolean);
                     }
+                } else if (mGoogleMap != null) {
+                    closeKeyboard();
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(mAutocompleteSelection.getValue().getLatitude(), mAutocompleteSelection.getValue().getLongitude()),
+                            DEFAULT_ZOOM));
                 }
             }
         });
 
-        mViewModel.getAutocompletePredictionLiveData().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
-            public void onChanged(AutocompletePrediction autocompletePrediction) {
-                Log.d(TAG, "getAutocompletePredictionLiveData: onChanged");
-
-                if (mGoogleMap != null) {
-                    if (autocompletePrediction != null) {
-                        for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
-                            entry.getValue().setVisible(true);
-                            if (!autocompletePrediction.getPlaceId().equals(entry.getKey().getPlaceId())) {
-                                entry.getValue().setVisible(false);
-                            }
-                        }
-                    } else {
-                        for (Map.Entry<Restaurant, Marker> entry : mRestaurants.entrySet()) {
-                            entry.getValue().setVisible(true);
-                        }
+            public void onChanged(Restaurant restaurant) {
+                if (restaurant != null) {
+                    for (Marker marker : mRestaurants.keySet()) {
+                        marker.setVisible(false);
                     }
+
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .icon(getBitmapDescriptor(mContext, R.drawable.ic_restaurant_marker_yellow))
+                            .position(new LatLng(restaurant.getLatitude(),
+                                    restaurant.getLongitude()));
+                    Marker marker = mGoogleMap.addMarker(markerOptions);
+                    marker.setTag(restaurant.getPlaceId());
+                    mAutocompleteSelection = new AbstractMap.SimpleEntry<>(marker, restaurant);
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(restaurant.getLatitude(), restaurant.getLongitude()),
+                            DEFAULT_ZOOM));
+                } else {
+                    for (Marker marker : mRestaurants.keySet()) {
+                        marker.setVisible(true);
+                    }
+                    if (mAutocompleteSelection != null) {
+                        mAutocompleteSelection.getKey().setVisible(false);
+                        mAutocompleteSelection.getKey().remove();
+                    }
+                    mAutocompleteSelection = null;
                 }
             }
         });
@@ -302,16 +338,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
 
         if (!PermissionsUtils.isLocationPermissionGranted(context)) {
             requireActivity().finish();
-        }
-    }
-
-    private void animateCamera(Location location, float zoom, GoogleMap googleMap) {
-        Log.d(TAG, "moveCamera");
-
-        if (googleMap != null) {
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(), location.getLongitude()),
-                    zoom));
         }
     }
 
@@ -334,6 +360,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         } else {
             return BitmapDescriptorFactory.fromResource(id);
+        }
+    }
+
+    private void closeKeyboard() {
+        Log.d(TAG, "closeKeyboard");
+
+        View view = requireActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null) {
+                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 }

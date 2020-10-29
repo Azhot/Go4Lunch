@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     // private static
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int NEARBY_SEARCH_RADIUS = 500;
-    public static final int AUTOCOMPLETE_SEARCH_RADIUS = 750;
+    public static final int AUTOCOMPLETE_SEARCH_RADIUS = 5000;
     public static final float DISTANCE_UNTIL_UPDATE = 50f;
     public static final String RESTAURANT_TYPE = "restaurant";
 
@@ -130,7 +130,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
-        // todo : reset all users choices per day
+        // todo : L'application doit s'afficher correctement sur toutes les tailles de téléphone Android en mode portrait
+        // todo : Votre application contient des tests unitaires qui couvrent la majorité de la logique de votre code ;
+        // todo : Le projet compile correctement et ne contient aucun message d’avertissement ou d’erreur ;
+        // todo : show "no nearby restaurants" in listview when no restaurants
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -423,7 +426,7 @@ public class MainActivity extends AppCompatActivity {
                                         AutocompletePrediction prediction = predictions.get(i);
                                         Log.d(TAG, "findAutocompletePredictions : onSuccess: " + prediction.getPrimaryText(null));
                                         if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
-                                            matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null)});
+                                            matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null)});
                                             cursorAdapter.changeCursor(matrixCursor);
                                         }
                                     }
@@ -436,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                 } else if (newText.length() == 0) {
-                    mViewModel.setAutocompletePredictionLiveData(null);
+                    mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
                 }
 
                 return true;
@@ -456,13 +459,7 @@ public class MainActivity extends AppCompatActivity {
                 Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
                 String selection = cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1));
                 searchView.setQuery(selection, false);
-
-                for (AutocompletePrediction prediction : predictions) {
-                    if (selection.contentEquals(prediction.getPrimaryText(null))) {
-                        mViewModel.setAutocompletePredictionLiveData(prediction);
-                        break;
-                    }
-                }
+                mViewModel.setDetailsRestaurantFromAutocompleteLiveData(predictions.get(position).getPlaceId());
 
                 return true;
             }
@@ -471,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                mViewModel.setAutocompletePredictionLiveData(null);
+                mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
                 return false;
             }
         });

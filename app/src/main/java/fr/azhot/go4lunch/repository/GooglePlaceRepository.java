@@ -29,14 +29,14 @@ public class GooglePlaceRepository {
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<List<Restaurant>> mNearbyRestaurants;
-    private final MutableLiveData<Restaurant> mDetailsRestaurant;
+    private final MutableLiveData<Restaurant> mDetailsRestaurantFromAutocomplete;
 
 
     // constructor
     private GooglePlaceRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
         mNearbyRestaurants = new MutableLiveData<>();
-        mDetailsRestaurant = new MutableLiveData<>();
+        mDetailsRestaurantFromAutocomplete = new MutableLiveData<>();
     }
 
 
@@ -88,31 +88,36 @@ public class GooglePlaceRepository {
         });
     }
 
-    public LiveData<Restaurant> getDetailsRestaurantLiveData() {
-        Log.d(TAG, "getDetailsRestaurantLiveData");
+    public LiveData<Restaurant> getDetailsRestaurantFromAutocompleteLiveData() {
+        Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData");
 
-        return mDetailsRestaurant;
+        return mDetailsRestaurantFromAutocomplete;
     }
 
-    public void setDetailsRestaurantLiveData(String placeId) {
-        Log.d(TAG, "setDetailsRestaurantLiveData");
+    public void setDetailsRestaurantFromAutocompleteLiveData(String placeId) {
+        Log.d(TAG, "setDetailsRestaurantFromAutocompleteLiveData");
+
+        if (placeId == null) {
+            mDetailsRestaurantFromAutocomplete.setValue(null);
+            return;
+        }
 
         Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
-                Log.d(TAG, "setDetailsRestaurantLiveData: onResponse");
+                Log.d(TAG, "setDetailsRestaurantFromAutocompleteLiveData: onResponse");
 
-                if (response.body() != null) {
-                    mDetailsRestaurant.setValue(new Restaurant(response.body().getResult()));
+                if (response.body() != null && response.body().getResult() != null) {
+                    mDetailsRestaurantFromAutocomplete.setValue(new Restaurant(response.body().getResult()));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
-                Log.e(TAG, "setDetailsRestaurantLiveData: onFailure", t);
+                Log.e(TAG, "setDetailsRestaurantFromAutocompleteLiveData: onFailure", t);
 
-                mDetailsRestaurant.postValue(null);
+                mDetailsRestaurantFromAutocomplete.postValue(null);
             }
         });
     }
@@ -122,7 +127,7 @@ public class GooglePlaceRepository {
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
-                Log.d(TAG, "setDetailsRestaurantLiveData: onResponse");
+                Log.d(TAG, "getDetailsRestaurant: onResponse");
 
                 if (response.body() != null) {
                     onCompleteListener.onSuccess(new Restaurant(response.body().getResult()));

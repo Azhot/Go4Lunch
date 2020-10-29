@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -55,6 +54,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private AppViewModel mViewModel;
     private ListViewAdapter mAdapter;
     private List<ListenerRegistration> mListenerRegistrations;
+    private ListenerRegistration mAutocompleteListenerRegistration;
 
 
     // inherited methods
@@ -94,6 +94,9 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             registration.remove();
         }
         mListenerRegistrations.clear();
+        if (mAutocompleteListenerRegistration != null) {
+            mAutocompleteListenerRegistration.remove();
+        }
     }
 
     // Called when user clicks on a cell of the recyclerview
@@ -172,20 +175,28 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
-
-        mViewModel.getAutocompletePredictionLiveData().observe(getViewLifecycleOwner(), new Observer<AutocompletePrediction>() {
+        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), new Observer<Restaurant>() {
             @Override
-            public void onChanged(AutocompletePrediction autocompletePrediction) {
-                Log.d(TAG, "getAutocompletePredictionLiveData: onChanged");
+            public void onChanged(Restaurant restaurant) {
+                Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData: onChanged");
 
-                if (autocompletePrediction != null) {
-                    for (Restaurant restaurant : mAdapter.getRestaurants()) {
-                        if (autocompletePrediction.getPlaceId().equals(restaurant.getPlaceId())) {
-                            mAdapter.filterAutocompleteRestaurant(restaurant);
-                            break;
-                        }
-                    }
+                if (restaurant != null) {
+                    mAutocompleteListenerRegistration =
+                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
+                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                                            if (snapshot != null && e == null) {
+                                                Log.d(TAG, "added EventListener to : " + restaurant.getName());
+                                                restaurant.setWorkmatesJoining(snapshot.size());
+                                                mAdapter.filterAutocompleteRestaurant(restaurant);
+                                            }
+                                        }
+                                    });
                 } else {
+                    if (mAutocompleteListenerRegistration != null) {
+                        mAutocompleteListenerRegistration.remove();
+                    }
                     mAdapter.loadSavedRestaurants();
                 }
             }
