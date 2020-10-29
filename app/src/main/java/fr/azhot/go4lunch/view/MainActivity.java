@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.cursoradapter.widget.CursorAdapter;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mainToolbar);
+        mBinding.mainToolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
         setUpDrawerNavigation();
         setUpBottomNavigation();
         PermissionsUtils.checkLocationPermission(this);
@@ -354,6 +356,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 closeKeyboard();
+
+                if (locationManager != null
+                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    for (AutocompletePrediction prediction : predictions) {
+                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
+                            String selection = prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null);
+                            searchView.setQuery(selection, false);
+                            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(prediction.getPlaceId());
+                            break;
+                        }
+                    }
+                }
                 return false;
             }
 
