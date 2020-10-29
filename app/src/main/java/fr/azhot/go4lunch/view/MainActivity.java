@@ -14,7 +14,6 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
@@ -40,10 +39,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
@@ -51,13 +46,9 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,9 +122,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
-        // todo : L'application doit s'afficher correctement sur toutes les tailles de téléphone Android en mode portrait
         // todo : Votre application contient des tests unitaires qui couvrent la majorité de la logique de votre code ;
         // todo : Le projet compile correctement et ne contient aucun message d’avertissement ou d’erreur ;
+        // todo : mic to the searchview
 
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -163,16 +154,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (item.getItemId() == R.id.action_search) {
-
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     protected void onResume() {
         Log.d(TAG, "onResume");
 
@@ -182,18 +163,15 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             mViewModel.getUser(currentUser.getUid())
-                    .addOnCompleteListener(this, new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "getUser: onSuccess");
-                                mUser = task.getResult().toObject(User.class);
-                                if (mUser != null) {
-                                    setUpDrawerWithUserDetails(mUser);
-                                }
-                            } else {
-                                Log.e(TAG, "getUser: onFailure", task.getException());
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "getUser: onSuccess");
+                            mUser = task.getResult().toObject(User.class);
+                            if (mUser != null) {
+                                setUpDrawerWithUserDetails(mUser);
                             }
+                        } else {
+                            Log.e(TAG, "getUser: onFailure", task.getException());
                         }
                     });
         }
@@ -223,30 +201,27 @@ public class MainActivity extends AppCompatActivity {
         mBinding.mainDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        mBinding.mainNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        mBinding.mainNavView.setNavigationItemSelectedListener(item -> {
 
-                if (item.getItemId() == R.id.nav_your_lunch) {
-                    if (mUser.getSelectedRestaurantId() != null) {
-                        Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
-                                MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId());
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
-                    }
-                } else if (item.getItemId() == R.id.nav_settings) {
-                    startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-                } else if (item.getItemId() == R.id.nav_logout) {
-                    mAuth.signOut();
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
+            if (item.getItemId() == R.id.nav_your_lunch) {
+                if (mUser.getSelectedRestaurantId() != null) {
+                    Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
+                            MainActivity.this, RestaurantDetailsActivity.class, mUser.getSelectedRestaurantId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
                 }
-
-                mBinding.mainDrawerLayout.closeDrawer(GravityCompat.START);
-
-                return true;
+            } else if (item.getItemId() == R.id.nav_settings) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            } else if (item.getItemId() == R.id.nav_logout) {
+                mAuth.signOut();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                finish();
             }
+
+            mBinding.mainDrawerLayout.closeDrawer(GravityCompat.START);
+
+            return true;
         });
     }
 
@@ -269,33 +244,30 @@ public class MainActivity extends AppCompatActivity {
     private void setUpBottomNavigation() {
         Log.d(TAG, "setUpBottomNavigation");
 
-        mBinding.mainBottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment selectedFragment;
+        mBinding.mainBottomNav.setOnNavigationItemSelectedListener(item -> {
+            Fragment selectedFragment;
 
-                if (item.getItemId() == R.id.list_view) {
-                    selectedFragment = ListViewFragment.newInstance();
-                    setTitle(R.string.list_view_title);
-                } else if (item.getItemId() == R.id.workmates) {
-                    selectedFragment = WorkmatesFragment.newInstance();
-                    setTitle(R.string.workmates_title);
-                } else if (item.getItemId() == R.id.map_view) {
-                    selectedFragment = MapViewFragment.newInstance();
-                    setTitle(R.string.map_view_title);
-                } else {
-                    selectedFragment = MapViewFragment.newInstance();
-                    setTitle(R.string.map_view_title);
-                }
-
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .setCustomAnimations(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit, R.anim.fragment_open_enter, R.anim.fragment_close_exit)
-                        .replace(mBinding.mainNavHostFragment.getId(), selectedFragment)
-                        .commit();
-
-                return true;
+            if (item.getItemId() == R.id.list_view) {
+                selectedFragment = ListViewFragment.newInstance();
+                setTitle(R.string.list_view_title);
+            } else if (item.getItemId() == R.id.workmates) {
+                selectedFragment = WorkmatesFragment.newInstance();
+                setTitle(R.string.workmates_title);
+            } else if (item.getItemId() == R.id.map_view) {
+                selectedFragment = MapViewFragment.newInstance();
+                setTitle(R.string.map_view_title);
+            } else {
+                selectedFragment = MapViewFragment.newInstance();
+                setTitle(R.string.map_view_title);
             }
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit, R.anim.fragment_open_enter, R.anim.fragment_close_exit)
+                    .replace(mBinding.mainNavHostFragment.getId(), selectedFragment)
+                    .commit();
+
+            return true;
         });
     }
 
@@ -415,32 +387,24 @@ public class MainActivity extends AppCompatActivity {
                             .build();
 
                     placesClient.findAutocompletePredictions(request)
-                            .addOnSuccessListener(MainActivity.this, new OnSuccessListener<FindAutocompletePredictionsResponse>() {
-                                @Override
-                                public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
-                                    Log.d(TAG, "onSuccess");
+                            .addOnSuccessListener(MainActivity.this, findAutocompletePredictionsResponse -> {
+                                Log.d(TAG, "onSuccess");
 
-                                    predictions.clear();
-                                    predictions.addAll(findAutocompletePredictionsResponse.getAutocompletePredictions());
+                                predictions.clear();
+                                predictions.addAll(findAutocompletePredictionsResponse.getAutocompletePredictions());
 
-                                    MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
+                                MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
 
-                                    for (int i = 0; i < predictions.size(); i++) {
-                                        AutocompletePrediction prediction = predictions.get(i);
-                                        Log.d(TAG, "findAutocompletePredictions : onSuccess: " + prediction.getPrimaryText(null));
-                                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
-                                            matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null)});
-                                            cursorAdapter.changeCursor(matrixCursor);
-                                        }
+                                for (int i = 0; i < predictions.size(); i++) {
+                                    AutocompletePrediction prediction = predictions.get(i);
+                                    Log.d(TAG, "findAutocompletePredictions : onSuccess: " + prediction.getPrimaryText(null));
+                                    if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
+                                        matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null)});
+                                        cursorAdapter.changeCursor(matrixCursor);
                                     }
                                 }
                             })
-                            .addOnFailureListener(MainActivity.this, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.e(TAG, "findAutocompletePredictions : onFailure: ", e);
-                                }
-                            });
+                            .addOnFailureListener(MainActivity.this, e -> Log.e(TAG, "findAutocompletePredictions : onFailure: ", e));
                 } else if (newText.length() == 0) {
                     mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
                 }
@@ -468,12 +432,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
-            @Override
-            public boolean onClose() {
-                mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
-                return false;
-            }
+        searchView.setOnCloseListener(() -> {
+            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
+            return false;
         });
     }
 
