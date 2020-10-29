@@ -128,27 +128,33 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             public void onChanged(List<Restaurant> restaurants) {
                 Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
-                mAdapter.setRestaurants(restaurants);
+                if (restaurants.isEmpty()) {
+                    mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+                } else {
+                    mBinding.noRestaurantLayout.setVisibility(View.GONE);
 
-                for (ListenerRegistration registration : mListenerRegistrations) {
-                    registration.remove();
-                }
-                mListenerRegistrations.clear();
+                    mAdapter.setRestaurants(restaurants);
 
-                for (Restaurant restaurant : restaurants) {
-                    ListenerRegistration registration =
-                            mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
-                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                                            if (snapshot != null && e == null) {
-                                                Log.d(TAG, "added EventListener to : " + restaurant.getName());
-                                                restaurant.setWorkmatesJoining(snapshot.size());
-                                                mAdapter.notifyDataSetChanged();
+                    for (ListenerRegistration registration : mListenerRegistrations) {
+                        registration.remove();
+                    }
+                    mListenerRegistrations.clear();
+
+                    for (Restaurant restaurant : restaurants) {
+                        ListenerRegistration registration =
+                                mViewModel.loadWorkmatesInRestaurants(restaurant.getPlaceId())
+                                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onEvent(@Nullable QuerySnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                                                if (snapshot != null && e == null) {
+                                                    Log.d(TAG, "added EventListener to : " + restaurant.getName());
+                                                    restaurant.setWorkmatesJoining(snapshot.size());
+                                                    mAdapter.notifyDataSetChanged();
+                                                }
                                             }
-                                        }
-                                    });
-                    mListenerRegistrations.add(registration);
+                                        });
+                        mListenerRegistrations.add(registration);
+                    }
                 }
             }
         });
@@ -160,8 +166,14 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
                 if (aBoolean) {
                     mAdapter.showRestaurants();
+                    if (mAdapter.getRestaurants().isEmpty()) {
+                        mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+                    } else {
+                        mBinding.noRestaurantLayout.setVisibility(View.GONE);
+                    }
                 } else {
                     mAdapter.hideRestaurants();
+                    mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -190,6 +202,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                                                 Log.d(TAG, "added EventListener to : " + restaurant.getName());
                                                 restaurant.setWorkmatesJoining(snapshot.size());
                                                 mAdapter.filterAutocompleteRestaurant(restaurant);
+                                                mBinding.noRestaurantLayout.setVisibility(View.GONE);
                                             }
                                         }
                                     });
@@ -198,6 +211,11 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
                         mAutocompleteListenerRegistration.remove();
                     }
                     mAdapter.loadSavedRestaurants();
+                    if (!mAdapter.getSavedRestaurants().isEmpty()) {
+                        mBinding.noRestaurantLayout.setVisibility(View.VISIBLE);
+                    } else {
+                        mBinding.noRestaurantLayout.setVisibility(View.GONE);
+                    }
                 }
             }
         });
