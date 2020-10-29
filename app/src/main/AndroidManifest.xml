@@ -21,6 +21,7 @@
         <!-- Login Activity : app launcher -->
         <activity
             android:name=".view.LoginActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,16 +32,19 @@
         <!-- Main Activity -->
         <activity
             android:name=".view.MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Restaurant Details Activity -->
         <activity
             android:name=".view.RestaurantDetailsActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Settings Activity -->
         <activity
             android:name=".view.SettingsActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
 
         <!-- Places meta-data -->
