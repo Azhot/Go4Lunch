@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -54,8 +55,9 @@ public class SettingsActivity extends AppCompatActivity {
     // inherited methods
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
+        super.onCreate(savedInstanceState);
         init();
         getNotificationsActivatedFromSharedPreferences();
         setUpNotificationCheckBox();
@@ -67,6 +69,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected");
+
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
@@ -76,6 +80,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.d(TAG, "onRequestPermissionsResult");
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == RC_READ_EXTERNAL_STORAGE_PERMISSION) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -87,11 +93,15 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
+        Log.d(TAG, "onActivityResult");
+
         super.onActivityResult(requestCode, resultCode, data);
         handleImageChosenResponse(requestCode, resultCode, data);
     }
 
     private void init() {
+        Log.d(TAG, "init");
+
         mBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Settings");
@@ -101,11 +111,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void getNotificationsActivatedFromSharedPreferences() {
+        Log.d(TAG, "getNotificationsActivatedFromSharedPreferences");
+
         mSharedPreferences = this.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mIsNotificationsActivated = mSharedPreferences.getBoolean(NOTIFICATIONS_PREFERENCES_NAME, true);
     }
 
     private void setUpNotificationCheckBox() {
+        Log.d(TAG, "setUpNotificationCheckBox");
+
         mBinding.notificationCheckBox.setChecked(mIsNotificationsActivated);
         mBinding.notificationCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             mIsNotificationsActivated = isChecked;
@@ -117,6 +131,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setUpUserInformationEditText() {
+        Log.d(TAG, "setUpUserInformationEditText");
+
         mBinding.userSettingsNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -144,6 +160,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setUpUserSettingsPictureButton() {
+        Log.d(TAG, "setUpUserSettingsPictureButton");
+
         mBinding.userSettingsPictureImageButton.setOnClickListener(v -> {
             if (PermissionsUtils.checkExternalStoragePermission(SettingsActivity.this)) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -153,6 +171,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void handleImageChosenResponse(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "handleImageChosenResponse");
+
         if (requestCode == RC_CHOOSE_IMAGE) {
             if (resultCode == RESULT_OK) {
                 this.mUriImageSelected = data.getData();
@@ -167,6 +187,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setUpConfirmButton() {
+        Log.d(TAG, "setUpConfirmButton");
 
         mBinding.confirmButton.setOnClickListener(v -> {
             String name = "";
@@ -197,6 +218,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void uploadImageInFirebaseAndUpdateUserProfile(FirebaseUser user, Uri uriImageSelected) {
+        Log.d(TAG, "uploadImageInFirebaseAndUpdateUserProfile");
+
         if (uriImageSelected != null) {
             StorageReference imageRef = FirebaseStorage.getInstance().getReference(user.getUid());
             imageRef.putFile(uriImageSelected)

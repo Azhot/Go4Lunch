@@ -150,6 +150,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     }
 
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query) {
+        Log.d(TAG, "generateOptionsForAdapter");
+
         return new FirestoreRecyclerOptions.Builder<User>()
                 .setQuery(query, User.class)
                 .setLifecycleOwner(this)

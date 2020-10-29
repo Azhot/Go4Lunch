@@ -324,6 +324,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithEmailAndPassword() {
+        Log.d(TAG, "signInWithEmailAndPassword");
+
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
         AltertDialogLoginBinding altertDialogLoginBinding = AltertDialogLoginBinding.inflate(getLayoutInflater());

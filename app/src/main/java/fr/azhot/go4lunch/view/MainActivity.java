@@ -122,10 +122,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
-        // todo : Votre application contient des tests unitaires qui couvrent la majorité de la logique de votre code ;
-        // todo : Le projet compile correctement et ne contient aucun message d’avertissement ou d’erreur ;
-        // todo : mic to the searchview
-
         super.onCreate(savedInstanceState);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
@@ -330,6 +326,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpAutoCompleteSearchView(Menu menu) {
+        Log.d(TAG, "setUpAutoCompleteSearchView");
+
         if (!Places.isInitialized()) {
             Places.initialize(MainActivity.this, BuildConfig.GOOGLE_API_KEY);
         }
@@ -439,6 +437,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private LatLng getCoordinate(double latitude, double longitude, long distance) {
+        Log.d(TAG, "getCoordinate");
+
         double lat = latitude + (180 / Math.PI) * (distance / 6378137f);
         double lng = longitude + (180 / Math.PI) * (distance / 6378137f) / Math.cos(latitude);
         return new LatLng(lat, lng);
