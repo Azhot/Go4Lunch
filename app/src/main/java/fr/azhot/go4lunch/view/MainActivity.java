@@ -52,6 +52,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import fr.azhot.go4lunch.BuildConfig;
@@ -354,24 +355,6 @@ public class MainActivity extends AppCompatActivity {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                closeKeyboard();
-
-                if (locationManager != null
-                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    for (AutocompletePrediction prediction : predictions) {
-                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
-                            String selection = prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null);
-                            searchView.setQuery(selection, false);
-                            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(prediction.getPlaceId());
-                            break;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            @Override
             public boolean onQueryTextChange(String newText) {
                 cursorAdapter.changeCursor(null);
 
@@ -394,6 +377,7 @@ public class MainActivity extends AppCompatActivity {
                     FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
                             .setLocationRestriction(bounds)
                             .setSessionToken(token)
+                            .setOrigin(new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()))
                             .setTypeFilter(TypeFilter.ESTABLISHMENT)
                             .setQuery(newText)
                             .build();
@@ -404,6 +388,14 @@ public class MainActivity extends AppCompatActivity {
 
                                 predictions.clear();
                                 predictions.addAll(findAutocompletePredictionsResponse.getAutocompletePredictions());
+                                Collections.sort(predictions, (o1, o2) -> {
+                                    int d1 = 0, d2 = 0;
+                                    if (o1.getDistanceMeters() != null && o2.getDistanceMeters() != null) {
+                                        d1 = o1.getDistanceMeters();
+                                        d2 = o2.getDistanceMeters();
+                                    }
+                                    return Integer.compare(d1, d2);
+                                });
 
                                 MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
 
@@ -422,6 +414,24 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 return true;
+            }
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                closeKeyboard();
+
+                if (locationManager != null
+                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    for (AutocompletePrediction prediction : predictions) {
+                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
+                            String selection = prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null);
+                            searchView.setQuery(selection, false);
+                            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(prediction.getPlaceId());
+                            break;
+                        }
+                    }
+                }
+                return false;
             }
         });
 
