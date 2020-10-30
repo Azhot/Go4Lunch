@@ -12,6 +12,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
+import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.GooglePlaceRepository;
@@ -49,12 +50,20 @@ public class AppViewModel extends ViewModel {
         mGooglePlaceRepository.setNearbyRestaurantsLiveData(keyword, type, location, radius);
     }
 
-    public LiveData<Restaurant> getDetailsRestaurantFromAutocompleteLiveData() {
-        return mGooglePlaceRepository.getDetailsRestaurantFromAutocompleteLiveData();
+    public LiveData<Restaurant> getDetailsRestaurantLiveData() {
+        return mGooglePlaceRepository.getDetailsRestaurantLiveData();
     }
 
-    public void setDetailsRestaurantFromAutocompleteLiveData(String placeId) {
-        mGooglePlaceRepository.setDetailsRestaurantFromAutocompleteLiveData(placeId);
+    public void setDetailsRestaurantLiveData(String placeId) {
+        mGooglePlaceRepository.setDetailsRestaurantLiveData(placeId);
+    }
+
+    public LiveData<List<AutocompletePOJO.Prediction>> getAutocompletePredictionsLiveData() {
+        return mGooglePlaceRepository.getAutocompletePredictionsLiveData();
+    }
+
+    public void setAutocompletePredictionsLiveData(String input, String types, String location, int radius, String sessionToken) {
+        mGooglePlaceRepository.setAutocompletePredictionsLiveData(input, types, location, radius, sessionToken);
     }
 
     public void getRestaurantDetails(String placeId, GooglePlaceRepository.OnCompleteListener onCompleteListener) {

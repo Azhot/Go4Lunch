@@ -10,6 +10,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.ParcelUuid;
 import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.Menu;
@@ -39,32 +40,25 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.RectangularBounds;
-import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
-import fr.azhot.go4lunch.BuildConfig;
 import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.ActivityMainBinding;
+import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
+import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_LOCATION_SETTINGS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 
 public class MainActivity extends AppCompatActivity {
@@ -76,37 +70,76 @@ public class MainActivity extends AppCompatActivity {
     public static final int AUTOCOMPLETE_SEARCH_RADIUS = 5000;
     public static final float DISTANCE_UNTIL_UPDATE = 50f;
     public static final String RESTAURANT_TYPE = "restaurant";
+    public static final String ESTABLISHMENT_TYPE = "establishment";
 
 
     // variables
     private ActivityMainBinding mBinding;
     private FirebaseAuth mAuth;
     private AppViewModel mViewModel;
+    private LocationManager mLocationManager;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback mLocationCallback;
     private Location mDeviceLocation;
     private User mUser;
+    private List<AutocompletePOJO.Prediction> mPredictions;
+    private CursorAdapter mCursorAdapter;
 
 
     // inherited methods
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
+
+        init();
+        initObservers();
+        setContentView(mBinding.getRoot());
+        buildDrawerNavigation();
+        buildBottomNavigation();
+        PermissionsUtils.checkLocationPermission(this);
+        if (PermissionsUtils.isLocationPermissionGranted(this)) {
+            launchMapViewFragment();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu");
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.search_menu, menu);
+
+        buildAutoCompleteSearchView(menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+
+        startLocationUpdates();
+        getUserFromFirestore();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+
+        if (mFusedLocationProviderClient != null) {
+            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "onRequestPermissionsResult");
 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_LOCATION_PERMISSIONS) {
-            if (grantResults.length > 0) {
-                for (int i : grantResults) {
-                    if (i != PackageManager.PERMISSION_GRANTED) {
-                        Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
-                        PermissionsUtils.forceUserChoiceOnLocationPermissions(this);
-                        return;
-                    } else {
-                        launchFragment();
-                    }
-                }
-            }
-        }
+        handleLocationPermissionsRequest(requestCode, grantResults);
     }
 
     @Override
@@ -120,76 +153,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
 
-        super.onCreate(savedInstanceState);
+    // methods
+    private void init() {
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         mAuth = FirebaseAuth.getInstance();
         mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mPredictions = new ArrayList<>();
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mainToolbar);
         mBinding.mainToolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        setUpDrawerNavigation();
-        setUpBottomNavigation();
-        PermissionsUtils.checkLocationPermission(this);
-        if (PermissionsUtils.isLocationPermissionGranted(this)) {
-            launchFragment();
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (mLocationManager != null && !mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            LocationUtils.checkLocationSettings(
+                    this,
+                    DEFAULT_INTERVAL,
+                    FASTEST_INTERVAL,
+                    RC_CHECK_LOCATION_SETTINGS);
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        Log.d(TAG, "onCreateOptionsMenu");
+    private void initObservers() {
+        mViewModel.getAutocompletePredictionsLiveData().observe(MainActivity.this, predictions -> {
+            mPredictions.clear();
+            mPredictions.addAll(predictions);
 
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.search_menu, menu);
-
-        setUpAutoCompleteSearchView(menu);
-
-        return super.onCreateOptionsMenu(menu);
+            MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
+            for (int i = 0; i < mPredictions.size(); i++) {
+                AutocompletePOJO.Prediction prediction = predictions.get(i);
+                if (prediction.getTypes().contains(RESTAURANT_TYPE)) {
+                    String name = prediction.getStructuredFormatting().getMainText();
+                    String vicinity = prediction.getStructuredFormatting().getSecondaryText();
+                    String rowText = name + ", " + vicinity;
+                    matrixCursor.addRow(new Object[]{i, rowText});
+                    mCursorAdapter.changeCursor(matrixCursor);
+                }
+            }
+        });
     }
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume");
-
-        super.onResume();
-        initLocationUpdates();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            mViewModel.getUser(currentUser.getUid())
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "getUser: onSuccess");
-                            mUser = task.getResult().toObject(User.class);
-                            if (mUser != null) {
-                                setUpDrawerWithUserDetails(mUser);
-                            }
-                        } else {
-                            Log.e(TAG, "getUser: onFailure", task.getException());
-                        }
-                    });
-        }
-    }
-
-    @Override
-    public void onPause() {
-        Log.d(TAG, "onPause");
-
-        super.onPause();
-        if (mFusedLocationProviderClient != null) {
-            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        }
-    }
-
-
-    // methods
-    private void setUpDrawerNavigation() {
-        Log.d(TAG, "setUpDrawerNavigation");
+    private void buildDrawerNavigation() {
+        Log.d(TAG, "buildDrawerNavigation");
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this,
@@ -224,9 +228,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // configuring nav drawer header
-    private void setUpDrawerWithUserDetails(User user) {
-        Log.d(TAG, "setUpDrawerWithUserDetails");
+    private void getUserFromFirestore() {
+        Log.d(TAG, "getUserFromFirestore");
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            mViewModel.getUser(currentUser.getUid())
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "getUser: onSuccess");
+                            mUser = task.getResult().toObject(User.class);
+                            if (mUser != null) {
+                                loadUserDetailsInDrawerHeader(mUser);
+                            }
+                        } else {
+                            Log.e(TAG, "getUser: onFailure", task.getException());
+                        }
+                    });
+        }
+    }
+
+    private void loadUserDetailsInDrawerHeader(User user) {
+        Log.d(TAG, "loadUserDetailsInDrawerHeader");
 
         Glide.with(MainActivity.this)
                 .load((user.getUrlPicture()))
@@ -240,8 +263,8 @@ public class MainActivity extends AppCompatActivity {
         emailTextView.setText(user.getEmail());
     }
 
-    private void setUpBottomNavigation() {
-        Log.d(TAG, "setUpBottomNavigation");
+    private void buildBottomNavigation() {
+        Log.d(TAG, "buildBottomNavigation");
 
         mBinding.mainBottomNav.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment;
@@ -270,9 +293,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void handleLocationPermissionsRequest(int requestCode, @NonNull int[] grantResults) {
+        Log.d(TAG, "handleLocationPermissionsRequest");
+
+        if (requestCode == RC_LOCATION_PERMISSIONS) {
+            if (grantResults.length > 0) {
+                for (int i : grantResults) {
+                    if (i != PackageManager.PERMISSION_GRANTED) {
+                        Log.d(TAG, "onRequestPermissionsResult: permissions denied.");
+                        PermissionsUtils.forceUserChoiceOnLocationPermissions(this);
+                        return;
+                    } else {
+                        launchMapViewFragment();
+                    }
+                }
+            }
+        }
+    }
+
     @SuppressWarnings("MissingPermission") // ok since we are calling isLocationPermissionGranted
-    private void initLocationUpdates() {
-        Log.d(TAG, "initLocationUpdates");
+    private void startLocationUpdates() {
+        Log.d(TAG, "startLocationUpdates");
 
         LocationRequest locationRequest = new LocationRequest();
         locationRequest
@@ -284,9 +325,9 @@ public class MainActivity extends AppCompatActivity {
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
+                    super.onLocationResult(locationResult);
                     Log.d(TAG, "LocationCallback: onLocationResult");
 
-                    super.onLocationResult(locationResult);
                     Location currentLocation = locationResult.getLastLocation();
                     mViewModel.setDeviceLocationLiveData(currentLocation);
                     if (mDeviceLocation == null || mDeviceLocation.distanceTo(currentLocation) > DISTANCE_UNTIL_UPDATE) {
@@ -302,9 +343,9 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onLocationAvailability(LocationAvailability locationAvailability) {
+                    super.onLocationAvailability(locationAvailability);
                     Log.d(TAG, "LocationCallback: onLocationAvailability");
 
-                    super.onLocationAvailability(locationAvailability);
                     if (!locationAvailability.isLocationAvailable()) {
                         Toast.makeText(MainActivity.this, R.string.get_location_error, Toast.LENGTH_SHORT).show();
                     }
@@ -318,101 +359,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void launchFragment() {
-        Log.d(TAG, "launchFragment");
+    private void buildAutoCompleteSearchView(Menu menu) {
+        Log.d(TAG, "buildAutoCompleteSearchView");
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
-                .commit();
-        setTitle(R.string.list_view_title);
-    }
-
-    private void setUpAutoCompleteSearchView(Menu menu) {
-        Log.d(TAG, "setUpAutoCompleteSearchView");
-
-        if (!Places.isInitialized()) {
-            Places.initialize(MainActivity.this, BuildConfig.GOOGLE_API_KEY);
-        }
-        PlacesClient placesClient = Places.createClient(MainActivity.this);
-
-        List<AutocompletePrediction> predictions = new ArrayList<>();
-
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        searchView.setQueryHint(getString(R.string.search_bar_hint));
-        AutoCompleteTextView autoCompleteTextView = searchView.findViewById(R.id.search_src_text);
-        autoCompleteTextView.setThreshold(3);
         String[] from = new String[]{SearchManager.SUGGEST_COLUMN_TEXT_1};
         int[] to = new int[]{R.id.item_label};
-        CursorAdapter cursorAdapter = new SimpleCursorAdapter(this,
+        mCursorAdapter = new SimpleCursorAdapter(
+                this,
                 R.layout.search_item,
                 null,
                 from,
                 to,
                 CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-        searchView.setSuggestionsAdapter(cursorAdapter);
 
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setQueryHint(getString(R.string.search_bar_hint));
+        searchView.setSuggestionsAdapter(mCursorAdapter);
+
+        AutoCompleteTextView autoCompleteTextView = searchView.findViewById(R.id.search_src_text);
+        autoCompleteTextView.setThreshold(3);
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(String newText) {
-                cursorAdapter.changeCursor(null);
-
                 if (newText.length() >= 3
-                        && locationManager != null
-                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        && mLocationManager != null
+                        && mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
-                    RectangularBounds bounds = RectangularBounds.newInstance(
-                            getCoordinate(
-                                    mDeviceLocation.getLatitude(),
-                                    mDeviceLocation.getLongitude(),
-                                    -AUTOCOMPLETE_SEARCH_RADIUS),
-                            getCoordinate(
-                                    mDeviceLocation.getLatitude(),
-                                    mDeviceLocation.getLongitude(),
-                                    AUTOCOMPLETE_SEARCH_RADIUS));
+                    String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
+                    ParcelUuid sessionToken = new ParcelUuid(UUID.randomUUID());
+                    mViewModel.setAutocompletePredictionsLiveData(
+                            newText,
+                            ESTABLISHMENT_TYPE,
+                            location,
+                            AUTOCOMPLETE_SEARCH_RADIUS,
+                            sessionToken.toString());
 
-                    AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+                    Log.d(TAG, "onQueryTextChange: input=" + newText + "types=" + ESTABLISHMENT_TYPE
+                            + ",location=" + location + ",radius=" + AUTOCOMPLETE_SEARCH_RADIUS + ",sessiontoken=" + sessionToken.toString());
 
-                    FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                            .setLocationRestriction(bounds)
-                            .setSessionToken(token)
-                            .setOrigin(new LatLng(mDeviceLocation.getLatitude(), mDeviceLocation.getLongitude()))
-                            .setTypeFilter(TypeFilter.ESTABLISHMENT)
-                            .setQuery(newText)
-                            .build();
-
-                    placesClient.findAutocompletePredictions(request)
-                            .addOnSuccessListener(MainActivity.this, findAutocompletePredictionsResponse -> {
-                                Log.d(TAG, "onSuccess");
-
-                                predictions.clear();
-                                predictions.addAll(findAutocompletePredictionsResponse.getAutocompletePredictions());
-                                Collections.sort(predictions, (o1, o2) -> {
-                                    int d1 = 0, d2 = 0;
-                                    if (o1.getDistanceMeters() != null && o2.getDistanceMeters() != null) {
-                                        d1 = o1.getDistanceMeters();
-                                        d2 = o2.getDistanceMeters();
-                                    }
-                                    return Integer.compare(d1, d2);
-                                });
-
-                                MatrixCursor matrixCursor = new MatrixCursor(new String[]{BaseColumns._ID, SearchManager.SUGGEST_COLUMN_TEXT_1});
-
-                                for (int i = 0; i < predictions.size(); i++) {
-                                    AutocompletePrediction prediction = predictions.get(i);
-                                    Log.d(TAG, "findAutocompletePredictions : onSuccess: " + prediction.getPrimaryText(null));
-                                    if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
-                                        matrixCursor.addRow(new Object[]{i, prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null)});
-                                        cursorAdapter.changeCursor(matrixCursor);
-                                    }
-                                }
-                            })
-                            .addOnFailureListener(MainActivity.this, e -> Log.e(TAG, "findAutocompletePredictions : onFailure: ", e));
                 } else if (newText.length() == 0) {
-                    mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
+                    mViewModel.setDetailsRestaurantLiveData(null);
                 }
-
                 return true;
             }
 
@@ -420,13 +408,15 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 closeKeyboard();
 
-                if (locationManager != null
-                        && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    for (AutocompletePrediction prediction : predictions) {
-                        if (prediction.getPlaceTypes().contains(Place.Type.RESTAURANT)) {
-                            String selection = prediction.getPrimaryText(null) + ", " + prediction.getSecondaryText(null);
+                if (mLocationManager != null
+                        && mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    for (AutocompletePOJO.Prediction prediction : mPredictions) {
+                        if (prediction.getTypes().contains(RESTAURANT_TYPE)) {
+                            String name = prediction.getStructuredFormatting().getMainText();
+                            String vicinity = prediction.getStructuredFormatting().getSecondaryText();
+                            String selection = name + ", " + vicinity;
                             searchView.setQuery(selection, false);
-                            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(prediction.getPlaceId());
+                            mViewModel.setDetailsRestaurantLiveData(prediction.getPlaceId());
                             break;
                         }
                     }
@@ -448,24 +438,26 @@ public class MainActivity extends AppCompatActivity {
                 Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
                 String selection = cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1));
                 searchView.setQuery(selection, false);
-                mViewModel.setDetailsRestaurantFromAutocompleteLiveData(predictions.get(position).getPlaceId());
+                mViewModel.setDetailsRestaurantLiveData(mPredictions.get(position).getPlaceId());
 
                 return true;
             }
         });
 
         searchView.setOnCloseListener(() -> {
-            mViewModel.setDetailsRestaurantFromAutocompleteLiveData(null);
+            mViewModel.setDetailsRestaurantLiveData(null);
             return false;
         });
     }
 
-    private LatLng getCoordinate(double latitude, double longitude, long distance) {
-        Log.d(TAG, "getCoordinate");
+    private void launchMapViewFragment() {
+        Log.d(TAG, "launchMapViewFragment");
 
-        double lat = latitude + (180 / Math.PI) * (distance / 6378137f);
-        double lng = longitude + (180 / Math.PI) * (distance / 6378137f) / Math.cos(latitude);
-        return new LatLng(lat, lng);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(mBinding.mainNavHostFragment.getId(), MapViewFragment.newInstance())
+                .commit();
+        setTitle(R.string.list_view_title);
     }
 
     private void closeKeyboard() {

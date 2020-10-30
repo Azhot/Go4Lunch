@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.azhot.go4lunch.api.GoogleMapsApi;
+import fr.azhot.go4lunch.model.AutocompletePOJO;
 import fr.azhot.go4lunch.model.DetailsPOJO;
 import fr.azhot.go4lunch.model.NearbySearchPOJO;
 import fr.azhot.go4lunch.model.Restaurant;
@@ -29,14 +30,16 @@ public class GooglePlaceRepository {
     // variables
     private final GoogleMapsApi mGoogleMapsApi;
     private final MutableLiveData<List<Restaurant>> mNearbyRestaurants;
-    private final MutableLiveData<Restaurant> mDetailsRestaurantFromAutocomplete;
+    private final MutableLiveData<Restaurant> mDetailsRestaurant;
+    private final MutableLiveData<List<AutocompletePOJO.Prediction>> mAutocompletePredictions;
 
 
     // constructor
     private GooglePlaceRepository() {
         mGoogleMapsApi = RetrofitService.createService(GoogleMapsApi.class);
         mNearbyRestaurants = new MutableLiveData<>();
-        mDetailsRestaurantFromAutocomplete = new MutableLiveData<>();
+        mDetailsRestaurant = new MutableLiveData<>();
+        mAutocompletePredictions = new MutableLiveData<>();
     }
 
 
@@ -88,17 +91,17 @@ public class GooglePlaceRepository {
         });
     }
 
-    public LiveData<Restaurant> getDetailsRestaurantFromAutocompleteLiveData() {
-        Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData");
+    public LiveData<Restaurant> getDetailsRestaurantLiveData() {
+        Log.d(TAG, "getDetailsRestaurantLiveData");
 
-        return mDetailsRestaurantFromAutocomplete;
+        return mDetailsRestaurant;
     }
 
-    public void setDetailsRestaurantFromAutocompleteLiveData(String placeId) {
-        Log.d(TAG, "setDetailsRestaurantFromAutocompleteLiveData");
+    public void setDetailsRestaurantLiveData(String placeId) {
+        Log.d(TAG, "setDetailsRestaurantLiveData");
 
         if (placeId == null) {
-            mDetailsRestaurantFromAutocomplete.setValue(null);
+            mDetailsRestaurant.setValue(null);
             return;
         }
 
@@ -106,18 +109,47 @@ public class GooglePlaceRepository {
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
             @Override
             public void onResponse(@NonNull Call<DetailsPOJO> call, @NonNull Response<DetailsPOJO> response) {
-                Log.d(TAG, "setDetailsRestaurantFromAutocompleteLiveData: onResponse");
+                Log.d(TAG, "setDetailsRestaurantLiveData: onResponse");
 
                 if (response.body() != null && response.body().getResult() != null) {
-                    mDetailsRestaurantFromAutocomplete.setValue(new Restaurant(response.body().getResult()));
+                    mDetailsRestaurant.setValue(new Restaurant(response.body().getResult()));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<DetailsPOJO> call, @NonNull Throwable t) {
-                Log.e(TAG, "setDetailsRestaurantFromAutocompleteLiveData: onFailure", t);
+                Log.e(TAG, "setDetailsRestaurantLiveData: onFailure", t);
 
-                mDetailsRestaurantFromAutocomplete.postValue(null);
+                mDetailsRestaurant.postValue(null);
+            }
+        });
+    }
+
+    public LiveData<List<AutocompletePOJO.Prediction>> getAutocompletePredictionsLiveData() {
+        Log.d(TAG, "getAutocompletePredictionsLiveData");
+
+        return mAutocompletePredictions;
+    }
+
+    public void setAutocompletePredictionsLiveData(String input, String types, String location, int radius, String sessionToken) {
+        Log.d(TAG, "setAutocompletePredictionsLiveData");
+
+        Call<AutocompletePOJO> placeDetails = mGoogleMapsApi.getAutocomplete(input, types, location, radius, sessionToken);
+        placeDetails.enqueue(new Callback<AutocompletePOJO>() {
+            @Override
+            public void onResponse(@NonNull Call<AutocompletePOJO> call, @NonNull Response<AutocompletePOJO> response) {
+                Log.d(TAG, "setAutocompletePredictionsLiveData: onResponse");
+
+                if (response.body() != null) {
+                    mAutocompletePredictions.setValue(response.body().getPredictions());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<AutocompletePOJO> call, @NonNull Throwable t) {
+                Log.e(TAG, "setAutocompletePredictionsLiveData: onFailure", t);
+
+                mAutocompletePredictions.postValue(null);
             }
         });
     }
