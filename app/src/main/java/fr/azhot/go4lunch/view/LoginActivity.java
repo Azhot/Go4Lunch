@@ -114,20 +114,12 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "onClick");
 
         if (view.getId() == R.id.login_facebook_login_button) {
-            Log.d(TAG, "onClick: facebook login button");
-
             signInWithFacebook();
         } else if (view.getId() == R.id.login_google_login_button) {
-            Log.d(TAG, "onClick: google login button");
-
             signInWithGoogle();
         } else if (view.getId() == R.id.login_twitter_login_interface_button) {
-            Log.d(TAG, "onClick: twitter login button");
-
             signInWithTwitter();
         } else if (view.getId() == R.id.login_email_login_text_view) {
-            Log.d(TAG, "onClick: email login text view");
-
             signInWithEmailAndPassword();
         }
     }
