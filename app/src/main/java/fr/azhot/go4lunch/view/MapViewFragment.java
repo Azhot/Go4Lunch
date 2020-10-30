@@ -292,6 +292,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                                 restaurant.getLongitude()));
                 Marker marker = mGoogleMap.addMarker(markerOptions);
                 marker.setTag(restaurant.getPlaceId());
+                if (mAutocompleteSelection != null) {
+                    mAutocompleteSelection.getKey().remove();
+                }
                 mAutocompleteSelection = new AbstractMap.SimpleEntry<>(marker, restaurant);
                 mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                         new LatLng(restaurant.getLatitude(), restaurant.getLongitude()),
