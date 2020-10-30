@@ -379,6 +379,8 @@ public class MainActivity extends AppCompatActivity {
         AutoCompleteTextView autoCompleteTextView = searchView.findViewById(R.id.search_src_text);
         autoCompleteTextView.setThreshold(3);
 
+        ParcelUuid sessionToken = new ParcelUuid(UUID.randomUUID());
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(String newText) {
@@ -387,7 +389,6 @@ public class MainActivity extends AppCompatActivity {
                         && mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
                     String location = mDeviceLocation.getLatitude() + "," + mDeviceLocation.getLongitude();
-                    ParcelUuid sessionToken = new ParcelUuid(UUID.randomUUID());
                     mViewModel.setAutocompletePredictionsLiveData(
                             newText,
                             ESTABLISHMENT_TYPE,
