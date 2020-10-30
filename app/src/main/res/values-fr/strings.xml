@@ -25,9 +25,9 @@
     <string name="no">Non</string>
 
     <!-- Login alert dialog -->
-    <string name="provide_email_password">Renseignez une adresse email et un mot de passe valides</string>
+    <string name="provide_email_password">Veuillez renseigner une adresse e-mail valide et un mot de passe</string>
     <string name="first_and_last_name">Prénom et nom</string>
-    <string name="email_address">Adresse em-mail *</string>
+    <string name="email_address">Adresse e-mail *</string>
     <string name="password">Mot de passe *</string>
     <string name="cancel">Annuler</string>
     <string name="login">Se connecter</string>
