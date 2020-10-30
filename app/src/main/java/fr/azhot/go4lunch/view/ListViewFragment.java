@@ -57,9 +57,9 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     // inherited methods
     @Override
     public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         Log.d(TAG, "onAttach");
 
-        super.onAttach(context);
         this.mContext = context;
     }
 
@@ -74,18 +74,18 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
 
-        super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
         initObservers();
     }
 
     @Override
     public void onDetach() {
+        super.onDetach();
         Log.d(TAG, "onDetach");
 
-        super.onDetach();
         mContext = null;
         for (ListenerRegistration registration : mListenerRegistrations) {
             registration.remove();
@@ -96,7 +96,6 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         }
     }
 
-    // Called when user clicks on a cell of the recyclerview
     @Override
     public void onRestaurantClick(String placeId) {
         Intent intent = IntentUtils.loadRestaurantDataIntoIntent(
@@ -105,7 +104,6 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     }
 
     // methods
-    // Initializes UI related variables
     private void init(LayoutInflater inflater) {
         Log.d(TAG, "init");
 
@@ -116,7 +114,6 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
         mListenerRegistrations = new ArrayList<>();
     }
 
-    // Initializes the AppViewModel observers
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
@@ -177,8 +174,8 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             mAdapter.setDeviceLocation(location);
         });
 
-        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), restaurant -> {
-            Log.d(TAG, "getDetailsRestaurantFromAutocompleteLiveData: onChanged");
+        mViewModel.getDetailsRestaurantLiveData().observe(getViewLifecycleOwner(), restaurant -> {
+            Log.d(TAG, "getDetailsRestaurantLiveData: onChanged");
 
             if (restaurant != null) {
                 mAutocompleteListenerRegistration =

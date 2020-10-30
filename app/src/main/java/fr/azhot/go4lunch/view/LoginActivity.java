@@ -74,10 +74,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
-        mBinding = ActivityLoginBinding.inflate(getLayoutInflater());
+        init();
         setContentView(mBinding.getRoot());
-        mAuth = FirebaseAuth.getInstance();
-        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
         configureGoogleSignIn();
         configureFacebookSignIn();
         configureTwitterSignIn();
@@ -88,7 +86,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG, "onStart");
 
-        mCurrentUser = mAuth.getCurrentUser();
         if (mCurrentUser != null) {
             navigateToMainActivity();
         }
@@ -100,23 +97,19 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, "onActivityResult");
 
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_GOOGLE_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-                firebaseAuthWithCredential(credential);
-            } catch (ApiException e) {
-                Log.e(TAG, "onActivityResult: Google sign in failed.", e);
-            }
-        }
-
+        handleGoogleSignInRequest(requestCode, data);
         mBinding.loginTwitterLoginButton.onActivityResult(requestCode, resultCode, data);
     }
 
 
     // methods
+    private void init() {
+        mBinding = ActivityLoginBinding.inflate(getLayoutInflater());
+        mAuth = FirebaseAuth.getInstance();
+        mCurrentUser = mAuth.getCurrentUser();
+        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
+    }
+
     public void onClick(View view) {
         Log.d(TAG, "onClick");
 
@@ -156,6 +149,19 @@ public class LoginActivity extends AppCompatActivity {
 
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
+    }
+
+    private void handleGoogleSignInRequest(int requestCode, @Nullable Intent data) {
+        if (requestCode == RC_GOOGLE_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+                firebaseAuthWithCredential(credential);
+            } catch (ApiException e) {
+                Log.e(TAG, "onActivityResult: Google sign in failed.", e);
+            }
+        }
     }
 
     private void configureFacebookSignIn() {
@@ -267,14 +273,6 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void navigateToMainActivity() {
-        Log.d(TAG, "navigateToMainActivity");
-
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
     private void makeAlertDialogExistingSignIn(String email, AuthCredential credential) {
         Log.d(TAG, "makeAlertDialogExistingSignIn");
 
@@ -301,26 +299,6 @@ public class LoginActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.no, null)
                 .create()
                 .show();
-    }
-
-    private void createUserInFirestore(FirebaseUser user) {
-        Log.d(TAG, "createUserInFirestore");
-
-        String uid = user.getUid();
-        String name = user.getDisplayName();
-        String email = user.getEmail();
-        String urlPicture = user.getPhotoUrl() != null
-                ? user.getPhotoUrl().toString()
-                : "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png";
-
-        mAppViewModel.createOrUpdateUser(new User(uid, name, email, urlPicture))
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "createOrUpdateUser: onSuccess");
-                    } else {
-                        Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
-                    }
-                });
     }
 
     private void signInWithEmailAndPassword() {
@@ -411,5 +389,33 @@ public class LoginActivity extends AppCompatActivity {
                         });
             }
         });
+    }
+
+    private void createUserInFirestore(FirebaseUser user) {
+        Log.d(TAG, "createUserInFirestore");
+
+        String uid = user.getUid();
+        String name = user.getDisplayName();
+        String email = user.getEmail();
+        String urlPicture = user.getPhotoUrl() != null
+                ? user.getPhotoUrl().toString()
+                : "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png";
+
+        mAppViewModel.createOrUpdateUser(new User(uid, name, email, urlPicture))
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "createOrUpdateUser: onSuccess");
+                    } else {
+                        Log.e(TAG, "createOrUpdateUser: onFailure", task.getException());
+                    }
+                });
+    }
+
+    private void navigateToMainActivity() {
+        Log.d(TAG, "navigateToMainActivity");
+
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

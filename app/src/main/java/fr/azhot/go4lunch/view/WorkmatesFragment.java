@@ -54,9 +54,9 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
     // inherited methods
     @Override
     public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         Log.d(TAG, "onAttach");
 
-        super.onAttach(context);
         this.mContext = context;
     }
 
@@ -72,18 +72,18 @@ public class WorkmatesFragment extends Fragment implements WorkmatesAdapter.OnWo
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
 
-        super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
         initObservers();
     }
 
     @Override
     public void onDetach() {
+        super.onDetach();
         Log.d(TAG, "onDetach");
 
-        super.onDetach();
         mContext = null;
     }
 

@@ -49,13 +49,13 @@ import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
 import static fr.azhot.go4lunch.util.AppConstants.FASTEST_INTERVAL;
+import static fr.azhot.go4lunch.util.AppConstants.RC_CHECK_LOCATION_SETTINGS;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
     // private static
     private static final String TAG = MapViewFragment.class.getSimpleName();
-    public static final int RC_CHECK_SETTINGS = 3456;
     public static final float DEFAULT_ZOOM = 14.5f;
     public static final LatLng CENTER_FRANCE = new LatLng(46.3432097, 2.5733245);
     public static final float INIT_ZOOM = 5f;
@@ -81,16 +81,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private AppViewModel mViewModel;
     private Map<Marker, Restaurant> mRestaurants;
     private List<ListenerRegistration> mListenerRegistrations;
-    private LocationManager mLocationManager;
     private AbstractMap.SimpleEntry<Marker, Restaurant> mAutocompleteSelection;
 
 
     // inherited methods
     @Override
     public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         Log.d(TAG, "onAttach");
 
-        super.onAttach(context);
         mContext = context;
     }
 
@@ -100,34 +99,31 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onCreateView");
 
         init(inflater);
-        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            LocationUtils.checkLocationSettings(
-                    (AppCompatActivity) mContext, DEFAULT_INTERVAL, FASTEST_INTERVAL, RC_CHECK_SETTINGS);
-        }
+        buildFab();
         return mBinding.getRoot();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         Log.d(TAG, "onActivityCreated");
 
-        super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(requireActivity()).get(AppViewModel.class);
     }
 
     @Override
     public void onResume() {
+        super.onResume();
         Log.d(TAG, "onResume");
 
-        super.onResume();
         mMapFragment.getMapAsync(this);
     }
 
     @Override
     public void onDetach() {
+        super.onDetach();
         Log.d(TAG, "onDetach");
 
-        super.onDetach();
         mContext = null;
         for (ListenerRegistration registration : mListenerRegistrations) {
             registration.remove();
@@ -144,7 +140,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d(TAG, "onMapReady");
 
         mGoogleMap = googleMap;
-        initObservers();
+        initObservers(); // here so mGoogleMap is initialized
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 CENTER_FRANCE,
                 INIT_ZOOM));
@@ -200,15 +196,17 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
                 .findFragmentById(R.id.cell_workmates_fragment_container);
         mRestaurants = new HashMap<>();
         mListenerRegistrations = new ArrayList<>();
-        mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        mBinding.mapViewFab.setOnClickListener(v -> {
+    }
 
-            if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+    private void buildFab() {
+        mBinding.mapViewFab.setOnClickListener(v -> {
+            LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            if (locationManager != null && !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 LocationUtils.checkLocationSettings(
                         (AppCompatActivity) mContext,
                         DEFAULT_INTERVAL,
                         FASTEST_INTERVAL,
-                        RC_CHECK_SETTINGS);
+                        RC_CHECK_LOCATION_SETTINGS);
             }
             if (mDeviceLocation != null) {
                 mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
@@ -282,7 +280,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
-        mViewModel.getDetailsRestaurantFromAutocompleteLiveData().observe(getViewLifecycleOwner(), restaurant -> {
+        mViewModel.getDetailsRestaurantLiveData().observe(getViewLifecycleOwner(), restaurant -> {
             if (restaurant != null) {
                 for (Marker marker : mRestaurants.keySet()) {
                     marker.setVisible(false);

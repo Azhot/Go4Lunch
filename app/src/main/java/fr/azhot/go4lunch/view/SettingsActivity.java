@@ -55,15 +55,15 @@ public class SettingsActivity extends AppCompatActivity {
     // inherited methods
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
-        super.onCreate(savedInstanceState);
         init();
         getNotificationsActivatedFromSharedPreferences();
-        setUpNotificationCheckBox();
-        setUpUserInformationEditText();
-        setUpUserSettingsPictureButton();
-        setUpConfirmButton();
+        buildNotificationCheckBox();
+        buildUserInformationEditText();
+        buildUserSettingsPictureButton();
+        buildConfirmButton();
         setContentView(mBinding.getRoot());
     }
 
@@ -80,25 +80,22 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "onRequestPermissionsResult");
 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_READ_EXTERNAL_STORAGE_PERMISSION) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, RC_CHOOSE_IMAGE);
-            }
-        }
+        handleReadExternalStoragePermissionRequest(requestCode);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult");
 
-        super.onActivityResult(requestCode, resultCode, data);
-        handleImageChosenResponse(requestCode, resultCode, data);
+        handleImageChosenRequest(requestCode, resultCode, data);
     }
 
+
+    // methods
     private void init() {
         Log.d(TAG, "init");
 
@@ -117,8 +114,8 @@ public class SettingsActivity extends AppCompatActivity {
         mIsNotificationsActivated = mSharedPreferences.getBoolean(NOTIFICATIONS_PREFERENCES_NAME, true);
     }
 
-    private void setUpNotificationCheckBox() {
-        Log.d(TAG, "setUpNotificationCheckBox");
+    private void buildNotificationCheckBox() {
+        Log.d(TAG, "buildNotificationCheckBox");
 
         mBinding.notificationCheckBox.setChecked(mIsNotificationsActivated);
         mBinding.notificationCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -130,8 +127,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void setUpUserInformationEditText() {
-        Log.d(TAG, "setUpUserInformationEditText");
+    private void buildUserInformationEditText() {
+        Log.d(TAG, "buildUserInformationEditText");
 
         mBinding.userSettingsNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -159,8 +156,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void setUpUserSettingsPictureButton() {
-        Log.d(TAG, "setUpUserSettingsPictureButton");
+    private void buildUserSettingsPictureButton() {
+        Log.d(TAG, "buildUserSettingsPictureButton");
 
         mBinding.userSettingsPictureImageButton.setOnClickListener(v -> {
             if (PermissionsUtils.checkExternalStoragePermission(SettingsActivity.this)) {
@@ -170,8 +167,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void handleImageChosenResponse(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "handleImageChosenResponse");
+    private void handleImageChosenRequest(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "handleImageChosenRequest");
 
         if (requestCode == RC_CHOOSE_IMAGE) {
             if (resultCode == RESULT_OK) {
@@ -186,8 +183,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpConfirmButton() {
-        Log.d(TAG, "setUpConfirmButton");
+    private void buildConfirmButton() {
+        Log.d(TAG, "buildConfirmButton");
 
         mBinding.confirmButton.setOnClickListener(v -> {
             String name = "";
@@ -242,6 +239,17 @@ public class SettingsActivity extends AppCompatActivity {
                     });
         } else {
             finish();
+        }
+    }
+
+    private void handleReadExternalStoragePermissionRequest(int requestCode) {
+        Log.d(TAG, "handleReadExternalStoragePermissionRequest");
+
+        if (requestCode == RC_READ_EXTERNAL_STORAGE_PERMISSION) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, RC_CHOOSE_IMAGE);
+            }
         }
     }
 }

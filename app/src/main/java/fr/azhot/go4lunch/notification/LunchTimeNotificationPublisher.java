@@ -90,13 +90,13 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
                 .addSnapshotListener((snapshot, e) -> {
                     if (snapshot != null) {
                         mJoiningWorkmates = new ArrayList<>(snapshot.toObjects(User.class));
-                        setUpAndScheduleLunchTimeNotification(context, uid, restaurant);
+                        buildAndScheduleLunchTimeNotification(context, uid, restaurant);
                     }
                 });
     }
 
     // methods
-    private void setUpAndScheduleLunchTimeNotification(Context context, String uid, Restaurant restaurant) {
+    private void buildAndScheduleLunchTimeNotification(Context context, String uid, Restaurant restaurant) {
         mListenerRegistration.remove();
 
         // set-up notification

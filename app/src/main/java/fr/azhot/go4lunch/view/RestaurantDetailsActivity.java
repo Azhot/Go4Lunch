@@ -58,26 +58,21 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
     // inherited methods
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
-        super.onCreate(savedInstanceState);
         init();
         setContentView(mBinding.getRoot());
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "onRequestPermissionsResult");
 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == RC_CALL_PHONE_PERMISSION) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
-                startActivity(intent);
-            }
-        }
+        handleCallPhonePermissionRequest(requestCode);
     }
+
 
     // methods
     private void init() {
@@ -139,8 +134,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                             Log.d(TAG, "getUser: onSuccess");
                             mUser = task.getResult().toObject(User.class);
                             if (mUser != null) {
-                                setUpFab();
-                                setUpLikeButton();
+                                buildFab();
+                                buildLikeButton();
                             }
                         } else {
                             Log.e(TAG, "getUser: onFailure", task.getException());
@@ -158,8 +153,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 .build();
     }
 
-    private void setUpFab() {
-        Log.d(TAG, "setUpFab");
+    private void buildFab() {
+        Log.d(TAG, "buildFab");
 
         if (mCurrentRestaurant.getPlaceId().equals(mUser.getSelectedRestaurantId())) {
             mBinding.restaurantDetailsFab.setImageResource(R.drawable.ic_check_circle_cyan);
@@ -168,8 +163,8 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpLikeButton() {
-        Log.d(TAG, "setUpFab");
+    private void buildLikeButton() {
+        Log.d(TAG, "buildFab");
 
         if (mUser.getLikedRestaurants().contains(mCurrentRestaurant.getPlaceId())) {
             mBinding.restaurantDetailsLikeButton.setCompoundDrawablesWithIntrinsicBounds(null, ContextCompat.getDrawable(this, R.drawable.ic_star_cyan), null, null);
@@ -255,6 +250,18 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                 startActivity(intent);
             } else {
                 Toast.makeText(this, R.string.no_website, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void handleCallPhonePermissionRequest(int requestCode) {
+        Log.d(TAG, "handleCallPhonePermissionRequest");
+
+        if (requestCode == RC_CALL_PHONE_PERMISSION) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+                intent.setData(Uri.parse("tel:" + mCurrentRestaurant.getPhoneNumber()));
+                startActivity(intent);
             }
         }
     }
