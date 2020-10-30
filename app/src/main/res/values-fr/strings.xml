@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Go4Lunch</string>
+    <string name="get_location_error">Erreur: localisation impossible.</string>
+    <string name="search">Recherche</string>
+
+    <!-- PermissionsUtils -->
+    <string name="permissions_dialog_title">Autorisations manquantes</string>
+    <string name="permissions_dialog_message">La localisation est indispensable pour le fonctionnement des composants de cette application.</string>
+    <string name="ok">OK</string>
+    <string name="exit">Quitter</string>
+
+    <!-- Login Activity -->
+    <string name="main_activity_sub_title">Trouvez un bon restaurant et invitez vos collègues à déjeuner !</string>
+    <string name="facebook_login_button">Connexion avec Facebook</string>
+    <string name="google_login_button">Connexion avec Google</string>
+    <string name="twitter_login_button">Connexion avec Twitter</string>
+    <string name="create_account">ou créer un compte…</string>
+    <string name="sign_in_canceled">Connexion annulée</string>
+    <string name="unknown_sign_in_error">Erreur inconnue: impossible de se connecter</string>
+    <string name="email_already_linked_title">Cette adresse e-mail est déjà associée à un compte existant.</string>
+    <string name="email_already_linked_message"> est déjà associée à un compte existant via la connexion avec Google.
+    \nSouhaitez-vous vous connecter à votre compte Google pour pouvoir lier la méthode de connection par %1$s à votre compte Go4Lunch ?</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+
+    <!-- Login alert dialog -->
+    <string name="provide_email_password">Renseignez une adresse email et un mot de passe valides</string>
+    <string name="first_and_last_name">Prénom et nom</string>
+    <string name="email_address">Adresse em-mail *</string>
+    <string name="password">Mot de passe *</string>
+    <string name="cancel">Annuler</string>
+    <string name="login">Se connecter</string>
+
+    <!-- Main Activity -->
+    <string name="search_bar_hint">Chercher un restaurant</string>
+
+    <!-- Navigation drawer -->
+    <string name="navigation_drawer_open">Ouvrir le tiroir de navigation</string>
+    <string name="navigation_drawer_close">Fermer le tiroir de navigation</string>
+    <string name="your_lunch">Votre déjeuner</string>
+    <string name="settings">Paramètres</string>
+    <string name="logout">Se déconnecter</string>
+
+    <!-- Bottom navigation -->
+    <string name="map_view_name">Carte</string>
+    <string name="list_view_name">Liste</string>
+    <string name="workmates_name">Collègues</string>
+    <string name="map_view_title">J\'ai faim !</string>
+    <string name="list_view_title">J\'ai faim !</string>
+    <string name="workmates_title">Collègues disponibles</string>
+
+    <!-- MapView Fragment -->
+    <string name="localize_device_button">Bouton de localisation</string>
+
+    <!-- ListView Fragment -->
+    <string name="no_restaurants_found">Aucun restaurants trouvés</string>
+    <string name="location_is_disabled">La localisation est désactivée</string>
+
+    <!-- Workmates Fragment -->
+    <string name="has_decided">%1$s déjeune chez %2$s.</string>
+    <string name="has_not_decided">%1$s ne s\'est pas encore décidé.</string>
+    <string name="open">Ouvert</string>
+    <string name="closed">Fermé</string>
+    <string name="info_not_available">Information indisponible</string>
+
+    <!-- RestaurantDetails Activity -->
+    <string name="is_joining">%1$s y déjeune !</string>
+    <string name="no_restaurant_selected">Vous n\'avez pas encore sélectionné de restaurant</string>
+    <string name="no_website">Site internet inexistant</string>
+    <string name="no_phone_number">Numéro de téléphone inexistant</string>
+    <string name="call">Appeler</string>
+    <string name="like">Like</string>
+    <string name="liked">Liked</string>
+    <string name="website">Site internet</string>
+    <string name="select_restaurant_button">Bouton de choix de restaurant</string>
+
+    <!-- Notifications Service -->
+    <string name="lunch_time_notification_title">C\'est l\'heure de déjeuner !</string>
+    <string name="lunch_at">Vous déjeunez chez:</string>
+    <string name="address">Adresse:</string>
+    <string name="with">Avec:</string>
+
+    <!-- Settings Activity -->
+    <string name="notification_settings">Paramètres de notifications</string>
+    <string name="activate_lunch_time_notifications">Activer les notifications à l\'heure du déjeuner</string>
+    <string name="user_information">Informations d\'utilisateur</string>
+    <string name="information_updated">Informations mises à jour</string>
+    <string name="error_information_not_updated">Erreur: la mise à jour a échoué.</string>
+    <string name="change_name">Modifier votre nom</string>
+    <string name="change_profile_picture">Télécharger une photo de profile</string>
+    <string name="confirm_changes">Confirmer les modifications</string>
+
+</resources>

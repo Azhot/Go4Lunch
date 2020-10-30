@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Go4Lunch</string>
-    <string name="get_location_error">Error: unable to get current location.</string>
+    <string name="get_location_error">Error: unable to get current location</string>
     <string name="search">Search</string>
 
     <!-- PermissionsUtils -->
     <string name="permissions_dialog_title">Missing permissions</string>
-    <string name="permissions_dialog_message">Location permissions are required for this app components to work.</string>
+    <string name="permissions_dialog_message">Location is required for this app components to work.</string>
     <string name="ok">OK</string>
     <string name="exit">Exit</string>
 
@@ -16,8 +16,8 @@
     <string name="google_login_button">Sign in with Google</string>
     <string name="twitter_login_button">Sign in with Twitter</string>
     <string name="create_account">or create an account…</string>
-    <string name="sign_in_canceled">Sign in canceled.</string>
-    <string name="unknown_sign_in_error">Unknown error: could not sign in.</string>
+    <string name="sign_in_canceled">Sign in canceled</string>
+    <string name="unknown_sign_in_error">Unknown error: could not sign in</string>
     <string name="email_already_linked_title">Email address already linked to an existing account.</string>
     <string name="email_already_linked_message"> is already linked to an existing account via Google sign in.
         \nWould you like to log in to your Google account to link %1$s sign in method to your Go4Lunch account ?</string>
@@ -62,13 +62,13 @@
     <string name="has_not_decided">%1$s hasn\'t decided yet.</string>
     <string name="open">Open</string>
     <string name="closed">Closed</string>
-    <string name="info_not_available">Information not available.</string>
+    <string name="info_not_available">Information not available</string>
 
     <!-- RestaurantDetails Activity -->
     <string name="is_joining">%1$s is joining!</string>
-    <string name="no_restaurant_selected">You have not selected a restaurant yet.</string>
-    <string name="no_website">No website available.</string>
-    <string name="no_phone_number">No phone number available.</string>
+    <string name="no_restaurant_selected">You have not selected a restaurant yet</string>
+    <string name="no_website">No website available</string>
+    <string name="no_phone_number">No phone number available</string>
     <string name="call">Call</string>
     <string name="like">Like</string>
     <string name="liked">Liked</string>
@@ -85,10 +85,10 @@
     <string name="notification_settings">Notification settings</string>
     <string name="activate_lunch_time_notifications">Activate lunch time notifications</string>
     <string name="user_information">User information</string>
-    <string name="information_updated">User information updated.</string>
-    <string name="error_information_not_updated">Error: could not update user information.</string>
-    <string name="change_name">Change name</string>
-    <string name="change_profile_picture">Change profile picture</string>
-    <string name="confirm_changes">Confirm changes</string>
+    <string name="information_updated">User information updated</string>
+    <string name="error_information_not_updated">Error: could not update user information</string>
+    <string name="change_name">Update your name</string>
+    <string name="change_profile_picture">Update profile picture</string>
+    <string name="confirm_changes">Confirm updates</string>
 
 </resources>
