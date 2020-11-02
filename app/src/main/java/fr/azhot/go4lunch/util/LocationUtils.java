@@ -11,10 +11,22 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 
+/**
+ * Utils for location
+ */
 public class LocationUtils {
 
     private static final String TAG = LocationUtils.class.getSimpleName();
 
+    /**
+     * Checks whether location is activated on the user's device, and if it's not,
+     * will prompt a dialog inviting him to turn it on.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @param interval          the desired interval for active location updates, in milliseconds.
+     * @param fastestInterval   the desired fastest interval for location updates, in milliseconds.
+     * @param requestCode       the request code to pass to onActivityResult.
+     */
     public static void checkLocationSettings(final AppCompatActivity appCompatActivity, int interval, int fastestInterval, final int requestCode) {
         Log.d(TAG, "checkLocationSettings");
 

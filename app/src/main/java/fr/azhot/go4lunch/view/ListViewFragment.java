@@ -117,6 +117,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
+        // Nearby Search observer
         mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), restaurants -> {
             Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
@@ -147,6 +148,7 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
+        // Location setting's observer
         mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), aBoolean -> {
             Log.d(TAG, "getLocationActivatedLiveData: onChanged");
 
@@ -168,12 +170,14 @@ public class ListViewFragment extends Fragment implements ListViewAdapter.OnRest
             }
         });
 
+        // Current device's location observer
         mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), location -> {
             Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
             mAdapter.setDeviceLocation(location);
         });
 
+        // Restaurant details observer
         mViewModel.getDetailsRestaurantLiveData().observe(getViewLifecycleOwner(), restaurant -> {
             Log.d(TAG, "getDetailsRestaurantLiveData: onChanged");
 

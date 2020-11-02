@@ -28,6 +28,9 @@ import fr.azhot.go4lunch.view.RestaurantDetailsActivity;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 
+/**
+ * Custom {@link BroadcastReceiver} that provides methods to notify the User at lunch time.
+ */
 public class LunchTimeNotificationPublisher extends BroadcastReceiver {
 
 
@@ -45,12 +48,6 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
     // variables
     private List<User> mJoiningWorkmates;
     private ListenerRegistration mListenerRegistration;
-
-
-    // constructor
-    public LunchTimeNotificationPublisher() {
-
-    }
 
 
     // inherited methods
@@ -79,6 +76,8 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
         }
     }
 
+
+    // methods
     public void scheduleLunchTimeNotification(Context context, String uid, Restaurant restaurant) {
         mListenerRegistration = getJoiningWorkmatesFromFirestore(context, uid, restaurant);
     }
@@ -95,7 +94,6 @@ public class LunchTimeNotificationPublisher extends BroadcastReceiver {
                 });
     }
 
-    // methods
     private void buildAndScheduleLunchTimeNotification(Context context, String uid, Restaurant restaurant) {
         mListenerRegistration.remove();
 

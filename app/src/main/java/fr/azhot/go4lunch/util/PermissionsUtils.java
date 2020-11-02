@@ -17,11 +17,22 @@ import static fr.azhot.go4lunch.util.AppConstants.RC_CALL_PHONE_PERMISSION;
 import static fr.azhot.go4lunch.util.AppConstants.RC_LOCATION_PERMISSIONS;
 import static fr.azhot.go4lunch.util.AppConstants.RC_READ_EXTERNAL_STORAGE_PERMISSION;
 
+/**
+ * Utils for permissions
+ */
 public class PermissionsUtils {
 
     private static final String TAG = PermissionsUtils.class.getSimpleName();
 
-    public static void getLocationPermission(AppCompatActivity activity, int requestCode) {
+    /**
+     * Will prompt a dialog inviting the user to provide the app with the ACCESS_FINE_LOCATION
+     * and ACCESS_COARSE_LOCATION permissions.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @param requestCode       specific request code to match with a result reported
+     *                          to onRequestPermissionsResult.
+     */
+    public static void getLocationPermission(AppCompatActivity appCompatActivity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -29,10 +40,15 @@ public class PermissionsUtils {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
             };
-            activity.requestPermissions(permissions, requestCode);
+            appCompatActivity.requestPermissions(permissions, requestCode);
         }
     }
 
+    /**
+     * Checks whether location permissions are provided by the device or not.
+     *
+     * @return a boolean which value is set to true if permissions are granted and false otherwise.
+     */
     public static boolean isLocationPermissionGranted(Context context) {
         Log.d(TAG, "isLocationPermissionGranted");
 
@@ -40,6 +56,12 @@ public class PermissionsUtils {
                 && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Combines both {@link PermissionsUtils#getLocationPermission} and
+     * {@link PermissionsUtils#isLocationPermissionGranted} methods.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     */
     public static void checkLocationPermission(AppCompatActivity appCompatActivity) {
         Log.d(TAG, "checkLocationPermission");
 
@@ -48,6 +70,11 @@ public class PermissionsUtils {
         }
     }
 
+    /**
+     * Forces the user to provide location permissions or else finishes the activity.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     */
     public static void forceUserChoiceOnLocationPermissions(AppCompatActivity appCompatActivity) {
         Log.d(TAG, "forceUserChoiceOnLocationPermissions");
 
@@ -69,15 +96,29 @@ public class PermissionsUtils {
                 .show();
     }
 
-    public static void getCallPhonePermission(AppCompatActivity activity, int requestCode) {
+    /**
+     * Will prompt a dialog inviting the user to provide the app with the CALL_PHONE permission.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @param requestCode       specific request code to match with a result reported
+     *                          to onRequestPermissionsResult.
+     */
+    public static void getCallPhonePermission(AppCompatActivity appCompatActivity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[]{Manifest.permission.CALL_PHONE,};
-            activity.requestPermissions(permissions, requestCode);
+            appCompatActivity.requestPermissions(permissions, requestCode);
         }
     }
 
+    /**
+     * Checks whether CALL_PHONE permission is provided by the device or calls the
+     * {@link PermissionsUtils#getCallPhonePermission} method.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @return a boolean which value is set to true if permission is granted and false otherwise.
+     */
     public static boolean checkCallPhonePermission(AppCompatActivity appCompatActivity) {
         Log.d(TAG, "checkLocationPermission");
 
@@ -88,15 +129,29 @@ public class PermissionsUtils {
         return ContextCompat.checkSelfPermission(appCompatActivity, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void getExternalStoragePermission(AppCompatActivity activity, int requestCode) {
+    /**
+     * Will prompt a dialog inviting the user to provide the app with the READ_EXTERNAL_STORAGE permission.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @param requestCode       specific request code to match with a result reported
+     *                          to onRequestPermissionsResult.
+     */
+    public static void getExternalStoragePermission(AppCompatActivity appCompatActivity, int requestCode) {
         Log.d(TAG, "getLocationPermission");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,};
-            activity.requestPermissions(permissions, requestCode);
+            appCompatActivity.requestPermissions(permissions, requestCode);
         }
     }
 
+    /**
+     * Checks whether READ_EXTERNAL_STORAGE permission is provided by the device or calls the
+     * {@link PermissionsUtils#getExternalStoragePermission} method.
+     *
+     * @param appCompatActivity the {@link AppCompatActivity} from which this method is called.
+     * @return a boolean which value is set to true if permission is granted and false otherwise.
+     */
     public static boolean checkExternalStoragePermission(AppCompatActivity appCompatActivity) {
         Log.d(TAG, "checkLocationPermission");
 

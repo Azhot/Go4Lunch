@@ -1,5 +1,8 @@
 package fr.azhot.go4lunch.util;
 
+/**
+ * Global constants for the Go4Lunch app.
+ */
 public abstract class AppConstants {
     public static final int RC_LOCATION_PERMISSIONS = 1234;
     public static final int RC_CALL_PHONE_PERMISSION = 2345;

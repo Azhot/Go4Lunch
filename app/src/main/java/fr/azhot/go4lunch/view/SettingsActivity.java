@@ -101,7 +101,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         mBinding = ActivitySettingsBinding.inflate(getLayoutInflater());
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Settings");
+            getSupportActionBar().setTitle(R.string.settings);
         }
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mViewModel = ViewModelProviders.of(this).get(AppViewModel.class);

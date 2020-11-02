@@ -19,6 +19,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Class which will make use of the {@link GoogleMapsApi} in order to return
+ * models used by the Go4Lunch app.
+ */
 public class GooglePlaceRepository {
 
 
@@ -55,12 +59,23 @@ public class GooglePlaceRepository {
 
 
     // methods
+
+    /**
+     * @return a LiveData of a List of {@link Restaurant} returned by the
+     * Google Places Nearby Search API.
+     */
     public LiveData<List<Restaurant>> getNearbyRestaurantsLiveData() {
         Log.d(TAG, "getNearbyRestaurantsLiveData");
 
         return mNearbyRestaurants;
     }
 
+    /**
+     * Makes-up a call to the Google Places Nearby Search API in order to set-up a LiveData of a
+     * List of {@link Restaurant} which can then be observed.
+     *
+     * @see GoogleMapsApi#getNearbySearch for parameters info.
+     */
     public void setNearbyRestaurantsLiveData(String keyword, String type, String location, int radius) {
         Log.d(TAG, "setNearbyRestaurantsLiveData");
 
@@ -91,12 +106,22 @@ public class GooglePlaceRepository {
         });
     }
 
+    /**
+     * @return a LiveData of a {@link Restaurant} returned by the
+     * Google Places Details API.
+     */
     public LiveData<Restaurant> getDetailsRestaurantLiveData() {
         Log.d(TAG, "getDetailsRestaurantLiveData");
 
         return mDetailsRestaurant;
     }
 
+    /**
+     * Makes-up a call to the Google Places Details API in order to set-up a LiveData of a
+     * {@link Restaurant} which can then be observed.
+     *
+     * @see GoogleMapsApi#getDetails for parameters info.
+     */
     public void setDetailsRestaurantLiveData(String placeId) {
         Log.d(TAG, "setDetailsRestaurantLiveData");
 
@@ -125,12 +150,22 @@ public class GooglePlaceRepository {
         });
     }
 
+    /**
+     * @return a LiveData of a List of {@link AutocompletePOJO.Prediction}
+     * returned by the Google Places Autocomplete API.
+     */
     public LiveData<List<AutocompletePOJO.Prediction>> getAutocompletePredictionsLiveData() {
         Log.d(TAG, "getAutocompletePredictionsLiveData");
 
         return mAutocompletePredictions;
     }
 
+    /**
+     * Makes-up a call to the Google Places Autocomplete API in order to set-up a LiveData of a List
+     * of {@link AutocompletePOJO.Prediction} which can then be observed.
+     *
+     * @see GoogleMapsApi#getAutocomplete for parameters info.
+     */
     public void setAutocompletePredictionsLiveData(String input, String types, String location, int radius, String sessionToken) {
         Log.d(TAG, "setAutocompletePredictionsLiveData");
 
@@ -154,6 +189,13 @@ public class GooglePlaceRepository {
         });
     }
 
+    /**
+     * Makes-up a call to the Google Places Details API which will return a
+     * {@link Restaurant} that can then be retrieved using
+     * an {@link OnCompleteListener}.
+     *
+     * @see GoogleMapsApi#getDetails for parameters info.
+     */
     public void getDetailsRestaurant(String placeId, OnCompleteListener onCompleteListener) {
         Call<DetailsPOJO> placeDetails = mGoogleMapsApi.getDetails(placeId);
         placeDetails.enqueue(new Callback<DetailsPOJO>() {
@@ -175,6 +217,10 @@ public class GooglePlaceRepository {
         });
     }
 
+    /**
+     * Listener used in order to get a {@link Restaurant} from a
+     * Google Places Details API call.
+     */
     public interface OnCompleteListener {
         void onSuccess(Restaurant restaurant);
 

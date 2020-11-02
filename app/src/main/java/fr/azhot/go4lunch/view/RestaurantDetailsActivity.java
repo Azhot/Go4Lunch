@@ -109,7 +109,7 @@ public class RestaurantDetailsActivity extends AppCompatActivity {
                     "&maxwidth=400";
 
             Glide.with(this)
-                    .load("https://source.unsplash.com/random/400x400") // todo : REPLACE WITH photoUrl AT THE END OF PROJECT
+                    .load(photoUrl)
                     .into(mBinding.restaurantDetailsPhotoImageView);
         } else {
             Glide.with(this)

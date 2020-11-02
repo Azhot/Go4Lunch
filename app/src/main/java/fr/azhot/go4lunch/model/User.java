@@ -5,11 +5,15 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class representing a user in Go4Lunch app.
+ */
 public class User {
 
     private String uid;
     private String name;
     private String email;
+    @Nullable
     private String urlPicture;
     @Nullable
     private String selectedRestaurantId;
@@ -22,7 +26,15 @@ public class User {
         // public no-arg constructor needed for Firestore
     }
 
-    public User(String uid, String name, String email, String urlPicture) {
+    /**
+     * Constructor which returns a {@link User} new instance.
+     *
+     * @param uid        the unique identifier for the user.
+     * @param name       the name of the user.
+     * @param email      the e-mail address of the user.
+     * @param urlPicture the picture url of the user.
+     */
+    public User(String uid, String name, String email, @Nullable String urlPicture) {
         this.uid = uid;
         this.name = name;
         this.email = email;
@@ -56,11 +68,12 @@ public class User {
         this.email = email;
     }
 
+    @Nullable
     public String getUrlPicture() {
         return urlPicture;
     }
 
-    public void setUrlPicture(String urlPicture) {
+    public void setUrlPicture(@Nullable String urlPicture) {
         this.urlPicture = urlPicture;
     }
 

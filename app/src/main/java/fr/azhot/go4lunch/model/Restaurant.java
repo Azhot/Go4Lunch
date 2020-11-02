@@ -5,6 +5,9 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.Exclude;
 
+/**
+ * Class representing a restaurant in Go4Lunch app.
+ */
 public class Restaurant {
 
     private String mName;
@@ -30,6 +33,13 @@ public class Restaurant {
         // public no-arg constructor needed for Firestore
     }
 
+    /**
+     * Constructor which returns a {@link Restaurant} new instance based on
+     * a {@link NearbySearchPOJO.Result} existing instance.
+     *
+     * @param result a {@link NearbySearchPOJO.Result} which was returned by
+     *               the Google Places Nearby Search API.
+     */
     public Restaurant(@NonNull NearbySearchPOJO.Result result) {
         mName = result.getName();
         mPlaceId = result.getPlaceId();
@@ -44,6 +54,13 @@ public class Restaurant {
         mWorkmatesJoining = 0;
     }
 
+    /**
+     * Constructor which returns a {@link Restaurant} new instance based on
+     * a {@link DetailsPOJO.Result} existing instance.
+     *
+     * @param result a {@link DetailsPOJO.Result} which was returned by the
+     *               Google Places Details API.
+     */
     public Restaurant(@NonNull DetailsPOJO.Result result) {
         mName = result.getName();
         mPlaceId = result.getPlaceId();

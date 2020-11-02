@@ -219,6 +219,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
     private void initObservers() {
         Log.d(TAG, "initObservers");
 
+        // Nearby Search observer
         mViewModel.getNearbyRestaurantsLiveData().observe(getViewLifecycleOwner(), restaurants -> {
             Log.d(TAG, "getNearbyRestaurantsLiveData: onChanged");
 
@@ -252,6 +253,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
+        // Current device's location observer
         mViewModel.getDeviceLocationLiveData().observe(getViewLifecycleOwner(), location -> {
             Log.d(TAG, "getDeviceLocationLiveData: onChanged");
 
@@ -263,6 +265,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             mDeviceLocation = location;
         });
 
+        // Location setting's observer
         mViewModel.getLocationActivatedLiveData().observe(getViewLifecycleOwner(), aBoolean -> {
             Log.d(TAG, "getLocationActivatedLiveData: onChanged");
 
@@ -280,6 +283,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
+        // Restaurant details observer
         mViewModel.getDetailsRestaurantLiveData().observe(getViewLifecycleOwner(), restaurant -> {
             if (restaurant != null) {
                 for (Marker marker : mRestaurants.keySet()) {

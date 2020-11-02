@@ -268,16 +268,13 @@ public class LoginActivity extends AppCompatActivity {
     private void makeAlertDialogExistingSignIn(String email, AuthCredential credential) {
         Log.d(TAG, "makeAlertDialogExistingSignIn");
 
-        String providerName;
+        String providerName = "";
         switch (credential.getProvider()) {
             case TwitterAuthProvider.PROVIDER_ID:
                 providerName = "Twitter";
                 break;
             case FacebookAuthProvider.PROVIDER_ID:
                 providerName = "Facebook";
-                break;
-            default:
-                providerName = "this";
                 break;
         }
 

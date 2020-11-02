@@ -95,12 +95,6 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         return mRestaurants;
     }
 
-    public List<Restaurant> getSavedRestaurants() {
-        Log.d(TAG, "getSavedRestaurants");
-
-        return mSavedRestaurants;
-    }
-
     public void filterAutocompleteRestaurant(Restaurant restaurant) {
         Log.d(TAG, "setRestaurants");
 
@@ -150,10 +144,12 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
         mDeviceLocation = location;
     }
 
+
     // interface
     public interface OnRestaurantClickListener {
         void onRestaurantClick(String placeId);
     }
+
 
     // view holder
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -210,7 +206,7 @@ public class ListViewAdapter extends RecyclerView.Adapter<ListViewAdapter.Restau
                         "&maxwidth=400";
 
                 Log.d(TAG, "loadPhoto: " + restaurant.getName() + ", downloaded photo : " + photoUrl);
-                glide.load("https://source.unsplash.com/random/400x400") // todo : REPLACE WITH photoUrl AT THE END OF PROJECT
+                glide.load(photoUrl)
                         .into(mBinding.cellListViewPhotoImageView);
             } else {
                 glide.load(R.drawable.ic_no_image)

@@ -5,6 +5,9 @@ import android.util.Log;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * Class which configures a {@link Retrofit} service.
+ */
 public class RetrofitService {
 
     private static final String TAG = RetrofitService.class.getSimpleName();
