@@ -24,7 +24,7 @@ import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.repository.UserRepository;
 import fr.azhot.go4lunch.util.IntentUtils;
-import fr.azhot.go4lunch.view.RestaurantDetailsActivity;
+import fr.azhot.go4lunch.view.activity.RestaurantDetailsActivity;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;
 

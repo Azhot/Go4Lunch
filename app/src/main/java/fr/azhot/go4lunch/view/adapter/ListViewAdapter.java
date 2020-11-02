@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.adapter;
 
 import android.location.Location;
 import android.location.LocationManager;

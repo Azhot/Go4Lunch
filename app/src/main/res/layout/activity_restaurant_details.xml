@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.RestaurantDetailsActivity">
+    tools:context=".view.activity.RestaurantDetailsActivity">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/restaurant_details_photo_image_view"

@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -45,6 +45,7 @@ import fr.azhot.go4lunch.model.Restaurant;
 import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
+import fr.azhot.go4lunch.view.activity.RestaurantDetailsActivity;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;

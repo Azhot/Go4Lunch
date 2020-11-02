@@ -7,7 +7,7 @@
     android:paddingStart="@dimen/average_padding"
     android:paddingTop="@dimen/average_padding"
     android:paddingEnd="@dimen/average_padding"
-    tools:context=".view.SettingsActivity">
+    tools:context=".view.activity.SettingsActivity">
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/notification_settings_text_view"

@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.adapter;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;

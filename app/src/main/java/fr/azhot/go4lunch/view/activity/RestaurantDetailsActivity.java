@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.activity;
 
 import android.Manifest;
 import android.content.Context;
@@ -32,6 +32,7 @@ import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.notification.LunchTimeNotificationPublisher;
 import fr.azhot.go4lunch.repository.GooglePlaceRepository;
 import fr.azhot.go4lunch.util.PermissionsUtils;
+import fr.azhot.go4lunch.view.adapter.RestaurantDetailsAdapter;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.NOTIFICATIONS_PREFERENCES_NAME;

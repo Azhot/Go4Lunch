@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +23,8 @@ import fr.azhot.go4lunch.R;
 import fr.azhot.go4lunch.databinding.FragmentWorkmatesBinding;
 import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
+import fr.azhot.go4lunch.view.activity.RestaurantDetailsActivity;
+import fr.azhot.go4lunch.view.adapter.WorkmatesAdapter;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.SELECTED_RESTAURANT_ID_FIELD;

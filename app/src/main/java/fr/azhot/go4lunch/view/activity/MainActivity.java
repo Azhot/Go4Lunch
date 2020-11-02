@@ -1,4 +1,4 @@
-package fr.azhot.go4lunch.view;
+package fr.azhot.go4lunch.view.activity;
 
 import android.app.SearchManager;
 import android.content.Context;
@@ -54,6 +54,9 @@ import fr.azhot.go4lunch.model.User;
 import fr.azhot.go4lunch.util.IntentUtils;
 import fr.azhot.go4lunch.util.LocationUtils;
 import fr.azhot.go4lunch.util.PermissionsUtils;
+import fr.azhot.go4lunch.view.fragment.ListViewFragment;
+import fr.azhot.go4lunch.view.fragment.MapViewFragment;
+import fr.azhot.go4lunch.view.fragment.WorkmatesFragment;
 import fr.azhot.go4lunch.viewmodel.AppViewModel;
 
 import static fr.azhot.go4lunch.util.AppConstants.DEFAULT_INTERVAL;
