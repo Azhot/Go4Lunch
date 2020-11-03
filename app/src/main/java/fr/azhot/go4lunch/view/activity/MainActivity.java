@@ -189,10 +189,12 @@ public class MainActivity extends AppCompatActivity {
                     String vicinity = prediction.getStructuredFormatting().getSecondaryText();
                     String rowText = name + ", " + vicinity;
                     matrixCursor.addRow(new Object[]{i, rowText});
-                    mCursorAdapter.changeCursor(matrixCursor);
                 } else {
                     mPredictions.remove(prediction);
                 }
+            }
+            if (mCursorAdapter != null) {
+                mCursorAdapter.changeCursor(matrixCursor);
             }
         });
     }
