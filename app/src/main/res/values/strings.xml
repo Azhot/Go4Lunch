@@ -19,7 +19,7 @@
     <string name="sign_in_canceled">Sign in canceled</string>
     <string name="unknown_sign_in_error">Unknown error: could not sign in</string>
     <string name="email_already_linked_title">Email address already linked to an existing account.</string>
-    <string name="email_already_linked_message"> is already linked to an existing account via Google sign in.
+    <string name="email_already_linked_message">&#160;is already linked to an existing account via Google sign in.
         \nWould you like to log in to your Google account to link %1$s sign in method to your Go4Lunch account ?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

@@ -19,8 +19,8 @@
     <string name="sign_in_canceled">Connexion annulée</string>
     <string name="unknown_sign_in_error">Erreur inconnue: impossible de se connecter</string>
     <string name="email_already_linked_title">Cette adresse e-mail est déjà associée à un compte existant.</string>
-    <string name="email_already_linked_message"> est déjà associée à un compte existant via la connexion avec Google.
-    \nSouhaitez-vous vous connecter à votre compte Google pour pouvoir lier la méthode de connection par %1$s à votre compte Go4Lunch ?</string>
+    <string name="email_already_linked_message">&#160;est déjà associée à un compte existant via la méthode de connexion par Google.
+    \nSouhaitez-vous vous connecter via Google pour pouvoir lier la méthode de connexion par %1$s à votre compte Go4Lunch ?</string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>
 
