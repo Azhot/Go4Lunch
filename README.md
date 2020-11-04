@@ -3,8 +3,8 @@ Project 7 : Android app dev training - Openclassrooms
 
 ## Target
 This repository is an Android collaborative app designed to be used by company employees.
-It helps them to find restaurants in their surroundings, to select one and to consult restaurants selected by their colleagues in order to join them for lunch.
-Shortly before lunchtime, the application notifies employees reminding them the restaurant they selected and workmates they are having lunch with.
+It helps them finding restaurants in their nearby surroundings, to select one and to consult restaurants selected by their colleagues in order to join them for lunch.
+Shortly before lunch time, the application notifies employees reminding them the restaurant they selected and workmates they are having lunch with.
 
 ## Motivation
 This app is the seventh project part of the [Openclassrooms](https://openclassrooms.com/) training course that I am pursuing in order to become an Android application developer.
@@ -26,8 +26,8 @@ This project applies [AOSP Java Code Style](https://source.android.com/setup/con
 - View nearby restaurants in a Google map
 - List nearby restaurants
 - List workmates and identify where they intend to go for lunch
-- Searching for a restaurant
-- Send lunchtime notifications
+- Search a specific restaurant
+- Send lunch time notifications
 
 ## Localization
 This app supports:
